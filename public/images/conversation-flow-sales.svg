@@ -1,0 +1,24 @@
+<svg width="193" height="139" viewBox="0 0 193 139" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20 40H110C112.76 40 115 42.24 115 45V85C115 87.76 112.76 90 110 90H65L40 115V90H20C17.24 90 15 87.76 15 85V45C15 42.24 17.24 40 20 40Z" fill="url(#paint0_linear_sales)"/>
+  <path d="M140 70L180 90L140 110V70Z" fill="url(#paint1_linear_sales)"/>
+  <path d="M70 15C70 12.24 72.24 10 75 10H145C147.76 10 150 12.24 150 15V55C150 57.76 147.76 60 145 60H75C72.24 60 70 57.76 70 55V15Z" fill="url(#paint2_linear_sales)"/>
+  <path d="M105 65L120 90H90L105 65Z" fill="url(#paint3_linear_sales)"/>
+  <defs>
+    <linearGradient id="paint0_linear_sales" x1="15" y1="40" x2="115" y2="115" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F97316"/>
+      <stop offset="1" stop-color="#C2410C"/>
+    </linearGradient>
+    <linearGradient id="paint1_linear_sales" x1="140" y1="70" x2="180" y2="110" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F97316"/>
+      <stop offset="1" stop-color="#C2410C"/>
+    </linearGradient>
+    <linearGradient id="paint2_linear_sales" x1="70" y1="10" x2="150" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F97316"/>
+      <stop offset="1" stop-color="#C2410C"/>
+    </linearGradient>
+    <linearGradient id="paint3_linear_sales" x1="90" y1="65" x2="120" y2="90" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F97316"/>
+      <stop offset="1" stop-color="#C2410C"/>
+    </linearGradient>
+  </defs>
+</svg> 
