@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 
 interface WelcomeCardProps {
   name?: string;
+  isLoading?: boolean;
 }
 
-export function WelcomeCard({ name = "Usuário" }: WelcomeCardProps) {
+export function WelcomeCard({ name, isLoading = false }: WelcomeCardProps) {
   // Reference for the card and content
   const cardRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -58,7 +59,7 @@ export function WelcomeCard({ name = "Usuário" }: WelcomeCardProps) {
       />
       
       {/* Fixed-size content container that will be scaled */}
-      <div 
+      <div
         ref={contentRef}
         className="w-[325px] h-[325px] origin-top-left relative"
         style={{ transform: `scale(${scale})` }}
@@ -68,11 +69,15 @@ export function WelcomeCard({ name = "Usuário" }: WelcomeCardProps) {
             <h3 className="text-xl font-light text-white">
               Bem-vindo
             </h3>
-            <h2 className="text-xl font-bold text-white -mt-1">
-              {name}
-            </h2>
+            {isLoading || !name ? (
+              <div className="h-7 w-32 bg-white/20 rounded animate-pulse -mt-1" />
+            ) : (
+              <h2 className="text-xl font-bold text-white -mt-1">
+                {name}
+              </h2>
+            )}
           </div>
-          
+
           <div className="max-w-[180px]">
             <p className="text-sm text-white/90 font-light">
               Ialogus está aqui para levar seu atendimento
@@ -80,7 +85,7 @@ export function WelcomeCard({ name = "Usuário" }: WelcomeCardProps) {
             <p className="text-sm text-white/90 font-light">
               para outro nível.
             </p>
-            
+
             <p className="text-sm text-white/90 font-bold mt-3">
               Ialogus, conectando negócios e pessoas.
             </p>

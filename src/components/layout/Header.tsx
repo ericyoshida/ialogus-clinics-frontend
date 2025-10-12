@@ -1,14 +1,11 @@
 import { IalogusLogo } from '@/components/ui/ialogus-logo';
-import { useAuth } from '@/contexts/AuthContext';
-import { Bell, HelpCircle, LogOut, Menu } from 'lucide-react';
+import { Bell, HelpCircle, Menu } from 'lucide-react';
 
 interface HeaderProps {
   onToggleMobileSidebar: () => void;
 }
 
 export function Header({ onToggleMobileSidebar }: HeaderProps) {
-  const { logout, user } = useAuth();
-
   return (
     <header className="bg-[#0a0070] h-16 flex items-center justify-between px-4">
       <div className="flex-1 flex items-center">
@@ -47,20 +44,6 @@ export function Header({ onToggleMobileSidebar }: HeaderProps) {
           <Bell className="w-5 h-5 text-white" />
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
         </button>
-
-        <div className="flex items-center">
-          <div className="hidden md:block mr-2 text-white text-sm">
-            {user?.name?.split(' ')[0]}
-          </div>
-          <button 
-            onClick={logout} 
-            className="p-2 rounded-full hover:bg-blue-900 text-white flex items-center justify-center"
-            aria-label="Sair"
-            title="Sair"
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
-        </div>
       </div>
     </header>
   );

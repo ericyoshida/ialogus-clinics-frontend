@@ -17,7 +17,7 @@ interface ClinicWithClinicId extends Clinic {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   
   // Usar o hook personalizado para buscar as clínicas do usuário
   const { clinics, loading, error, refetchClinics } = useClinics();
@@ -122,7 +122,10 @@ export default function Dashboard() {
       {/* Cards principais */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         <div className="aspect-square w-full max-w-[325px] mx-auto">
-          <WelcomeCard name={user?.name?.split(' ')[0] || 'Usuário'} />
+          <WelcomeCard
+            name={user?.name?.split(' ')[0]}
+            isLoading={authLoading}
+          />
         </div>
         <div className="aspect-square w-full max-w-[325px] mx-auto">
           <PlanCard planName="Free" stats={planStats} />

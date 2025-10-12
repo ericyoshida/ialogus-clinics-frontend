@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { Clinic } from '@/services/clinics'
 import React, { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { LogOut } from 'lucide-react'
 
 // Adicionando interface estendida para incluir clinicId
 interface ClinicWithClinicId extends Clinic {
@@ -253,7 +254,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading, logout } = useAuth();
   const { clinics, loading, error } = useClinics();
   const location = useLocation();
   const navigate = useNavigate();
@@ -733,32 +734,64 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
       <div className="border-t" style={{
         background: 'linear-gradient(135deg, #DDDEDF 0%, #F1F1F1 30%)'
       }}>
-        <button 
-          onClick={() => navigate('/dashboard/profile')}
-          className={cn(
-            "py-3 flex items-center w-full hover:bg-gray-100 transition-colors cursor-pointer", 
-            isCollapsed ? "px-2 justify-center" : (mobile ? "px-3" : "px-6")
-          )}
-        >
-          <div className={cn(
-            "bg-[#39b54a] rounded-full overflow-hidden flex items-center justify-center flex-shrink-0",
-            isCollapsed ? "w-9 h-9" : "w-8 h-8"
-          )}>
-            <span className={cn(
-              "text-white font-medium",
-              isCollapsed ? "text-base" : "text-sm"
-            )}>
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-            </span>
-          </div>
+        <div className={cn(
+          "py-3 flex items-center w-full justify-between",
+          isCollapsed ? "px-2" : (mobile ? "px-3" : "px-6")
+        )}>
+          <button
+            onClick={() => navigate('/dashboard/profile')}
+            className={cn(
+              "flex items-center hover:opacity-70 transition-opacity cursor-pointer",
+              isCollapsed ? "justify-center" : "flex-1 min-w-0"
+            )}
+          >
+            {authLoading || !user?.name ? (
+              <>
+                <div className={cn(
+                  "bg-gray-300 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 animate-pulse",
+                  isCollapsed ? "w-9 h-9" : "w-8 h-8"
+                )} />
+                {!isCollapsed && (
+                  <div className="ml-3 min-w-0 flex-1">
+                    <div className="h-4 w-20 bg-gray-300 rounded animate-pulse" />
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className={cn(
+                  "bg-[#39b54a] rounded-full overflow-hidden flex items-center justify-center flex-shrink-0",
+                  isCollapsed ? "w-9 h-9" : "w-8 h-8"
+                )}>
+                  <span className={cn(
+                    "text-white font-medium",
+                    isCollapsed ? "text-base" : "text-sm"
+                  )}>
+                    {user.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                {!isCollapsed && (
+                  <div className="ml-3 min-w-0 flex-1">
+                    <p className="text-sm font-medium text-gray-700 truncate">
+                      {user.name.split(' ')[0]}
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+          </button>
+
           {!isCollapsed && (
-            <div className="ml-3 min-w-0 flex-1">
-              <p className="text-sm font-medium text-gray-700 truncate">
-                {user?.name ? user.name.split(' ')[0] : 'Usuário'}
-              </p>
-            </div>
+            <button
+              onClick={logout}
+              className="p-2 rounded-full hover:bg-gray-200 text-gray-600 hover:text-gray-800 flex items-center justify-center transition-colors ml-2"
+              aria-label="Sair"
+              title="Sair"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
           )}
-        </button>
+        </div>
       </div>
     </div>
   );

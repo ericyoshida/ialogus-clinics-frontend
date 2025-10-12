@@ -88,24 +88,44 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       setIsLoading(true);
       console.log('Iniciando login com:', { email });
-      
+
       const response = await authService.login({ email, password });
       console.log('Resposta do login:', response);
-      
+
       authService.saveAuthData(response);
-      setUser(response.user);
-      
+
+      // Se o backend não retornou os dados completos do usuário (name e email vazios),
+      // buscar o perfil do usuário
+      if (!response.user.name || !response.user.email) {
+        console.log('Dados do usuário incompletos, buscando perfil...');
+        try {
+          const profileResponse = await authService.getUserProfile();
+          console.log('Dados do perfil obtidos da API:', profileResponse);
+
+          // Atualizar os dados armazenados com as informações completas
+          authService.saveUserData(profileResponse);
+          setUser(profileResponse);
+          console.log('Dados do usuário atualizados com sucesso');
+        } catch (profileError) {
+          console.error('Erro ao buscar perfil do usuário:', profileError);
+          // Se falhar ao buscar o perfil, ainda assim definir o usuário com os dados parciais
+          setUser(response.user);
+        }
+      } else {
+        setUser(response.user);
+      }
+
       toast({
         title: "Login realizado",
         description: "Você foi autenticado com sucesso.",
       });
-      
+
       console.log('Redirecionando para o dashboard após login');
       navigate('/dashboard');
     } catch (error: unknown) {
       console.error('Erro durante login:', error);
       let errorMessage = "Ocorreu um erro ao fazer login. Tente novamente.";
-      
+
       if (error && typeof error === 'object' && 'response' in error) {
         const apiError = error as { response?: { status: number; data?: { message?: string } } };
         if (apiError.response) {
@@ -116,7 +136,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           }
         }
       }
-      
+
       toast({
         title: "Erro no login",
         description: errorMessage,
@@ -131,24 +151,54 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       setIsLoading(true);
       console.log('Iniciando registro com:', { name, email });
-      
+
       const response = await authService.register({ name, email, password });
       console.log('Resposta do registro:', response);
-      
+
       authService.saveAuthData(response);
-      setUser(response.user);
-      
+
+      // O backend de registro não retorna token, apenas cria o usuário
+      // Precisamos fazer login para obter o token e então buscar o perfil
+      console.log('Registro bem-sucedido, fazendo login automático...');
+      try {
+        const loginResponse = await authService.login({ email, password });
+        console.log('Login automático após registro:', loginResponse);
+
+        authService.saveAuthData(loginResponse);
+
+        // Buscar o perfil completo do usuário
+        if (!loginResponse.user.name || !loginResponse.user.email) {
+          console.log('Buscando perfil após registro...');
+          const profileResponse = await authService.getUserProfile();
+          console.log('Dados do perfil obtidos:', profileResponse);
+
+          authService.saveUserData(profileResponse);
+          setUser(profileResponse);
+        } else {
+          setUser(loginResponse.user);
+        }
+      } catch (loginError) {
+        console.error('Erro no login automático após registro:', loginError);
+        // Se falhar o login automático, ainda assim mostrar sucesso e redirecionar para login
+        toast({
+          title: "Cadastro realizado",
+          description: "Sua conta foi criada. Por favor, faça login.",
+        });
+        navigate('/auth/login');
+        return;
+      }
+
       toast({
         title: "Cadastro realizado",
         description: "Sua conta foi criada com sucesso.",
       });
-      
+
       console.log('Redirecionando para o dashboard após registro');
       navigate('/dashboard');
     } catch (error: unknown) {
       console.error('Erro durante registro:', error);
       let errorMessage = "Ocorreu um erro ao criar sua conta. Tente novamente.";
-      
+
       if (error && typeof error === 'object' && 'response' in error) {
         const apiError = error as { response?: { status: number; data?: { message?: string } } };
         if (apiError.response) {
@@ -157,7 +207,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           }
         }
       }
-      
+
       toast({
         title: "Erro no cadastro",
         description: errorMessage,

@@ -42,56 +42,47 @@ const formatApiResponse = (apiResponse: ApiAuthResponse): AuthResponse => {
   console.log('Resposta da API (raw):', JSON.stringify(apiResponse, null, 2));
   console.log('access_token existe:', !!apiResponse.access_token);
   console.log('user existe na resposta:', !!apiResponse.user);
-  
-  // Se a API não retornar um objeto user, criamos um com base no token (payload do JWT)
-  if (!apiResponse.user && apiResponse.access_token) {
-    console.log('=== USUÁRIO NÃO FORNECIDO PELA API - EXTRAINDO DO TOKEN ===');
-    // Extrair dados do usuário do token JWT
+
+  // Extrair o userId do JWT para ter pelo menos o ID disponível
+  let userId = 'unknown';
+  if (apiResponse.access_token) {
     try {
       const tokenParts = apiResponse.access_token.split('.');
       if (tokenParts.length === 3) {
         const payload = JSON.parse(atob(tokenParts[1]));
-        console.log('Payload extraído do token:', JSON.stringify(payload, null, 2));
-        
-        // Criando objeto de usuário a partir do payload do JWT
-        const userFromToken = {
-          id: payload.sub || payload.id || 'unknown',
-          name: payload.name || 'Usuário',
-          email: payload.email || '',
-          role: payload.role
-        };
-        
-        console.log('Usuário criado a partir do token:', JSON.stringify(userFromToken, null, 2));
-        
-        return {
-          token: apiResponse.access_token,
-          user: userFromToken
-        };
+        userId = payload.sub || payload.id || 'unknown';
+        console.log('UserId extraído do token:', userId);
       }
     } catch (error) {
       console.error('Erro ao decodificar token:', error);
     }
   }
-  
+
   // Se a API forneceu dados do usuário, usar eles
   if (apiResponse.user) {
     console.log('=== USUÁRIO FORNECIDO PELA API ===');
     console.log('Dados do usuário da API:', JSON.stringify(apiResponse.user, null, 2));
+    return {
+      token: apiResponse.access_token,
+      user: apiResponse.user
+    };
   }
-  
-  // Retornamos o formato esperado
+
+  // Se a API não forneceu dados do usuário, retornar objeto vazio com apenas o ID
+  // Os dados completos serão buscados via getUserProfile()
+  console.log('=== USUÁRIO NÃO FORNECIDO - SERÁ NECESSÁRIO BUSCAR PERFIL ===');
   const result = {
     token: apiResponse.access_token,
-    user: apiResponse.user || {
-      id: 'unknown',
-      name: 'Usuário',
+    user: {
+      id: userId,
+      name: '',
       email: ''
     }
   };
-  
+
   console.log('=== RESULTADO FORMATADO ===');
   console.log('Resultado final:', JSON.stringify(result, null, 2));
-  
+
   return result;
 };
 
@@ -149,11 +140,11 @@ export const getAuthData = (): { token: string | null; user: User | null } => {
     console.log('=== RECUPERANDO DADOS DE AUTENTICAÇÃO ===');
     const token = localStorage.getItem(TOKEN_KEY);
     const userStr = localStorage.getItem(USER_KEY);
-    
+
     console.log('Token existe no localStorage:', !!token);
     console.log('String do usuário existe no localStorage:', !!userStr);
     console.log('String do usuário (raw):', userStr);
-    
+
     let user = null;
     if (userStr) {
       user = JSON.parse(userStr);
@@ -163,24 +154,22 @@ export const getAuthData = (): { token: string | null; user: User | null } => {
       console.log('Email do usuário:', user?.email);
       console.log('ID do usuário:', user?.id);
     } else if (token) {
-      console.log('=== TENTANDO EXTRAIR USUÁRIO DO TOKEN JWT ===');
-      // Se temos um token mas não temos dados do usuário, vamos tentar extrair do JWT
+      console.log('=== TOKEN ENCONTRADO SEM DADOS DE USUÁRIO ===');
+      // Se temos um token mas não temos dados do usuário, extrair apenas o ID do JWT
+      // Os dados completos serão buscados via getUserProfile()
       try {
         const tokenParts = token.split('.');
         if (tokenParts.length === 3) {
           const payload = JSON.parse(atob(tokenParts[1]));
           console.log('Payload do JWT:', JSON.stringify(payload, null, 2));
-          
+
           user = {
             id: payload.sub || payload.id || 'unknown',
-            name: payload.name || 'Usuário',
-            email: payload.email || '',
+            name: '',
+            email: '',
             role: payload.role
           };
-          console.log('Usuário criado a partir do JWT:', JSON.stringify(user, null, 2));
-          // Salvar o usuário no localStorage para futuras consultas
-          localStorage.setItem(USER_KEY, JSON.stringify(user));
-          console.log('Usuário salvo no localStorage para futuras consultas');
+          console.log('Usuário parcial criado a partir do JWT (dados serão buscados):', JSON.stringify(user, null, 2));
         }
       } catch (error) {
         console.error('Erro ao decodificar token:', error);
@@ -188,11 +177,11 @@ export const getAuthData = (): { token: string | null; user: User | null } => {
     } else {
       console.log('=== NENHUM DADO DE AUTENTICAÇÃO ENCONTRADO ===');
     }
-    
+
     console.log('=== RESULTADO FINAL ===');
     console.log('Token retornado:', !!token);
     console.log('Usuário retornado:', JSON.stringify(user, null, 2));
-    
+
     return { token, user };
   } catch (error) {
     console.error('=== ERRO AO RECUPERAR DADOS ===', error);
