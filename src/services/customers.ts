@@ -37,6 +37,35 @@ export interface CustomersResponse {
   pagination?: PaginationInfo;
 }
 
+// Interface para a resposta da API do backend (usa "patients" e "patientReferenceId")
+interface BackendPatient {
+  id: string;
+  name: string;
+  phoneNumber: string;
+  patientReferenceId?: string;
+  hasActiveWhatsappServiceWindow: boolean;
+  whatsappServiceWindowStartedAt: string;
+  whatsappServiceWindowExpiresAt: string;
+  createdAt: string;
+  updatedAt: string;
+  lastMessageDate: string;
+  lastChatLogStatus: 'active' | 'waiting_response' | 'inactive';
+}
+
+interface BackendPatientsResponse {
+  patients: BackendPatient[];
+  pagination?: PaginationInfo;
+}
+
+// Função auxiliar para transformar dados do backend para o formato do frontend
+function transformBackendPatientToCustomer(patient: BackendPatient): Customer {
+  return {
+    ...patient,
+    customerReferenceId: patient.patientReferenceId,
+    department: undefined, // Campo não existe no backend
+  };
+}
+
 export interface CustomersFilters {
   name?: string;
   phoneNumber?: string;
@@ -71,10 +100,15 @@ export const customersService = {
       }
       
       const queryString = params.toString();
-      const url = `/clinics/${clinicId}/customers${queryString ? `?${queryString}` : ''}`;
-      
-      const response = await api.get<CustomersResponse>(url);
-      return response.data;
+      const url = `/clinics/${clinicId}/patients${queryString ? `?${queryString}` : ''}`;
+
+      const response = await api.get<BackendPatientsResponse>(url);
+
+      // Transformar a resposta do backend para o formato esperado pelo frontend
+      return {
+        customers: response.data.patients.map(transformBackendPatientToCustomer),
+        pagination: response.data.pagination,
+      };
     } catch (error) {
       console.error('Erro ao buscar clientes:', error);
       throw error;
@@ -87,25 +121,18 @@ export const customersService = {
     department?: string;
   }): Promise<Customer> {
     try {
-      const payload: {
-        name: string;
-        phoneNumber: string;
-        department?: string;
-      } = {
+      // O backend não aceita o campo 'department', então enviamos apenas name e phoneNumber
+      const payload = {
         name: customerData.name,
         phoneNumber: customerData.phoneNumber.replace(/^\+/, ''),
       };
-      
-      // Incluir department apenas se preenchido - undefined se vazio (para corresponder ao schema do backend)
-      if (customerData.department && customerData.department.trim()) {
-        payload.department = customerData.department.trim();
-      }
-      // Se vazio, não incluir o campo (será undefined)
-      
+
       console.log('Dados enviados para criação:', payload);
-      
-      const response = await api.post<Customer>(`/clinics/${clinicId}/customers`, payload);
-      return response.data;
+
+      const response = await api.post<BackendPatient>(`/clinics/${clinicId}/patients`, payload);
+
+      // Transformar a resposta do backend para o formato do frontend
+      return transformBackendPatientToCustomer(response.data);
     } catch (error: unknown) {
       console.error('Erro ao criar cliente:', error);
       console.log('Estrutura completa do erro:', JSON.stringify(error, null, 2));
@@ -117,7 +144,7 @@ export const customersService = {
       
       if (apiError.response?.status === 400) {
         const errorData = apiError.response.data;
-        if (errorData?.message === 'CUSTOMER_ALREADY_EXISTS') {
+        if (errorData?.message === 'PATIENT_ALREADY_EXISTS') {
           throw new Error(errorData.details || 'Este número de telefone já está cadastrado para esta clínica.');
         }
         // Tratar outros erros 400
@@ -133,31 +160,24 @@ export const customersService = {
 
   async updateCustomer(customerId: string, customerData: Omit<Customer, 'id' | 'createdAt' | 'updatedAt' | 'hasActiveWhatsappServiceWindow' | 'whatsappServiceWindowStartedAt' | 'whatsappServiceWindowExpiresAt' | 'lastMessageDate' | 'lastChatLogStatus'>): Promise<void> {
     try {
+      // O backend não aceita 'department', então enviamos apenas os campos que ele espera
       const payload: {
         name: string;
         phoneNumber: string;
-        department?: string | null;
-        customerReferenceId?: string;
+        patientReferenceId?: string;
       } = {
         name: customerData.name,
         phoneNumber: customerData.phoneNumber,
       };
-      
-      // Sempre incluir department - null se vazio, string se preenchido
-      if (customerData.department && customerData.department.trim()) {
-        payload.department = customerData.department.trim();
-      } else {
-        payload.department = null;
-      }
-      
-      // Adicionar customerReferenceId apenas se existir
+
+      // Transformar customerReferenceId → patientReferenceId
       if (customerData.customerReferenceId) {
-        payload.customerReferenceId = customerData.customerReferenceId;
+        payload.patientReferenceId = customerData.customerReferenceId;
       }
-      
+
       console.log('Dados enviados para API:', payload);
-      
-      await api.put(`/customers/${customerId}`, payload);
+
+      await api.put(`/patients/${customerId}`, payload);
     } catch (error) {
       console.error('Erro ao atualizar cliente:', error);
       throw error;
@@ -166,7 +186,7 @@ export const customersService = {
 
   async deleteCustomer(customerId: string): Promise<void> {
     try {
-      await api.delete(`/customers/${customerId}`);
+      await api.delete(`/patients/${customerId}`);
     } catch (error) {
       console.error('Erro ao deletar cliente:', error);
       throw error;
