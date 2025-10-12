@@ -25,7 +25,7 @@ export interface CalendarWithEvents {
   clinic: {
     id: string;
     name: string;
-    shortName: string;
+    address: string;
   };
   googleCalendarId: string | null;
   isGoogleConnected?: boolean;

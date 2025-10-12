@@ -6,7 +6,7 @@ export * as authService from './auth';
 export * as calendarService from './calendar';
 export * as channelsService from './channels';
 export * as chatsService from './chats';
-export * as companiesService from './companies';
+export * as clinicsService from './clinics';
 export * as membershipsService from './memberships';
 export * as messageTemplatesService from './messageTemplates';
 export * as productsService from './products';

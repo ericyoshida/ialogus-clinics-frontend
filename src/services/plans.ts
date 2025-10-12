@@ -27,7 +27,7 @@ export const PLANS: PlanInfo[] = [
   {
     name: 'START',
     displayName: 'Starter',
-    description: 'Para pequenas empresas',
+    description: 'Para pequenas clínicas',
     price: 'R$ 97',
     features: [
       'Até 1.000 conversas/mês',
@@ -42,7 +42,7 @@ export const PLANS: PlanInfo[] = [
   {
     name: 'PRO',
     displayName: 'Profissional',
-    description: 'Para empresas em crescimento',
+    description: 'Para clínicas em crescimento',
     price: 'R$ 297',
     features: [
       'Conversas ilimitadas',

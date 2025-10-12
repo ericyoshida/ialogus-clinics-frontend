@@ -1,5 +1,5 @@
-import { IalogusButton } from '@/components/ui/ialogus-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { IalogusButton } from '@/components/ui/ialogus-button';
 import { CalendarDays, CheckCircle } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -10,13 +10,13 @@ interface EmptyCalendarStateProps {
 
 export function EmptyCalendarState({ onCreateCalendar, isCreating }: EmptyCalendarStateProps) {
   const navigate = useNavigate();
-  const { companyId } = useParams<{ companyId: string }>();
+  const { clinicId } = useParams<{ clinicId: string }>();
   
   const handleCreateClick = () => {
     if (onCreateCalendar) {
       onCreateCalendar();
     } else {
-      navigate(`/dashboard/company/${companyId}/calendar/create`);
+      navigate(`/dashboard/clinic/${clinicId}/calendar/create`);
     }
   };
   

@@ -1,18 +1,18 @@
-import { useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { CalendarView } from '@/components/calendar/CalendarView'
 import { CalendarSidebar } from '@/components/calendar/CalendarSidebar'
+import { CalendarView } from '@/components/calendar/CalendarView'
 import { CreateEventModal } from '@/components/calendar/CreateEventModal'
 import { EmptyCalendarState } from '@/components/calendar/EmptyCalendarState'
-import { CalendarEvent } from '@/services/calendar'
 import { useCalendar } from '@/hooks/use-calendar'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2 } from 'lucide-react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { calendarService } from '@/services'
+import { CalendarEvent } from '@/services/calendar'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { Loader2 } from 'lucide-react'
+import { useState } from 'react'
+import { useParams } from 'react-router-dom'
 
 export default function CalendarsPage() {
-  const { companyId } = useParams<{ companyId: string }>()
+  const { clinicId } = useParams<{ clinicId: string }>()
   const { calendar, isLoading, error, hasCalendar, createCalendar, refetchCalendar } = useCalendar()
   const { toast } = useToast()
   const queryClient = useQueryClient()

@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { channelsService } from '@/services/channels'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { InformationCircleIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
+import { CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
+import React, { useEffect, useState } from 'react'
 
 interface EmbeddedSignupProps {
-  companyId: string
+  clinicId: string
   onSuccess: (data: EmbeddedSignupResult) => void
   onError: (error: string) => void
 }
@@ -43,7 +43,7 @@ declare global {
 }
 
 export const EmbeddedSignup: React.FC<EmbeddedSignupProps> = ({
-  companyId,
+  clinicId,
   onSuccess,
   onError
 }) => {
@@ -179,7 +179,7 @@ export const EmbeddedSignup: React.FC<EmbeddedSignupProps> = ({
         // Send the code to our backend for token exchange
         const result = await channelsService.exchangeEmbeddedSignupCode({
           code,
-          companyId,
+          clinicId,
           configId: META_CONFIG.configId
         })
         
@@ -205,7 +205,7 @@ export const EmbeddedSignup: React.FC<EmbeddedSignupProps> = ({
         // Log the successful signup event
         if (window.FB.AppEvents) {
           window.FB.AppEvents.logEvent('WhatsAppBusinessSignup', {
-            companyId,
+            clinicId,
             configId: META_CONFIG.configId
           })
         }

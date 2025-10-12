@@ -1,33 +1,33 @@
-import { FeatureCard } from '@/components/ui/feature-card';
 import { MultiStepAgent } from '@/components/multi-step-agent';
-import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useCompany } from '@/contexts/CompanyContext';
-import { useCompanies } from '@/hooks/use-companies';
-import { ApiService } from '@/services/api';
-import { useToast } from '@/hooks/use-toast';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from '@/components/ui/dialog';
+import { FeatureCard } from '@/components/ui/feature-card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useClinic } from '@/contexts/ClinicContext';
+import { useClinics } from '@/hooks/use-clinics';
+import { useToast } from '@/hooks/use-toast';
+import { ApiService } from '@/services/api';
 import { PencilIcon } from '@heroicons/react/24/outline';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 
 // Card de adicionar novo fluxo
@@ -156,13 +156,13 @@ function ConversationFlowCard({
 
 export default function SelectConversationFlowPage() {
   const navigate = useNavigate();
-  const { companyId } = useParams<{ companyId: string }>();
-  const { selectedCompany } = useCompany();
+  const { clinicId } = useParams<{ clinicId: string }>();
+  const { selectedClinic } = useClinic();
   const { toast } = useToast();
   
-  // Buscar nome da empresa
-  const { companies } = useCompanies();
-  const companyName = companies.find(c => c.id === companyId)?.name || 'Carregando...';
+  // Buscar nome da clínica
+  const { clinics } = useClinics();
+  const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...';
   
   // Estado para o fluxo de conversa selecionado
   const [conversationFlow, setConversationFlow] = useState<string | null>(null);
@@ -180,13 +180,13 @@ export default function SelectConversationFlowPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<{ type: string; name: string } | null>(null);
   const [newFlowName, setNewFlowName] = useState('');
   
-  // Validar se temos um companyId
+  // Validar se temos um clinicId
   useEffect(() => {
-    if (!companyId) {
+    if (!clinicId) {
       navigate('/dashboard');
       return;
     }
-  }, [companyId, navigate]);
+  }, [clinicId, navigate]);
   
   // Carregar dados salvos do localStorage quando o componente é montado
   useEffect(() => {
@@ -212,11 +212,11 @@ export default function SelectConversationFlowPage() {
   
   // Função para criar flowchart a partir do template
   const handleCreateFromTemplate = async () => {
-    if (!selectedTemplate || !newFlowName.trim() || !companyId) return;
+    if (!selectedTemplate || !newFlowName.trim() || !clinicId) return;
     
     try {
       const response = await ApiService.createFlowchartFromTemplate(
-        companyId,
+        clinicId,
         {
           templateType: selectedTemplate.type as 'sales_general' | 'sales_scheduling',
           name: newFlowName.trim()
@@ -224,7 +224,7 @@ export default function SelectConversationFlowPage() {
       );
       
       // Navegar para o editor com o novo flowchart
-      navigate(`/dashboard/company/${companyId}/conversations/flow-editor?flowchartId=${response.messagesFlowchart.id}`);
+      navigate(`/dashboard/clinic/${clinicId}/conversations/flow-editor?flowchartId=${response.messagesFlowchart.id}`);
       
       toast({
         title: "Sucesso",
@@ -267,11 +267,11 @@ export default function SelectConversationFlowPage() {
   // Buscar fluxos do usuário da API
   useEffect(() => {
     async function fetchUserFlows() {
-      if (!companyId) return;
+      if (!clinicId) return;
       
       setIsLoading(true);
       try {
-        const response = await ApiService.listMessagesFlowcharts(companyId);
+        const response = await ApiService.listMessagesFlowcharts(clinicId);
         
         // Mapear os fluxos para o formato esperado
         const mappedFlows = response.messagesFlowcharts.map((flow, index) => ({
@@ -299,7 +299,7 @@ export default function SelectConversationFlowPage() {
     }
     
     fetchUserFlows();
-  }, [companyId, toast]);
+  }, [clinicId, toast]);
   
   // Função para selecionar um fluxo de conversa
   const selectConversationFlow = (flowId: string) => {
@@ -310,7 +310,7 @@ export default function SelectConversationFlowPage() {
   const handleAddNewFlow = () => {
     console.log('Adicionar novo fluxo de conversa');
     // Navegar para a página de criação de fluxo
-    navigate(`/dashboard/company/${companyId}/conversations/flow-editor`);
+    navigate(`/dashboard/clinic/${clinicId}/conversations/flow-editor`);
   };
   
   // Função para avançar para a próxima etapa
@@ -325,18 +325,18 @@ export default function SelectConversationFlowPage() {
     console.log(`Fluxo selecionado: ${conversationFlow}`);
     
     // Navegar para a próxima etapa: catálogo de produtos
-    navigate(`/dashboard/company/${companyId}/agents/create/product-catalog`);
+    navigate(`/dashboard/clinic/${clinicId}/agents/create/product-catalog`);
   };
   
   // Função para voltar à etapa anterior
   const handleBack = () => {
-    navigate(`/dashboard/company/${companyId}/agents/create/agent-type`);
+    navigate(`/dashboard/clinic/${clinicId}/agents/create/agent-type`);
   };
   
   // Função para editar fluxo
   const handleEditFlow = (flowId: string, flowName: string) => {
     // Navegar para a tela de edição passando o ID do fluxo
-    navigate(`/dashboard/company/${companyId}/conversations/flow-editor?flowchartId=${flowId}`);
+    navigate(`/dashboard/clinic/${clinicId}/conversations/flow-editor?flowchartId=${flowId}`);
   };
   
   // Estado para controlar o diálogo de deletar
@@ -380,7 +380,7 @@ export default function SelectConversationFlowPage() {
         <h1 className="text-[21px] font-medium text-gray-900 mt-2 flex items-center gap-2">
           Criar Novo Agente
           <span className="text-gray-400">|</span>
-          <span className="text-gray-600">{companyName}</span>
+          <span className="text-gray-600">{clinicName}</span>
         </h1>
         <p className="text-gray-500 text-sm mb-4">Etapa 2: Defina o fluxo de conversa</p>
         

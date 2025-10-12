@@ -1,23 +1,22 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { calendarService, membershipsService } from '@/services';
-import { CalendarWithEvents } from '@/services/calendar';
 import { Membership } from '@/services/memberships';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 
 export function useCalendar() {
   const { user } = useAuth();
-  const { companyId } = useParams<{ companyId: string }>();
+  const { clinicId } = useParams<{ clinicId: string }>();
 
-  // Buscar memberships da empresa
+  // Buscar memberships da clínica
   const {
     data: memberships,
     isLoading: isLoadingMemberships,
     error: membershipsError
   } = useQuery({
-    queryKey: ['memberships', companyId],
-    queryFn: () => membershipsService.getMembershipsByCompanyId(companyId!),
-    enabled: !!companyId && !!user,
+    queryKey: ['memberships', clinicId],
+    queryFn: () => membershipsService.getMembershipsByClinicId(clinicId!),
+    enabled: !!clinicId && !!user,
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
 

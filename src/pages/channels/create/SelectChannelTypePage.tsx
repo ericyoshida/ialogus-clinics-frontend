@@ -1,10 +1,10 @@
-import { FeatureCard } from '@/components/ui/feature-card'
 import { MultiStepChannel } from '@/components/multi-step-channel'
+import { FeatureCard } from '@/components/ui/feature-card'
 import { useChannelCreationForm } from '@/hooks/use-channel-creation-form'
-import { useNavigate, useLocation, useParams } from 'react-router-dom'
+import { useClinics } from '@/hooks/use-clinics'
 import { cn } from '@/lib/utils'
-import { useCompanies } from '@/hooks/use-companies'
 import { useEffect, useState } from 'react'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -71,22 +71,22 @@ function ChannelTypeCard({
 export default function SelectChannelTypePage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { companyId } = useParams<{ companyId: string }>()
+  const { clinicId } = useParams<{ clinicId: string }>()
   const { selectedChannelType, updateFormData, clearFormData } = useChannelCreationForm()
-  const [lastCompanyId, setLastCompanyId] = useState(companyId)
+  const [lastClinicId, setLastClinicId] = useState(clinicId)
   
-  // Buscar nome da empresa
-  const { companies } = useCompanies()
-  const companyName = companies.find(c => c.id === companyId)?.name || 'Carregando...'
+  // Buscar nome da clínica
+  const { clinics } = useClinics()
+  const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...'
   
-  // Limpar dados do formulário quando a empresa mudar
+  // Limpar dados do formulário quando a clínica mudar
   useEffect(() => {
-    if (companyId !== lastCompanyId) {
-      console.log('Empresa mudou no fluxo de criação de canal, limpando dados do formulário')
+    if (clinicId !== lastClinicId) {
+      console.log('Clínica mudou no fluxo de criação de canal, limpando dados do formulário')
       clearFormData()
-      setLastCompanyId(companyId)
+      setLastClinicId(clinicId)
     }
-  }, [companyId, lastCompanyId, clearFormData])
+  }, [clinicId, lastClinicId, clearFormData])
   
   const channelTypes = [
     {
@@ -99,18 +99,18 @@ export default function SelectChannelTypePage() {
   ]
   
   const handleChannelSelect = (type: 'whatsapp') => {
-    updateFormData({ selectedChannelType: type, companyId, step: 0 })
+    updateFormData({ selectedChannelType: type, clinicId, step: 0 })
   }
   
   const handleNext = () => {
     if (selectedChannelType) {
-      navigate(`/dashboard/company/${companyId}/channels/create/agents`)
+      navigate(`/dashboard/clinic/${clinicId}/channels/create/agents`)
     }
   }
   
   const handleBack = () => {
-    // Voltar para onde veio (da state.from ou fallback para dashboard com empresa)
-    const from = location.state?.from || `/dashboard/company/${companyId}/channels`
+    // Voltar para onde veio (da state.from ou fallback para dashboard com clínica)
+    const from = location.state?.from || `/dashboard/clinic/${clinicId}/channels`
     navigate(from)
   }
   
@@ -122,7 +122,7 @@ export default function SelectChannelTypePage() {
         <h1 className="text-[21px] font-medium text-gray-900 mt-2 flex items-center gap-2">
           Criar Novo Canal
           <span className="text-gray-400">|</span>
-          <span className="text-gray-600">{companyName}</span>
+          <span className="text-gray-600">{clinicName}</span>
         </h1>
         <p className="text-gray-500 text-sm mb-4">Configure um novo canal de comunicação para seus agentes</p>
         

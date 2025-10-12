@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { IalogusButton } from '@/components/ui/ialogus-button';
+import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
+import { useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 export default function GoogleCalendarCallback() {
   const navigate = useNavigate();
@@ -22,9 +22,9 @@ export default function GoogleCalendarCallback() {
   }, []);
 
   const handleContinue = () => {
-    const companyId = localStorage.getItem('currentCompanyId');
-    if (companyId) {
-      navigate(`/dashboard/company/${companyId}/calendar`);
+    const clinicId = localStorage.getItem('currentClinicId');
+    if (clinicId) {
+      navigate(`/dashboard/clinic/${clinicId}/calendar`);
     } else {
       navigate('/dashboard');
     }

@@ -1,44 +1,44 @@
-import { useAuth } from '@/contexts/AuthContext'
-import { channelsService, WhatsappChannel } from '@/services/channels'
-import { useEffect, useState } from 'react'
+import { useAuth } from '@/contexts/AuthContext';
+import { channelsService, WhatsappChannel } from '@/services/channels';
+import { useEffect, useState } from 'react';
 
-export function useChannels(companyId?: string) {
+export function useChannels(clinicId?: string) {
   const [channels, setChannels] = useState<WhatsappChannel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    if (isAuthenticated && companyId) {
-      fetchChannels(companyId);
+    if (isAuthenticated && clinicId) {
+      fetchChannels(clinicId);
     } else {
       setChannels([]);
       setLoading(false);
       
       if (!isAuthenticated) {
         setError('Usuário não autenticado');
-      } else if (!companyId) {
-        setError('Selecione uma empresa para visualizar os canais');
+      } else if (!clinicId) {
+        setError('Selecione uma clínica para visualizar os canais');
       } else {
         setError(null);
       }
     }
-  }, [isAuthenticated, companyId]);
+  }, [isAuthenticated, clinicId]);
 
   const fetchChannels = async (id: string) => {
     try {
       setLoading(true);
       setError(null);
       
-      console.log(`Buscando canais para empresa ${id}`);
-      const data = await channelsService.getWhatsappChannelsByCompanyId(id);
+      console.log(`Buscando canais para clínica ${id}`);
+      const data = await channelsService.getWhatsappChannelsByClinicId(id);
       
       console.log('Dados recebidos em useChannels:', data);
       
       setChannels(data || []);
       
       if (data.length === 0) {
-        console.log('Nenhum canal encontrado para esta empresa');
+        console.log('Nenhum canal encontrado para esta clínica');
       } else {
         console.log(`${data.length} canais encontrados`);
       }
@@ -57,8 +57,8 @@ export function useChannels(companyId?: string) {
   };
 
   const refetchChannels = (id?: string) => {
-    if (id || companyId) {
-      fetchChannels(id || companyId as string);
+    if (id || clinicId) {
+      fetchChannels(id || clinicId as string);
     }
   };
 

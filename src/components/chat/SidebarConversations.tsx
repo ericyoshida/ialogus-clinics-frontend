@@ -1,7 +1,7 @@
 import { useConversationContext } from '@/contexts/ConversationContext';
 import { chatsService } from '@/services';
 import { ChatLogItem, ChatLogsQueryParams, LastMessageObject } from '@/services/chats';
-import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { NewMessageData } from '../../services/websocket';
 import { FilterIcon } from '../icons/FilterIcon';
 import { NewChatIcon } from '../icons/NewChatIcon';
@@ -14,7 +14,7 @@ import { ConversationItem, ConversationItemProps } from './ConversationItem';
 
 type SidebarConversationsProps = {
   onSelectConversation: (chatLog: ChatLogItem) => void;
-  selectedCompanyId?: string;
+  selectedClinicId?: string;
   selectedConversationId?: string | null;
   newMessageUpdate?: NewMessageData | null;
   selectedChannelId?: string;
@@ -22,7 +22,7 @@ type SidebarConversationsProps = {
 
 export function SidebarConversations({ 
   onSelectConversation,
-  selectedCompanyId,
+  selectedClinicId,
   selectedConversationId,
   newMessageUpdate,
   selectedChannelId
@@ -162,7 +162,7 @@ export function SidebarConversations({
   }, []);
 
   const fetchChatLogs = useCallback(async (cursor?: string) => {
-    if (!selectedCompanyId) return;
+    if (!selectedClinicId) return;
     
     // Cancel any previous request
     if (abortControllerRef.current) {
@@ -195,7 +195,7 @@ export function SidebarConversations({
         return;
       }
       
-      const response = await chatsService.getChatLogs(selectedCompanyId, queryParams);
+      const response = await chatsService.getChatLogs(selectedClinicId, queryParams);
       
       // Check if request was aborted after receiving response
       if (abortController.signal.aborted) {
@@ -232,20 +232,20 @@ export function SidebarConversations({
         setIsLoading(false);
       }
     }
-  }, [selectedCompanyId, filters, processFilters, setConversations]);
+  }, [selectedClinicId, filters, processFilters, setConversations]);
 
-  // Load conversations when filters or company changes
+  // Load conversations when filters or clinic changes
   useEffect(() => {
-    if (!selectedCompanyId) return;
+    if (!selectedClinicId) return;
     
     fetchChatLogs();
-  }, [selectedCompanyId, filters, fetchChatLogs]);
+  }, [selectedClinicId, filters, fetchChatLogs]);
 
   // Debounced search function
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (selectedCompanyId) {
-        // Only update the search filter if we have a company ID
+      if (selectedClinicId) {
+        // Only update the search filter if we have a clinic ID
         setFilters(prev => ({
           ...prev,
           query: searchQuery || undefined
@@ -254,7 +254,7 @@ export function SidebarConversations({
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedCompanyId]);
+  }, [searchQuery, selectedClinicId]);
 
   // Handle infinite scroll
   useEffect(() => {
@@ -553,7 +553,7 @@ export function SidebarConversations({
     return {
       id: chatLog.chatLogId,
       contactName: chatLog.contactName,
-      companyName: '', // This field isn't in the API response
+      clinicName: '', // This field isn't in the API response
       lastMessageDate: new Date(chatLog.updatedAt),
       messagePreview,
       unreadCount: unreadCount, // Use the actual count from the Map

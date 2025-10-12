@@ -6,15 +6,15 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 export default function AgentDetailPage() {
   const navigate = useNavigate()
-  const { companyId, agentId } = useParams<{ companyId: string; agentId: string }>()
+  const { clinicId, agentId } = useParams<{ clinicId: string; agentId: string }>()
   const [agent, setAgent] = useState<Agent | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchAgentDetails = async () => {
-      if (!agentId || !companyId) {
-        setError('ID do agente ou empresa não fornecido')
+      if (!agentId || !clinicId) {
+        setError('ID do agente ou clínica não fornecido')
         setLoading(false)
         return
       }
@@ -24,7 +24,7 @@ export default function AgentDetailPage() {
         setError(null)
         
         // Buscar detalhes do agente específico
-        const agentData = await agentsService.getAgentById(companyId, agentId)
+        const agentData = await agentsService.getAgentById(clinicId, agentId)
         setAgent(agentData)
       } catch (err) {
         console.error('Erro ao buscar detalhes do agente:', err)
@@ -35,10 +35,10 @@ export default function AgentDetailPage() {
     }
 
     fetchAgentDetails()
-  }, [agentId, companyId])
+  }, [agentId, clinicId])
 
   const handleBack = () => {
-    navigate(`/dashboard/company/${companyId}/agents`)
+    navigate(`/dashboard/clinic/${clinicId}/agents`)
   }
 
   const getAgentType = (departmentName: string) => {

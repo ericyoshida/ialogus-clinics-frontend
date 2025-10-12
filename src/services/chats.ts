@@ -114,14 +114,14 @@ export interface MediaMessageResponse {
 }
 
 /**
- * Fetches chat logs for a specific seller company
+ * Fetches chat logs for a specific seller clinic
  */
 export const getChatLogs = async (
   clinicId: string,
   queryParams?: ChatLogsQueryParams
 ): Promise<ChatLogsResponse> => {
   try {
-    console.log(`Fetching chat logs for company ID ${clinicId}...`);
+    console.log(`Fetching chat logs for clinic ID ${clinicId}...`);
     console.log('Query params recebidos:', queryParams);
     
     // Build URL with query parameters
@@ -136,7 +136,7 @@ export const getChatLogs = async (
     }
     
     const queryString = params.toString();
-    const url = `/seller-companies/${clinicId}/chat-logs${queryString ? `?${queryString}` : ''}`;
+    const url = `/clinics/${clinicId}/chat-logs${queryString ? `?${queryString}` : ''}`;
     
     console.log('URL final:', url);
     const response = await api.get<ChatLogsResponse>(url);
@@ -144,7 +144,7 @@ export const getChatLogs = async (
     console.log('Chat logs received:', response.data);
     return response.data;
   } catch (error) {
-    console.error(`Error fetching chat logs for company ID ${clinicId}:`, error);
+    console.error(`Error fetching chat logs for clinic ID ${clinicId}:`, error);
     throw error;
   }
 };

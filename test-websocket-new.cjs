@@ -1,7 +1,7 @@
 const io = require('socket.io-client');
 
 // Configuração do teste
-const BACKEND_URL = 'https://ialogus-deploy-api.onrender.com/chat';
+const BACKEND_URL = 'https://ialogus-backend-deploy.onrender.com/chat';
 const AUTH_TOKEN = 'ialogus:token'; // Token de teste
 
 console.log('🧪 Testando nova implementação WebSocket...');

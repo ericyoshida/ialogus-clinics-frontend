@@ -1,7 +1,7 @@
 import { AgentCard } from '@/components/agents/AgentCard'
 import { MultiStepChannel } from '@/components/multi-step-channel'
 import { useChannelCreationForm } from '@/hooks/use-channel-creation-form'
-import { useCompanies } from '@/hooks/use-companies'
+import { useClinics } from '@/hooks/use-clinics'
 import { agentsService } from '@/services'
 import type { Agent } from '@/services/agents'
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
@@ -96,46 +96,46 @@ function AddAgentCard({ onClick }: { onClick: () => void }) {
 
 export default function SelectAgentsPage() {
   const navigate = useNavigate()
-  const { companyId } = useParams<{ companyId: string }>()
+  const { clinicId } = useParams<{ clinicId: string }>()
   const { selectedAgentIds, toggleAgentSelection, updateFormData, clearFormData } = useChannelCreationForm()
   const [currentPage, setCurrentPage] = useState(0)
   
-  const { companies, loading: loadingCompanies } = useCompanies()
-  const companyName = companies.find(c => c.id === companyId)?.name || 'Carregando...'
+  const { clinics, loading: loadingClinics } = useClinics()
+  const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...'
   
   const [allAgents, setAllAgents] = useState<Agent[]>([])
   const [loadingAgents, setLoadingAgents] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [lastCompanyId, setLastCompanyId] = useState<string | undefined>(undefined)
+  const [lastClinicId, setLastClinicId] = useState<string | undefined>(undefined)
 
-  // Limpar dados do formulário quando a empresa mudar
+  // Limpar dados do formulário quando a clínica mudar
   useEffect(() => {
-    // Inicializar lastCompanyId na primeira montagem
-    if (lastCompanyId === undefined) {
-      setLastCompanyId(companyId)
+    // Inicializar lastClinicId na primeira montagem
+    if (lastClinicId === undefined) {
+      setLastClinicId(clinicId)
       return
     }
     
-    if (companyId !== lastCompanyId) {
-      console.log('Empresa mudou no fluxo de criação de canal, limpando todos os dados')
+    if (clinicId !== lastClinicId) {
+      console.log('Clínica mudou no fluxo de criação de canal, limpando todos os dados')
       
       // Limpar localStorage manualmente também
       localStorage.removeItem('channel-creation-form')
       
       // Limpar o formulário
       clearFormData()
-      setLastCompanyId(companyId)
+      setLastClinicId(clinicId)
       
       // Forçar atualização do estado local
       setCurrentPage(0)
       setAllAgents([])
     }
-  }, [companyId, clearFormData])
+  }, [clinicId, clearFormData])
 
   useEffect(() => {
-    const fetchCompanyAgents = async () => {
-      if (!companyId) {
-        setError('Nenhuma empresa selecionada')
+    const fetchClinicAgents = async () => {
+      if (!clinicId) {
+        setError('Nenhuma clínica selecionada')
         setLoadingAgents(false)
         return
       }
@@ -144,30 +144,30 @@ export default function SelectAgentsPage() {
         setLoadingAgents(true)
         setError(null)
         
-        console.log('Buscando agentes para a empresa:', companyId)
-        const companyAgents = await agentsService.getCompanyAgents(companyId)
+        console.log('Buscando agentes para a clínica:', clinicId)
+        const clinicAgents = await agentsService.getClinicAgents(clinicId)
         
-        setAllAgents(companyAgents)
+        setAllAgents(clinicAgents)
       } catch (err) {
-        console.error(`Erro ao buscar agentes da empresa ${companyId}:`, err)
+        console.error(`Erro ao buscar agentes da clínica ${clinicId}:`, err)
         setError('Erro ao carregar agentes')
       } finally {
         setLoadingAgents(false)
       }
     }
 
-    fetchCompanyAgents()
-  }, [companyId])
+    fetchClinicAgents()
+  }, [clinicId])
 
-  // Validar e limpar agentes selecionados que não pertencem à empresa atual
+  // Validar e limpar agentes selecionados que não pertencem à clínica atual
   useEffect(() => {
     if (!loadingAgents && allAgents.length >= 0 && selectedAgentIds.length > 0) {
-      // Verificar se algum agente selecionado não existe na lista de agentes da empresa
+      // Verificar se algum agente selecionado não existe na lista de agentes da clínica
       const validAgentIds = allAgents.map(agent => agent.botModelId)
       const invalidSelections = selectedAgentIds.filter(id => !validAgentIds.includes(id))
       
       if (invalidSelections.length > 0) {
-        console.log('Removendo agentes selecionados que não pertencem a esta empresa:', invalidSelections)
+        console.log('Removendo agentes selecionados que não pertencem a esta clínica:', invalidSelections)
         // Atualizar para manter apenas os agentes válidos
         const validSelections = selectedAgentIds.filter(id => validAgentIds.includes(id))
         updateFormData({ 
@@ -205,7 +205,7 @@ export default function SelectAgentsPage() {
       departmentId: agent.departmentId,
       departmentName: agent.departmentName,
       botName: agent.botName,
-      companyId: '',
+      clinicId: '',
     }
     
     toggleAgentSelection(agent.botModelId, agentData)
@@ -213,17 +213,17 @@ export default function SelectAgentsPage() {
 
   const handleNext = () => {
     if (selectedAgentIds.length > 0) {
-      updateFormData({ step: 1, companyId })
-      navigate(`/dashboard/company/${companyId}/channels/create/meta-connection`)
+      updateFormData({ step: 1, clinicId })
+      navigate(`/dashboard/clinic/${clinicId}/channels/create/meta-connection`)
     }
   }
 
   const handleBack = () => {
-    navigate(`/dashboard/company/${companyId}/channels/create/type`)
+    navigate(`/dashboard/clinic/${clinicId}/channels/create/type`)
   }
 
   const handleCreateAgent = () => {
-    navigate(`/dashboard/company/${companyId}/agents/create`)
+    navigate(`/dashboard/clinic/${clinicId}/agents/create`)
   }
 
   const canProceed = selectedAgentIds.length > 0
@@ -232,7 +232,7 @@ export default function SelectAgentsPage() {
 
   // Debug: log dos agentes selecionados
   console.log('SelectAgentsPage - Estado atual:', {
-    companyId,
+    clinicId,
     selectedAgentIds,
     totalAgents: allAgents.length,
     loadingAgents
@@ -244,7 +244,7 @@ export default function SelectAgentsPage() {
         <h1 className="text-[21px] font-medium text-gray-900 mt-2 flex items-center gap-2">
           Criar Novo Canal
           <span className="text-gray-400">|</span>
-          <span className="text-gray-600">{companyName}</span>
+          <span className="text-gray-600">{clinicName}</span>
         </h1>
         <p className="text-gray-500 text-sm mb-4">Configure um novo canal de comunicação para seus agentes</p>
         

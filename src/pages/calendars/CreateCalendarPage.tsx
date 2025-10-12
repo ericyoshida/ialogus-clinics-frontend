@@ -1,6 +1,6 @@
+import { WorkingHoursSelector } from '@/components/calendar/WorkingHoursSelector';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { IalogusButton } from '@/components/ui/ialogus-button';
-import { WorkingHoursSelector } from '@/components/calendar/WorkingHoursSelector';
 import { useCalendar } from '@/hooks/use-calendar';
 import { useToast } from '@/hooks/use-toast';
 import { WorkingHours } from '@/services/calendar';
@@ -10,7 +10,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 export default function CreateCalendarPage() {
   const navigate = useNavigate();
-  const { companyId } = useParams<{ companyId: string }>();
+  const { clinicId } = useParams<{ clinicId: string }>();
   const { createCalendar } = useCalendar();
   const { toast } = useToast();
   
@@ -44,7 +44,7 @@ export default function CreateCalendarPage() {
         description: 'Seu calendário foi configurado com sucesso!',
       });
       
-      navigate(`/dashboard/company/${companyId}/calendar`);
+      navigate(`/dashboard/clinic/${clinicId}/calendar`);
     } catch (error) {
       toast({
         title: 'Erro ao criar calendário',

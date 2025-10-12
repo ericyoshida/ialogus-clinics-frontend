@@ -12,7 +12,7 @@ export interface ConversationItemProps {
   id: string;
   avatarUrl?: string;
   contactName: string;
-  companyName: string;
+  clinicName: string;
   lastMessageDate: Date;
   messagePreview: string;
   unreadCount: number;
@@ -29,7 +29,7 @@ export function ConversationItem({
   id,
   avatarUrl,
   contactName = 'Unknown',
-  companyName = '',
+  clinicName = '',
   lastMessageDate = new Date(),
   messagePreview = '',
   unreadCount = 0,

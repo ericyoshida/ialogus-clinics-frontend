@@ -1,11 +1,11 @@
+import { ChannelTabs } from '@/components/chat/ChannelTabs'
 import { ChatSection } from '@/components/chat/ChatSection'
 import { ContactDetailsModal } from '@/components/chat/ContactDetailsModal'
 import { ContactDetailsSidebar } from '@/components/chat/ContactDetailsSidebar'
 import { EmptyChatPlaceholder } from '@/components/chat/EmptyChatPlaceholder'
 import { SidebarConversations } from '@/components/chat/SidebarConversations'
-import { ChannelTabs } from '@/components/chat/ChannelTabs'
 import { useToast } from '@/components/ui/use-toast'
-import { useCompany } from '@/contexts/CompanyContext'
+import { useClinic } from '@/contexts/ClinicContext'
 import { useConversationContext } from '@/contexts/ConversationContext'
 import { useWhatsappChannels } from '@/hooks/use-whatsapp-channels'
 import { ConversationItem, Message } from '@/mock/conversations'
@@ -14,7 +14,7 @@ import { ChatLogItem, ChatLogMetrics, ChatMessage, LastMessageObject, MediaMessa
 import { ArrowLeft } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import type { NewMessageData, WhatsappServiceWindowData } from '../../services/websocket'
+import type { WhatsappServiceWindowData } from '../../services/websocket'
 
 // Type for controlling mobile view
 type MobileView = 'conversations' | 'chat' | 'details';
@@ -52,23 +52,23 @@ export default function ConversationsPage() {
   const [isTogglingAI, setIsTogglingAI] = useState(false);
   const [selectedChannelId, setSelectedChannelId] = useState<string>('');
 
-  // Get companyId from URL params
-  const { companyId } = useParams<{ companyId: string }>();
+  // Get clinicId from URL params
+  const { clinicId } = useParams<{ clinicId: string }>();
   
-  const { selectedCompany } = useCompany();
+  const { selectedClinic } = useClinic();
   const { toast } = useToast();
   
   // Use conversation context for managing global conversation state
   const { setCurrentActiveConversationId, markConversationAsRead, conversations, unreadCounts } = useConversationContext();
 
-  // Get company data from context
-  const { isLoading: isCompanyLoading, error: companyError } = useCompany();
+  // Get clinic data from context
+  const { isLoading: isClinicLoading, error: clinicError } = useClinic();
   
-  // Use companyId from URL as primary source, fallback to context
-  const selectedCompanyId = companyId || selectedCompany?.id || '';
+  // Use clinicId from URL as primary source, fallback to context
+  const selectedClinicId = clinicId || selectedClinic?.id || '';
   
   // Fetch WhatsApp channels
-  const { channels, isLoading: isLoadingChannels } = useWhatsappChannels(selectedCompanyId);
+  const { channels, isLoading: isLoadingChannels } = useWhatsappChannels(selectedClinicId);
   
   // Set first channel as selected when channels load
   useEffect(() => {
@@ -212,7 +212,7 @@ export default function ConversationsPage() {
   }, []);
 
   const handleLoadPreviousMessages = async (): Promise<void> => {
-    if (!selectedCompanyId || !currentChatLogId || isLoadingPreviousMessages || !hasMoreMessages) {
+    if (!selectedClinicId || !currentChatLogId || isLoadingPreviousMessages || !hasMoreMessages) {
       return;
     }
 
@@ -224,7 +224,7 @@ export default function ConversationsPage() {
       
       // Load messages with take parameter (starting from 1)
       const messagesResponse = await chatsService.getChatMessages(
-        selectedCompanyId, 
+        selectedClinicId, 
         currentChatLogId,
         { take: newTake }
       );
@@ -322,7 +322,7 @@ export default function ConversationsPage() {
         id: chatLog.chatLogId,
         avatarUrl: `https://i.pravatar.cc/150?u=${chatLog.contactId}`,
         contactName: chatLog.contactName,
-        companyName: '',
+        clinicName: '',
         lastMessageAt: new Date(chatLog.updatedAt),
         unreadCount: 0,
         channel: mapChannelNameToType(chatLog.channelName),
@@ -350,7 +350,7 @@ export default function ConversationsPage() {
 
       // Load initial messages WITHOUT take parameter
       const messagesResponse = await chatsService.getChatMessages(
-        selectedCompanyId, 
+        selectedClinicId, 
         chatLog.chatLogId
         // No queryParams - this loads the default/most recent messages
       );
@@ -1159,8 +1159,8 @@ export default function ConversationsPage() {
     }
   };
 
-  // If we're still loading companies, show a loading state
-  if (isCompanyLoading) {
+  // If we're still loading clinics, show a loading state
+  if (isClinicLoading) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
@@ -1172,7 +1172,7 @@ export default function ConversationsPage() {
   }
 
   // If we have an error, show the error message
-  if (companyError) {
+  if (clinicError) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center max-w-md p-6">
@@ -1182,14 +1182,14 @@ export default function ConversationsPage() {
             </svg>
           </div>
           <h3 className="text-xl font-semibold text-gray-800">Erro</h3>
-          <p className="text-gray-600 mt-2">{companyError}</p>
+          <p className="text-gray-600 mt-2">{clinicError}</p>
         </div>
       </div>
     );
   }
 
-  // If no company is selected, show a message
-  if (!selectedCompanyId) {
+  // If no clinic is selected, show a message
+  if (!selectedClinicId) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center max-w-md p-6">
@@ -1198,8 +1198,8 @@ export default function ConversationsPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
             </svg>
           </div>
-          <h3 className="text-xl font-semibold text-gray-800">Selecione uma empresa</h3>
-          <p className="text-gray-600 mt-2">Por favor, selecione uma empresa na barra lateral para visualizar as conversas.</p>
+          <h3 className="text-xl font-semibold text-gray-800">Selecione uma clínica</h3>
+          <p className="text-gray-600 mt-2">Por favor, selecione uma clínica na barra lateral para visualizar as conversas.</p>
         </div>
       </div>
     );
@@ -1269,7 +1269,7 @@ export default function ConversationsPage() {
             <div className="flex-1 overflow-hidden w-full m-0">
               <SidebarConversations
                 onSelectConversation={handleSelectConversation}
-                selectedCompanyId={selectedCompanyId}
+                selectedClinicId={selectedClinicId}
                 selectedConversationId={currentChatLogId}
                 selectedChannelId={selectedChannelId}
               />
@@ -1312,7 +1312,7 @@ export default function ConversationsPage() {
         <div className="hidden md:block h-full overflow-hidden rounded-md shadow-sm bg-white w-[250px] min-w-[250px] max-w-[250px]">
           <SidebarConversations
             onSelectConversation={handleSelectConversation}
-            selectedCompanyId={selectedCompanyId}
+            selectedClinicId={selectedClinicId}
             selectedConversationId={currentChatLogId}
             selectedChannelId={selectedChannelId}
           />

@@ -30,9 +30,9 @@ interface LLMCostSummary {
     tokens: number
     requests: number
   }>
-  costsByCompany: Array<{
-    companyId: string
-    companyName: string
+  costsByClinic: Array<{
+    clinicId: string
+    clinicName: string
     cost: number
     tokens: number
     requests: number

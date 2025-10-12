@@ -1,12 +1,12 @@
 import { IalogusInput } from '@/components/ui/ialogus-input'
 import { Input } from '@/components/ui/input'
+import { useClinics } from '@/hooks/use-clinics'
 import { useToast } from '@/hooks/use-toast'
 import { productsService } from '@/services'
 import { Product } from '@/services/products'
 import { Edit2, Loader2, MoreVertical, Search, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useCompanies } from '@/hooks/use-companies'
 
 // Função para normalizar texto removendo acentos e convertendo para minúsculas
 const normalizeText = (text: string): string => {
@@ -17,11 +17,11 @@ const normalizeText = (text: string): string => {
 };
 
 // Card de adicionar produtos
-function AddProductCard({ companyId }: { companyId?: string }) {
+function AddProductCard({ clinicId }: { clinicId?: string }) {
   const navigate = useNavigate();
   
   const handleClick = () => {
-    navigate(`/dashboard/company/${companyId}/agents/create/product-catalog/create/product`);
+    navigate(`/dashboard/clinic/${clinicId}/agents/create/product-catalog/create/product`);
   };
 
   return (
@@ -341,10 +341,10 @@ function DeleteConfirmationDialog({
 
 export default function CreateProductCatalogPage() {
   const navigate = useNavigate();
-  const { companyId } = useParams<{ companyId: string }>();
+  const { clinicId } = useParams<{ clinicId: string }>();
   const { toast } = useToast();
-  const { companies } = useCompanies();
-  const companyName = companies.find(c => c.id === companyId)?.name || 'Carregando...';
+  const { clinics } = useClinics();
+  const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...';
   
   // Estado para o nome do catálogo
   const [catalogName, setCatalogName] = useState('');
@@ -406,15 +406,15 @@ export default function CreateProductCatalogPage() {
         setLoading(true);
         setError(null);
         
-        // Usar o ID da empresa da URL
-        if (!companyId) {
-          throw new Error('Nenhuma empresa selecionada.');
+        // Usar o ID da clínica da URL
+        if (!clinicId) {
+          throw new Error('Nenhuma clínica selecionada.');
         }
         
-        console.log('Carregando produtos para empresa:', companyId);
+        console.log('Carregando produtos para clínica:', clinicId);
         
         // Carregar produtos da API
-        const products = await productsService.getCompanyProducts(companyId);
+        const products = await productsService.getClinicProducts(clinicId);
         
         console.log('Produtos carregados:', products);
         
@@ -451,7 +451,7 @@ export default function CreateProductCatalogPage() {
     };
     
     fetchProducts();
-  }, [toast, isEditMode, companyId]);
+  }, [toast, isEditMode, clinicId]);
   
   // Salvar o nome do catálogo no localStorage quando ele mudar
   useEffect(() => {
@@ -514,15 +514,15 @@ export default function CreateProductCatalogPage() {
     setLoading(true);
     setError(null);
     
-    // Usar o ID da empresa da URL
-    if (!companyId) {
-      setError('Nenhuma empresa selecionada.');
+    // Usar o ID da clínica da URL
+    if (!clinicId) {
+      setError('Nenhuma clínica selecionada.');
       setLoading(false);
       return;
     }
     
     // Buscar produtos novamente
-    productsService.getCompanyProducts(companyId)
+    productsService.getClinicProducts(clinicId)
       .then(products => {
         setApiProducts(products);
         setLoading(false);
@@ -565,9 +565,9 @@ export default function CreateProductCatalogPage() {
     try {
       setIsSubmitting(true);
       
-      // Usar o ID da empresa da URL
-      if (!companyId) {
-        throw new Error('Nenhuma empresa selecionada.');
+      // Usar o ID da clínica da URL
+      if (!clinicId) {
+        throw new Error('Nenhuma clínica selecionada.');
       }
       
       // Preparar dados para o backend conforme o schema esperado
@@ -589,7 +589,7 @@ export default function CreateProductCatalogPage() {
         });
       } else {
         // Modo de criação - criar novo catálogo
-        await productsService.createProductsList(companyId, catalogData);
+        await productsService.createProductsList(clinicId, catalogData);
         
         toast({
           title: "Catálogo criado",
@@ -604,7 +604,7 @@ export default function CreateProductCatalogPage() {
       localStorage.setItem('catalog_saved', 'true');
       
       // Voltar para a página de seleção de catálogo
-      navigate(`/dashboard/company/${companyId}/agents/create/product-catalog`);
+      navigate(`/dashboard/clinic/${clinicId}/agents/create/product-catalog`);
     } catch (error) {
       console.error('Erro ao salvar catálogo:', error);
       toast({
@@ -630,7 +630,7 @@ export default function CreateProductCatalogPage() {
     localStorage.removeItem('temp_editing_catalog_products');
     localStorage.removeItem('catalog_saved');
     
-    navigate(`/dashboard/company/${companyId}/agents/create/product-catalog`);
+    navigate(`/dashboard/clinic/${clinicId}/agents/create/product-catalog`);
   };
   
   // Função para editar produto
@@ -648,7 +648,7 @@ export default function CreateProductCatalogPage() {
     }
     
     // Navegar para a página de edição passando os dados do produto
-    navigate(`/dashboard/company/${companyId}/agents/create/product-catalog/edit/product/${productId}`, {
+    navigate(`/dashboard/clinic/${clinicId}/agents/create/product-catalog/edit/product/${productId}`, {
       state: { productData: productToEdit }
     });
   };
@@ -716,7 +716,7 @@ export default function CreateProductCatalogPage() {
         <h1 className="text-[21px] font-medium text-gray-900 mt-2 flex items-center gap-2">
           {isEditMode ? 'Editar Catálogo' : 'Criar Novo Catálogo'}
           <span className="text-gray-400">|</span>
-          <span className="text-gray-600">{companyName}</span>
+          <span className="text-gray-600">{clinicName}</span>
         </h1>
       </div>
       
@@ -796,7 +796,7 @@ export default function CreateProductCatalogPage() {
             <div className="flex space-x-3" style={{ paddingBottom: '4px' }}>
               {/* Card para adicionar produto - completamente separado dos demais */}
               <div className="flex-shrink-0">
-                <AddProductCard companyId={companyId} />
+                <AddProductCard clinicId={clinicId} />
               </div>
               
               {/* Renderização dos produtos ou mensagem de não encontrado */}

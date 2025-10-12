@@ -1,6 +1,6 @@
+import type { MetaBusinessAccount, WhatsAppPhoneNumber } from '@/services/channels'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { MetaBusinessAccount, WhatsAppPhoneNumber } from '@/services/channels'
 
 interface ChannelCreationFormData {
   selectedChannelType: 'whatsapp' | null
@@ -10,7 +10,7 @@ interface ChannelCreationFormData {
     departmentId: string
     departmentName: string
     botName: string
-    companyId: string
+    clinicId: string
   }>
   metaAuthData?: {
     accessToken?: string
@@ -24,7 +24,7 @@ interface ChannelCreationFormData {
   selectedPhoneNumberId?: string
   selectedPhoneNumber?: string
   channelName?: string
-  companyId?: string
+  clinicId?: string
   step: number
 }
 
@@ -46,7 +46,7 @@ const initialState: ChannelCreationFormData = {
   selectedPhoneNumberId: undefined,
   selectedPhoneNumber: undefined,
   channelName: undefined,
-  companyId: undefined,
+  clinicId: undefined,
   step: 0,
 }
 
@@ -87,7 +87,7 @@ export const useChannelCreationForm = create(
         selectedAgentIds: state.selectedAgentIds,
         selectedAgentsData: state.selectedAgentsData,
         channelName: state.channelName,
-        companyId: state.companyId,
+        clinicId: state.clinicId,
         step: state.step,
         // Dados de autenticação META são mantidos temporariamente
         metaAuthData: state.metaAuthData,

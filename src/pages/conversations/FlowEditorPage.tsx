@@ -1,27 +1,27 @@
+import { useClinics } from '@/hooks/use-clinics'
 import { useToast } from '@/hooks/use-toast'
-import { useCompanies } from '@/hooks/use-companies'
 import { ApiService } from '@/services/api'
 import {
-  ArrowLeftIcon,
-  Bars3Icon,
-  PlusIcon,
-  QuestionMarkCircleIcon
+    ArrowLeftIcon,
+    Bars3Icon,
+    PlusIcon,
+    QuestionMarkCircleIcon
 } from '@heroicons/react/24/outline'
-import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { useNavigate, useSearchParams, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import ReactFlow, {
-  addEdge,
-  Background,
-  BackgroundVariant,
-  Connection,
-  Controls,
-  Edge,
-  EdgeChange,
-  Node,
-  NodeChange,
-  useEdgesState,
-  useNodesState
+    addEdge,
+    Background,
+    BackgroundVariant,
+    Connection,
+    Controls,
+    Edge,
+    EdgeChange,
+    Node,
+    NodeChange,
+    useEdgesState,
+    useNodesState
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { FlowSidebar } from '../../components/flow/FlowSidebar'
@@ -117,9 +117,9 @@ export const FlowEditorPage: React.FC = () => {
   const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const { toast } = useToast();
-  const { companyId } = useParams<{ companyId: string }>();
-  const { companies } = useCompanies();
-  const companyName = companies.find(c => c.id === companyId)?.name || 'Carregando...';
+  const { clinicId } = useParams<{ clinicId: string }>();
+  const { clinics } = useClinics();
+  const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...';
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const flowchartId = searchParams.get('flowchartId');
@@ -260,7 +260,7 @@ export const FlowEditorPage: React.FC = () => {
           description: "Erro ao carregar fluxo. Verifique se o fluxo existe.",
           variant: "destructive",
         });
-        navigate(`/dashboard/company/${companyId}/agents/create/conversation-flow`);
+        navigate(`/dashboard/clinic/${clinicId}/agents/create/conversation-flow`);
       } finally {
         setIsLoading(false);
       }
@@ -837,11 +837,11 @@ export const FlowEditorPage: React.FC = () => {
   const onSave = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Verificar se há empresa selecionada
-      if (!companyId) {
+      // Verificar se há clínica selecionada
+      if (!clinicId) {
         toast({
           title: "Erro",
-          description: "Nenhuma empresa selecionada",
+          description: "Nenhuma clínica selecionada",
           variant: "destructive",
         });
         return;
@@ -869,7 +869,7 @@ export const FlowEditorPage: React.FC = () => {
         
       } else {
         // Se estamos criando um novo, criar o fluxograma
-        const flowchartResponse = await ApiService.createMessagesFlowchart(companyId, {
+        const flowchartResponse = await ApiService.createMessagesFlowchart(clinicId, {
           name: flowState.flowName || 'Novo Fluxo',
           messageBlockSequenceIds: []
         });
@@ -940,7 +940,7 @@ export const FlowEditorPage: React.FC = () => {
       
       // Navegar de volta para a tela de seleção de fluxo de conversa
       setTimeout(() => {
-        navigate(`/dashboard/company/${companyId}/agents/create/conversation-flow`);
+        navigate(`/dashboard/clinic/${clinicId}/agents/create/conversation-flow`);
       }, 1000);
     } catch (error) {
       console.error('Erro ao salvar fluxo:', error);
@@ -952,7 +952,7 @@ export const FlowEditorPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [nodes, edges, toast, companyId, flowState, navigate, isEditMode, flowchartId]);
+  }, [nodes, edges, toast, clinicId, flowState, navigate, isEditMode, flowchartId]);
 
   // Função para determinar a ordem de criação dos blocos (de trás para frente)
   const getCreationOrder = useCallback((nodes: Node<MessageNodeData>[], edges: Edge[]): string[] => {
@@ -1097,7 +1097,7 @@ export const FlowEditorPage: React.FC = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate(`/dashboard/company/${companyId}/agents/create/conversation-flow`)}
+              onClick={() => navigate(`/dashboard/clinic/${clinicId}/agents/create/conversation-flow`)}
               className="flex items-center gap-2"
             >
               <ArrowLeftIcon className="w-4 h-4" />
@@ -1105,7 +1105,7 @@ export const FlowEditorPage: React.FC = () => {
             </Button>
             <span className="text-gray-400 text-xl font-light">|</span>
             <h1 className="text-[21px] font-medium text-gray-900">
-              {companyName}
+              {clinicName}
             </h1>
             <span className="text-gray-400 text-xl font-light">|</span>
             {isEditingFlowName ? (

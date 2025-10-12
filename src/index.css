@@ -109,6 +109,12 @@
     outline: none !important;
   }
 
+  /* Focus state for insurance input */
+  .focused .gradient-line {
+    height: 0.25rem !important;
+    background: linear-gradient(90deg, #F6921E 14%, #EE413D 45%, #E63F42 50%, #D33952 57%, #B2306D 66%, #852492 76%, #4B14C1 87%, #0501FA 99%, #0000FF 100%) !important;
+  }
+
   /* Force no spacing on flow editor page */
   .flow-editor-page {
     margin: 0 !important;

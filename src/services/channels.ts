@@ -38,7 +38,7 @@ export interface OAuthResponse {
 
 export interface EmbeddedSignupRequest {
   code: string;
-  companyId: string;
+  clinicId: string;
 }
 
 export interface EmbeddedSignupResponse {
@@ -69,13 +69,13 @@ export interface CreateChannelData {
 }
 
 /**
- * Busca os canais WhatsApp de uma empresa
+ * Busca os canais WhatsApp de uma clínica
  */
-export const getWhatsappChannelsByCompanyId = async (clinicId: string): Promise<WhatsappChannel[]> => {
+export const getWhatsappChannelsByClinicId = async (clinicId: string): Promise<WhatsappChannel[]> => {
   try {
-    console.log('Buscando canais WhatsApp da empresa:', clinicId);
+    console.log('Buscando canais WhatsApp da clínica:', clinicId);
     const response = await api.get<any>(
-      `/seller-companies/${clinicId}/whatsapp-channels`
+      `/clinics/${clinicId}/whatsapp-channels`
     );
     
     console.log('Canais WhatsApp recebidos:', response.data.whatsappChannels);
@@ -102,26 +102,26 @@ export const getWhatsappChannelsByCompanyId = async (clinicId: string): Promise<
 /**
  * Inicia o fluxo OAuth do Meta retornando a URL de autorização
  */
-export const initiateMetaOAuth = async (companyId?: string): Promise<{ authUrl: string }> => {
+export const initiateMetaOAuth = async (clinicId?: string): Promise<{ authUrl: string }> => {
   try {
-    // Se temos companyId, tentar usar POST (nova versão)
-    if (companyId) {
+    // Se temos clinicId, tentar usar POST (nova versão)
+    if (clinicId) {
       try {
         const response = await api.post('/whatsapp-channels/oauth/authorize', {
-          companyId
+          clinicId
         });
         return response.data;
       } catch (postError: any) {
         // Se POST falhar com 404, fazer fallback para GET
         if (postError?.response?.status === 404) {
-          console.log('POST não disponível, usando GET sem companyId');
+          console.log('POST não disponível, usando GET sem clinicId');
           const response = await api.get('/whatsapp-channels/oauth/authorize');
           return response.data;
         }
         throw postError;
       }
     } else {
-      // Sem companyId, usar GET
+      // Sem clinicId, usar GET
       const response = await api.get('/whatsapp-channels/oauth/authorize');
       return response.data;
     }
@@ -181,7 +181,7 @@ export const createWhatsAppChannel = async (
   data: CreateChannelData
 ): Promise<WhatsappChannel> => {
   try {
-    const response = await api.post(`/seller-companies/${clinicId}/whatsapp-channels`, data);
+    const response = await api.post(`/clinics/${clinicId}/whatsapp-channels`, data);
     return response.data;
   } catch (error) {
     console.error('Erro ao criar canal WhatsApp:', error);
@@ -284,7 +284,7 @@ export const createWhatsAppChannelEmbedded = async (
   data: CreateChannelData & { embeddedAccessToken?: string }
 ): Promise<WhatsappChannel> => {
   try {
-    const response = await api.post(`/seller-companies/${clinicId}/whatsapp-channels/embedded`, data);
+    const response = await api.post(`/clinics/${clinicId}/whatsapp-channels/embedded`, data);
     return response.data;
   } catch (error) {
     console.error('Error creating WhatsApp channel via embedded signup:', error);
@@ -293,7 +293,7 @@ export const createWhatsAppChannelEmbedded = async (
 };
 
 export const channelsService = {
-  getWhatsappChannelsByCompanyId,
+  getWhatsappChannelsByClinicId,
   getWhatsAppChannelById,
   getWhatsAppChannelMetrics,
   getWhatsAppChannelStatistics,

@@ -1,22 +1,22 @@
-import { FeatureCard } from '@/components/ui/feature-card'
 import { MultiStepAgent } from '@/components/multi-step-agent'
-import { useCompanies } from '@/hooks/use-companies'
+import { FeatureCard } from '@/components/ui/feature-card'
+import { useClinics } from '@/hooks/use-clinics'
 import { useToast } from '@/hooks/use-toast'
 import { Edit2, Loader2, MoreVertical, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { deleteCompany } from '../../../services/companies'
+import { deleteClinic } from '../../../services/clinics'
 
 
-// Card de empresa com indicação visual de seleção
-function CompanyCard({ 
-  company, 
+// Card de clínica com indicação visual de seleção
+function ClinicCard({ 
+  clinic, 
   selected, 
   onClick,
   onEdit,
   onDelete
 }: { 
-  company: { 
+  clinic: { 
     id: string;
     name: string;
     svgPath?: string;
@@ -24,8 +24,8 @@ function CompanyCard({
   };
   selected: boolean;
   onClick: () => void;
-  onEdit?: (companyId: string) => void;
-  onDelete?: (companyId: string) => void;
+  onEdit?: (clinicId: string) => void;
+  onDelete?: (clinicId: string) => void;
 }) {
   // Reference to manually trigger hover events on the card element
   const cardRef = useRef<HTMLDivElement>(null);
@@ -71,7 +71,7 @@ function CompanyCard({
     right: '-5px',
   };
   
-  // Gerar cores de gradiente com base no ID da empresa
+  // Gerar cores de gradiente com base no ID da clínica
   const getGradientColors = (id: string) => {
     const gradients = [
       { from: '#F6921E', to: '#EE413D' },
@@ -86,12 +86,12 @@ function CompanyCard({
     return gradients[idSum % gradients.length];
   };
 
-  const gradientColors = getGradientColors(company.id);
+  const gradientColors = getGradientColors(clinic.id);
   
-  // Função para obter o caminho do SVG baseado no índice da empresa
+  // Função para obter o caminho do SVG baseado no índice da clínica
   const getSvgPath = () => {
-    const fallbackSvgPath = `/images/ialogus-company-${Math.floor(Math.random() * 3) + 1}.svg`;
-    return company.svgPath || fallbackSvgPath;
+    const fallbackSvgPath = `/images/ialogus-clinic-${Math.floor(Math.random() * 3) + 1}.svg`;
+    return clinic.svgPath || fallbackSvgPath;
   };
   
   return (
@@ -123,7 +123,7 @@ function CompanyCard({
                     onClick={(e) => {
                       e.stopPropagation();
                       setShowDropdown(false);
-                      onEdit(company.id);
+                      onEdit(clinic.id);
                     }}
                     className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   >
@@ -136,7 +136,7 @@ function CompanyCard({
                     onClick={(e) => {
                       e.stopPropagation();
                       setShowDropdown(false);
-                      onDelete(company.id);
+                      onDelete(clinic.id);
                     }}
                     className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                   >
@@ -152,7 +152,7 @@ function CompanyCard({
       
       <div ref={cardRef} className="w-full h-full">
         <FeatureCard
-          title={company.name}
+          title={clinic.name}
           decorativeElement="svg"
           svgPath={getSvgPath()}
           svgStyle={customSvgStyle}
@@ -179,13 +179,13 @@ function DeleteConfirmationDialog({
   isOpen,
   onConfirm,
   onCancel,
-  companyName,
+  clinicName,
   isDeleting
 }: {
   isOpen: boolean;
   onConfirm: () => void;
   onCancel: () => void;
-  companyName: string;
+  clinicName: string;
   isDeleting: boolean;
 }) {
   if (!isOpen) return null;
@@ -197,7 +197,7 @@ function DeleteConfirmationDialog({
           Confirmar exclusão
         </h3>
         <p className="text-gray-600 mb-6">
-          Tem certeza que deseja deletar a empresa <strong>{companyName}</strong>? 
+          Tem certeza que deseja deletar a clínica <strong>{clinicName}</strong>? 
           Esta ação não pode ser desfeita.
         </p>
         <div className="flex justify-end space-x-3">
@@ -222,19 +222,19 @@ function DeleteConfirmationDialog({
   );
 }
 
-export default function SelectCompanyPage() {
+export default function SelectClinicPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
   
-  // Usar o hook useCompanies para obter as empresas do usuário
-  const { companies: apiCompanies, loading, error, refetchCompanies } = useCompanies();
+  // Usar o hook useClinics para obter as clínicas do usuário
+  const { clinics: apiClinics, loading, error, refetchClinics } = useClinics();
   
   // Estado para controlar o redirecionamento automático
   const [isRedirecting, setIsRedirecting] = useState(false);
   
-  // Estado para a empresa selecionada
-  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+  // Estado para a clínica selecionada
+  const [selectedClinic, setSelectedClinic] = useState<string | null>(null);
   // Estado para mensagem de alerta
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   // Flag para controlar se a primeira inicialização já foi feita
@@ -242,39 +242,39 @@ export default function SelectCompanyPage() {
   // Flag para controlar se a seleção veio do usuário ou do efeito automático
   const userInitiatedSelection = useRef(false);
   
-  // Estados para edição e exclusão de empresas
-  const [companyToDelete, setCompanyToDelete] = useState<{ id: string; name: string } | null>(null);
+  // Estados para edição e exclusão de clínicas
+  const [clinicToDelete, setClinicToDelete] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   
-  // Função para extrair o ID da empresa da URL da página anterior
-  const extractCompanyIdFromPath = () => {
+  // Função para extrair o ID da clínica da URL da página anterior
+  const extractClinicIdFromPath = () => {
     const { state } = location;
     
     // Verificar se veio da navegação com state
     if (state) {
-      // Verificar primeiro se há um companyId explícito no state
-      if (state.companyId) {
-        console.log(`Detectado companyId explícito no state: ${state.companyId}`);
-        return state.companyId;
+      // Verificar primeiro se há um clinicId explícito no state
+      if (state.clinicId) {
+        console.log(`Detectado clinicId explícito no state: ${state.clinicId}`);
+        return state.clinicId;
       }
       
-      // Se não houver companyId explícito, verificar o caminho anterior
+      // Se não houver clinicId explícito, verificar o caminho anterior
       if (state.from) {
         const fromPath = state.from as string;
         
-        // Verificar se veio da tela de listagem de agentes de uma empresa
-        const agentsListMatch = fromPath.match(/\/company\/([^/]+)\/agents/);
+        // Verificar se veio da tela de listagem de agentes de uma clínica
+        const agentsListMatch = fromPath.match(/\/clinic\/([^/]+)\/agents/);
         if (agentsListMatch && agentsListMatch[1]) {
-          console.log(`Detectado navegação da tela de agentes da empresa: ${agentsListMatch[1]}`);
+          console.log(`Detectado navegação da tela de agentes da clínica: ${agentsListMatch[1]}`);
           return agentsListMatch[1];
         }
         
-        // Verificar se veio de qualquer página de empresa
-        const companyMatch = fromPath.match(/\/company\/([^/]+)/);
-        if (companyMatch && companyMatch[1]) {
-          console.log(`Detectado navegação de página da empresa: ${companyMatch[1]}`);
-          return companyMatch[1];
+        // Verificar se veio de qualquer página de clínica
+        const clinicMatch = fromPath.match(/\/clinic\/([^/]+)/);
+        if (clinicMatch && clinicMatch[1]) {
+          console.log(`Detectado navegação de página da clínica: ${clinicMatch[1]}`);
+          return clinicMatch[1];
         }
       }
     }
@@ -282,19 +282,19 @@ export default function SelectCompanyPage() {
     // Verificar a URL atual
     const pathname = location.pathname;
     
-    // Verificar se a URL atual contém referência à página de agentes de uma empresa
-    const currentAgentsMatch = pathname.match(/\/company\/([^/]+)\/agents\/create/);
+    // Verificar se a URL atual contém referência à página de agentes de uma clínica
+    const currentAgentsMatch = pathname.match(/\/clinic\/([^/]+)\/agents\/create/);
     if (currentAgentsMatch && currentAgentsMatch[1]) {
-      console.log(`Detectado URL atual com referência à empresa: ${currentAgentsMatch[1]}`);
+      console.log(`Detectado URL atual com referência à clínica: ${currentAgentsMatch[1]}`);
       return currentAgentsMatch[1];
     }
     
-    // Verificar se há um parâmetro companyId na URL atual
+    // Verificar se há um parâmetro clinicId na URL atual
     const searchParams = new URLSearchParams(location.search);
-    const companyIdParam = searchParams.get('companyId');
-    if (companyIdParam) {
-      console.log(`Detectado parâmetro companyId na URL: ${companyIdParam}`);
-      return companyIdParam;
+    const clinicIdParam = searchParams.get('clinicId');
+    if (clinicIdParam) {
+      console.log(`Detectado parâmetro clinicId na URL: ${clinicIdParam}`);
+      return clinicIdParam;
     }
     
     return null;
@@ -305,37 +305,37 @@ export default function SelectCompanyPage() {
     // Se ainda estamos carregando dados ou já iniciamos o redirecionamento, não fazer nada
     if (loading || isRedirecting) return;
     
-    // Extrair o ID da empresa
-    const companyIdFromPath = extractCompanyIdFromPath();
+    // Extrair o ID da clínica
+    const clinicIdFromPath = extractClinicIdFromPath();
     
-    // Verificar se o ID existe e se a empresa é válida
-    if (companyIdFromPath) {
-      const companyExists = apiCompanies.some(company => company.id === companyIdFromPath);
+    // Verificar se o ID existe e se a clínica é válida
+    if (clinicIdFromPath) {
+      const clinicExists = apiClinics.some(clinic => clinic.id === clinicIdFromPath);
       
-      if (companyExists) {
+      if (clinicExists) {
         // Verificar se veio diretamente da página de agentes
         const { state } = location;
         const fromPath = state?.from as string || '';
-        const isFromAgentsList = fromPath.match(/\/company\/([^/]+)\/agents/) !== null;
-        const hasExplicitCompanyId = state?.companyId !== undefined;
+        const isFromAgentsList = fromPath.match(/\/clinic\/([^/]+)\/agents/) !== null;
+        const hasExplicitClinicId = state?.clinicId !== undefined;
 
         // Se vier da lista de agentes ou tiver um ID explícito, redirecionar imediatamente
-        if (isFromAgentsList || hasExplicitCompanyId) {
-          // Encontrar a empresa para mostrar nome no toast
-          const selectedCompanyData = apiCompanies.find(company => company.id === companyIdFromPath);
-          const selectedCompanyName = selectedCompanyData?.name || 'Empresa';
+        if (isFromAgentsList || hasExplicitClinicId) {
+          // Encontrar a clínica para mostrar nome no toast
+          const selectedClinicData = apiClinics.find(clinic => clinic.id === clinicIdFromPath);
+          const selectedClinicName = selectedClinicData?.name || 'Clínica';
           
           // Marcar como redirecionando para evitar renderizações desnecessárias
           setIsRedirecting(true);
           
           // Salvar no localStorage e marcar inicialização concluída
-          localStorage.setItem('temp_selected_company', companyIdFromPath);
+          localStorage.setItem('temp_selected_clinic', clinicIdFromPath);
           initialLoadDone.current = true;
           
           // Mostrar toast
           toast({
             title: "Criando novo agente",
-            description: `Configurando novo agente para ${selectedCompanyName}`,
+            description: `Configurando novo agente para ${selectedClinicName}`,
           });
           
           // Redirecionar imediatamente
@@ -344,216 +344,215 @@ export default function SelectCompanyPage() {
         }
       }
     }
-  }, [apiCompanies, loading, navigate, toast, location]);
+  }, [apiClinics, loading, navigate, toast, location]);
   
-  // Efeito para pré-selecionar a empresa se não estiver redirecionando automaticamente
+  // Efeito para pré-selecionar a clínica se não estiver redirecionando automaticamente
   useEffect(() => {
     // Pular se estamos redirecionando ou já inicializamos
     if (isRedirecting || initialLoadDone.current || loading) return;
     
-    // Extrair o ID da empresa
-    const companyIdFromPath = extractCompanyIdFromPath();
+    // Extrair o ID da clínica
+    const clinicIdFromPath = extractClinicIdFromPath();
     
-    if (companyIdFromPath) {
-      // Verificar se a empresa existe
-      const companyExists = apiCompanies.some(company => company.id === companyIdFromPath);
+    if (clinicIdFromPath) {
+      // Verificar se a clínica existe
+      const clinicExists = apiClinics.some(clinic => clinic.id === clinicIdFromPath);
       
-      if (companyExists) {
-        // Pré-selecionar a empresa
-        setSelectedCompany(companyIdFromPath);
+      if (clinicExists) {
+        // Pré-selecionar a clínica
+        setSelectedClinic(clinicIdFromPath);
         // Também salvar no localStorage
-        localStorage.setItem('temp_selected_company', companyIdFromPath);
+        localStorage.setItem('temp_selected_clinic', clinicIdFromPath);
       } else {
-        // Mostrar mensagem de alerta se a empresa não existir
-        setAlertMessage(`A empresa com ID ${companyIdFromPath} não foi encontrada na lista. Por favor, selecione uma empresa.`);
+        // Mostrar mensagem de alerta se a clínica não existir
+        setAlertMessage(`A clínica com ID ${clinicIdFromPath} não foi encontrada na lista. Por favor, selecione uma clínica.`);
       }
     } else {
       // Se não houver ID na URL, tentar carregar do localStorage
-      const savedCompany = localStorage.getItem('temp_selected_company');
-      if (savedCompany) {
-        // Verificar se a empresa salva existe na lista
-        const companyExists = apiCompanies.some(company => company.id === savedCompany);
+      const savedClinic = localStorage.getItem('temp_selected_clinic');
+      if (savedClinic) {
+        // Verificar se a clínica salva existe na lista
+        const clinicExists = apiClinics.some(clinic => clinic.id === savedClinic);
         
-        if (companyExists) {
-          setSelectedCompany(savedCompany);
+        if (clinicExists) {
+          setSelectedClinic(savedClinic);
         } else {
-          localStorage.removeItem('temp_selected_company');
+          localStorage.removeItem('temp_selected_clinic');
         }
       }
     }
     
     // Marcar inicialização como concluída
     initialLoadDone.current = true;
-  }, [apiCompanies, loading, isRedirecting]);
+  }, [apiClinics, loading, isRedirecting]);
   
-  // Salvar empresa selecionada no localStorage quando mudar (se foi selecionada pelo usuário)
+  // Salvar clínica selecionada no localStorage quando mudar (se foi selecionada pelo usuário)
   useEffect(() => {
     // Só salvar se a seleção foi iniciada pelo usuário
-    if (userInitiatedSelection.current && selectedCompany !== null) {
-      localStorage.setItem('temp_selected_company', selectedCompany);
+    if (userInitiatedSelection.current && selectedClinic !== null) {
+      localStorage.setItem('temp_selected_clinic', selectedClinic);
     }
     
     // Resetar a flag de seleção iniciada pelo usuário
     userInitiatedSelection.current = false;
-  }, [selectedCompany]);
+  }, [selectedClinic]);
   
   // Se estamos redirecionando, mostrar apenas um indicador simples
   if (isRedirecting) {
     return null; // Não mostrar nada durante o redirecionamento
   }
   
-  // Função para selecionar uma empresa
-  const handleCompanySelect = (companyId: string) => {
+  // Função para selecionar uma clínica
+  const handleClinicSelect = (clinicId: string) => {
     // Indicar que esta seleção foi iniciada pelo usuário
     userInitiatedSelection.current = true;
-    setSelectedCompany(companyId);
-    setAlertMessage(null); // Limpar mensagem de alerta quando o usuário selecionar uma empresa
+    setSelectedClinic(clinicId);
+    setAlertMessage(null); // Limpar mensagem de alerta quando o usuário selecionar uma clínica
   };
   
-  // Função para lidar com a adição de uma nova empresa
-  const handleAddCompany = () => {
-    console.log('Adicionar nova empresa');
-    // Navegar para a página de criação de empresa
-    navigate('/dashboard/company/create', { 
-      state: { from: '/dashboard/agents/create/company' } 
+  // Função para lidar com a adição de uma nova clínica
+  const handleAddClinic = () => {
+    console.log('Adicionar nova clínica');
+    // Navegar para a página de criação de clínica
+    navigate('/dashboard/clinic/create', { 
+      state: { from: '/dashboard/agents/create/clinic' } 
     });
   };
 
   // Função para avançar para a próxima etapa
   const handleNext = () => {
-    if (selectedCompany !== null) {
-      // Encontrar o nome da empresa para exibir no toast
-      const selectedCompanyName = apiCompanies.find(company => company.id === selectedCompany)?.name || 'Empresa';
+    if (selectedClinic !== null) {
+      // Encontrar o nome da clínica para exibir no toast
+      const selectedClinicName = apiClinics.find(clinic => clinic.id === selectedClinic)?.name || 'Clínica';
       
       // Mostrar toast de sucesso
       toast({
-        title: "Empresa selecionada",
-        description: `${selectedCompanyName} foi selecionada para seu agente.`,
+        title: "Clínica selecionada",
+        description: `${selectedClinicName} foi selecionada para seu agente.`,
       });
       
       // Navegar para a próxima etapa
       navigate('/dashboard/agents/create/agent-type');
     } else {
-      // Exibir alguma mensagem ou feedback de que é necessário selecionar uma empresa
-      setAlertMessage('Por favor, selecione uma empresa para continuar');
+      // Exibir alguma mensagem ou feedback de que é necessário selecionar uma clínica
+      setAlertMessage('Por favor, selecione uma clínica para continuar');
     }
   };
 
   // Função para cancelar e voltar para a lista de agentes
   const handleCancel = () => {
-    // Determinar para qual empresa voltar
-    let companyIdToReturn: string | null = null;
+    // Determinar para qual clínica voltar
+    let clinicIdToReturn: string | null = null;
     
-    // Primeiro verificar se há uma empresa já selecionada
-    if (selectedCompany !== null) {
-      companyIdToReturn = selectedCompany;
+    // Primeiro verificar se há uma clínica já selecionada
+    if (selectedClinic !== null) {
+      clinicIdToReturn = selectedClinic;
     } else {
-      // Se não há empresa selecionada, verificar se há um parâmetro na URL
-      const companyIdParam = extractCompanyIdFromPath();
-      if (companyIdParam) {
-        companyIdToReturn = companyIdParam;
+      // Se não há clínica selecionada, verificar se há um parâmetro na URL
+      const clinicIdParam = extractClinicIdFromPath();
+      if (clinicIdParam) {
+        clinicIdToReturn = clinicIdParam;
       }
     }
     
     // Limpar dados temporários do localStorage
-    localStorage.removeItem('temp_selected_company');
+    localStorage.removeItem('temp_selected_clinic');
     
-    // Verificar se deve voltar para a página de uma empresa específica
-    if (companyIdToReturn !== null) {
-      const companyData = apiCompanies.find(c => c.id === companyIdToReturn);
-      if (companyData) {
-        // Navegar para a página de agentes da empresa específica
-        navigate(`/dashboard/company/${companyIdToReturn}/agents`);
+    // Verificar se deve voltar para a página de uma clínica específica
+    if (clinicIdToReturn !== null) {
+      const clinicData = apiClinics.find(c => c.id === clinicIdToReturn);
+      if (clinicData) {
+        // Navegar para a página de agentes da clínica específica
+        navigate(`/dashboard/clinic/${clinicIdToReturn}/agents`);
         return;
       }
     }
     
-    // Fallback: se não encontrou nenhuma empresa, voltar para o dashboard
+    // Fallback: se não encontrou nenhuma clínica, voltar para o dashboard
     navigate('/dashboard');
   };
 
-  // Função para editar empresa
-  const handleEditCompany = (companyId: string) => {
-    const company = apiCompanies.find(c => c.id === companyId);
-    if (company) {
-      // Salvar dados da empresa no localStorage para edição
-      const companyData = {
-        name: company.name,
-        shortName: company.shortName || '',
-        brandDescription: company.brandDescription,
-        businessDescription: company.businessDescription
+  // Função para editar clínica
+  const handleEditClinic = (clinicId: string) => {
+    const clinic = apiClinics.find(c => c.id === clinicId);
+    if (clinic) {
+      // Salvar dados da clínica no localStorage para edição
+      const clinicData = {
+        name: clinic.name,
+        address: clinic.address || '',
+        acceptedInsurances: clinic.acceptedInsurances || []
       };
-      localStorage.setItem('temp_edit_company', JSON.stringify({
-        id: companyId,
-        ...companyData
+      localStorage.setItem('temp_edit_clinic', JSON.stringify({
+        id: clinicId,
+        ...clinicData
       }));
       
-      // Navegar para a página de edição de empresa
-      navigate(`/dashboard/agents/create/company/edit/${companyId}`, { 
+      // Navegar para a página de edição de clínica
+      navigate(`/dashboard/agents/create/clinic/edit/${clinicId}`, { 
         state: { 
           editMode: true, 
-          companyId: companyId,
-          companyData: companyData,
-          from: '/dashboard/agents/create/company'
+          clinicId: clinicId,
+          clinicData: clinicData,
+          from: '/dashboard/agents/create/clinic'
         } 
       });
     } else {
       toast({
         title: "Erro",
-        description: "Empresa não encontrada",
+        description: "Clínica não encontrada",
         variant: "destructive"
       });
     }
   };
 
-  // Função para deletar empresa
-  const handleDeleteCompany = (companyId: string) => {
-    const company = apiCompanies.find(c => c.id === companyId);
-    if (company) {
-      setCompanyToDelete({ id: companyId, name: company.name });
+  // Função para deletar clínica
+  const handleDeleteClinic = (clinicId: string) => {
+    const clinic = apiClinics.find(c => c.id === clinicId);
+    if (clinic) {
+      setClinicToDelete({ id: clinicId, name: clinic.name });
       setDeleteDialogOpen(true);
     }
   };
 
-  // Confirmar exclusão da empresa
-  const confirmDeleteCompany = async () => {
-    if (!companyToDelete) return;
+  // Confirmar exclusão da clínica
+  const confirmDeleteClinic = async () => {
+    if (!clinicToDelete) return;
 
     setIsDeleting(true);
     try {
-      await deleteCompany(companyToDelete.id);
+      await deleteClinic(clinicToDelete.id);
       
       toast({
         title: "Sucesso",
-        description: `Empresa "${companyToDelete.name}" deletada com sucesso`,
+        description: `Clínica "${clinicToDelete.name}" deletada com sucesso`,
       });
 
-      // Atualizar lista de empresas
-      await refetchCompanies();
+      // Atualizar lista de clínicas
+      await refetchClinics();
       
-      // Se a empresa deletada estava selecionada, limpar seleção
-      if (selectedCompany === companyToDelete.id) {
-        setSelectedCompany(null);
-        localStorage.removeItem('temp_selected_company');
+      // Se a clínica deletada estava selecionada, limpar seleção
+      if (selectedClinic === clinicToDelete.id) {
+        setSelectedClinic(null);
+        localStorage.removeItem('temp_selected_clinic');
       }
     } catch (error) {
-      console.error('Erro ao deletar empresa:', error);
+      console.error('Erro ao deletar clínica:', error);
       toast({
         title: "Erro",
-        description: "Erro ao deletar empresa. Tente novamente.",
+        description: "Erro ao deletar clínica. Tente novamente.",
         variant: "destructive"
       });
     } finally {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
-      setCompanyToDelete(null);
+      setClinicToDelete(null);
     }
   };
 
-  // Cancelar exclusão da empresa
-  const cancelDeleteCompany = () => {
+  // Cancelar exclusão da clínica
+  const cancelDeleteClinic = () => {
     setDeleteDialogOpen(false);
-    setCompanyToDelete(null);
+    setClinicToDelete(null);
   };
 
   return (
@@ -563,7 +562,7 @@ export default function SelectCompanyPage() {
         <h1 className="text-[21px] font-medium text-gray-900 mt-2">
           Criar Novo Agente
         </h1>
-        <p className="text-gray-500 text-sm mb-4">Etapa 1: Selecione a empresa para o agente</p>
+        <p className="text-gray-500 text-sm mb-4">Etapa 1: Selecione a clínica para o agente</p>
         
         <div className="w-full mb-4">
           <MultiStepAgent 
@@ -574,11 +573,11 @@ export default function SelectCompanyPage() {
         
         {/* Título principal e subtítulo */}
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-xl font-medium text-gray-800">Escolha uma empresa para seu agente</h2>
+          <h2 className="text-xl font-medium text-gray-800">Escolha uma clínica para seu agente</h2>
         </div>
         
         {/* Subtítulo em uma linha separada */}
-        <p className="text-sm text-gray-500 mb-2">Selecione uma empresa existente ou crie uma nova para associar ao seu agente</p>
+        <p className="text-sm text-gray-500 mb-2">Selecione uma clínica existente ou crie uma nova para associar ao seu agente</p>
         
         {/* Mensagem de alerta */}
         {alertMessage && (
@@ -612,7 +611,7 @@ export default function SelectCompanyPage() {
                   {error}
                 </p>
                 <button 
-                  onClick={refetchCompanies}
+                  onClick={refetchClinics}
                   className="text-sm mt-1 text-red-700 hover:text-red-800 underline cursor-pointer"
                 >
                   Tentar novamente
@@ -623,7 +622,7 @@ export default function SelectCompanyPage() {
         )}
       </div>
 
-      {/* Cards de empresas */}
+      {/* Cards de clínicas */}
       <div className="flex-grow">
         {loading ? (
           // Estado de carregamento
@@ -634,47 +633,47 @@ export default function SelectCompanyPage() {
                 <div className="rounded-lg bg-gray-200 h-[250px] w-[250px]"></div>
                 <div className="rounded-lg bg-gray-200 h-[250px] w-[250px]"></div>
               </div>
-              <p className="text-center text-gray-500">Carregando empresas...</p>
+              <p className="text-center text-gray-500">Carregando clínicas...</p>
             </div>
           </div>
         ) : (
           <div className="overflow-x-auto overflow-y-hidden py-4 scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400">
             <div className="flex gap-5 min-w-max px-1 py-4">
-              {/* Card para adicionar nova empresa */}
+              {/* Card para adicionar nova clínica */}
               <button
-                onClick={handleAddCompany}
+                onClick={handleAddClinic}
                 className="w-[250px] h-[250px] flex-shrink-0 bg-transparent border-none outline-none focus:outline-none p-0 m-0 mt-6 mb-6 cursor-pointer transition-all duration-300 ease-in-out hover:scale-[1.02] hover:drop-shadow-[6px_6px_10px_rgba(0,0,0,0.15)]"
-                aria-label="Adicionar nova empresa"
+                aria-label="Adicionar nova clínica"
               >
                 <img 
-                  src="/images/add-company.svg" 
-                  alt="Adicionar nova empresa" 
+                  src="/images/add-clinic.svg" 
+                  alt="Adicionar nova clínica" 
                   className="w-full h-full object-contain"
                 />
               </button>
               
-              {/* Cards de empresas existentes da API */}
-              {apiCompanies.map((company) => (
-                <CompanyCard
-                  key={company.id}
-                  company={{
-                    id: company.id,
-                    name: company.name,
-                    description: company.brandDescription || company.businessDescription,
+              {/* Cards de clínicas existentes da API */}
+              {apiClinics.map((clinic) => (
+                <ClinicCard
+                  key={clinic.id}
+                  clinic={{
+                    id: clinic.id,
+                    name: clinic.name,
+                    description: clinic.address || '',
                   }}
-                  selected={selectedCompany === company.id}
-                  onClick={() => handleCompanySelect(company.id)}
-                  onEdit={handleEditCompany}
-                  onDelete={handleDeleteCompany}
+                  selected={selectedClinic === clinic.id}
+                  onClick={() => handleClinicSelect(clinic.id)}
+                  onEdit={handleEditClinic}
+                  onDelete={handleDeleteClinic}
                 />
               ))}
               
-              {/* Mostrar mensagem se não houver empresas */}
-              {!loading && apiCompanies.length === 0 && !error && (
+              {/* Mostrar mensagem se não houver clínicas */}
+              {!loading && apiClinics.length === 0 && !error && (
                 <div className="flex items-center justify-center h-[250px] w-full">
                   <div className="text-center text-gray-500">
-                    <p className="mb-2">Nenhuma empresa encontrada</p>
-                    <p className="text-sm">Clique no botão "+" para adicionar uma nova empresa</p>
+                    <p className="mb-2">Nenhuma clínica encontrada</p>
+                    <p className="text-sm">Clique no botão "+" para adicionar uma nova clínica</p>
                   </div>
                 </div>
               )}
@@ -699,9 +698,9 @@ export default function SelectCompanyPage() {
           className="px-5 py-2 rounded-md text-white transition-colors"
           style={{ 
             background: 'linear-gradient(90deg, #F6921E, #EE413D)',
-            opacity: selectedCompany === null ? 0.7 : 1 
+            opacity: selectedClinic === null ? 0.7 : 1 
           }}
-          disabled={selectedCompany === null || loading}
+          disabled={selectedClinic === null || loading}
         >
           Próximo
         </button>
@@ -710,9 +709,9 @@ export default function SelectCompanyPage() {
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
         isOpen={deleteDialogOpen}
-        onConfirm={confirmDeleteCompany}
-        onCancel={cancelDeleteCompany}
-        companyName={companyToDelete?.name || ''}
+        onConfirm={confirmDeleteClinic}
+        onCancel={cancelDeleteClinic}
+        clinicName={clinicToDelete?.name || ''}
         isDeleting={isDeleting}
       />
     </div>

@@ -99,14 +99,14 @@ class WebSocketService {
     }
 
     console.log('🔌 Iniciando conexão WebSocket...');
-    console.log('🌐 URL:', 'https://ialogus-deploy-api.onrender.com/chat');
+    console.log('🌐 URL:', 'https://ialogus-backend-deploy.onrender.com/chat');
     console.log('🔧 Configurações:', {
       auth: { token: token.substring(0, 10) + '...' },
       transports: ['websocket'],
       autoConnect: true
     });
 
-    this.socket = io('https://ialogus-deploy-api.onrender.com/chat', {
+    this.socket = io('https://ialogus-backend-deploy.onrender.com/chat', {
       auth: {
         token: token
       },

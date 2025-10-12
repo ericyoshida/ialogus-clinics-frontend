@@ -1,47 +1,47 @@
 import { AddAgentCard } from '@/components/agents/AddAgentCard'
 import { AgentCard } from '@/components/agents/AgentCard'
 import { useAgents } from '@/hooks/use-agents'
-import { useCompanies } from '@/hooks/use-companies'
+import { useClinics } from '@/hooks/use-clinics'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 export default function AgentsPage() {
   const navigate = useNavigate();
-  const { companyId } = useParams<{ companyId: string }>();
-  const [company, setCompany] = useState<{
+  const { clinicId } = useParams<{ clinicId: string }>();
+  const [clinic, setClinic] = useState<{
     name: string;
     id: string | undefined;
   }>({
     name: "Carregando...",
-    id: companyId
+    id: clinicId
   });
   
-  // Buscar as empresas para encontrar o nome da empresa pelo ID
-  const { companies, loading: loadingCompanies } = useCompanies();
+  // Buscar as clínicas para encontrar o nome da clínica pelo ID
+  const { clinics, loading: loadingClinics } = useClinics();
   
   // Usar o hook de agentes
-  const { agents, loading: loadingAgents, error, refetchAgents } = useAgents(company.id);
+  const { agents, loading: loadingAgents, error, refetchAgents } = useAgents(clinic.id);
   
-  // Atualizar o nome da empresa quando as empresas forem carregadas
+  // Atualizar o nome da clínica quando as clínicas forem carregadas
   useEffect(() => {
-    if (!loadingCompanies && companies.length > 0 && companyId) {
-      const foundCompany = companies.find(c => c.id === companyId);
+    if (!loadingClinics && clinics.length > 0 && clinicId) {
+      const foundClinic = clinics.find(c => c.id === clinicId);
       
-      if (foundCompany) {
-        setCompany({
-          name: foundCompany.name,
-          id: companyId
+      if (foundClinic) {
+        setClinic({
+          name: foundClinic.name,
+          id: clinicId
         });
       } else {
-        // Se não encontrou a empresa, mas temos o ID
-        setCompany({
-          name: "Empresa não encontrada",
-          id: companyId
+        // Se não encontrou a clínica, mas temos o ID
+        setClinic({
+          name: "Clínica não encontrada",
+          id: clinicId
         });
       }
     }
-  }, [companyId, companies, loadingCompanies]);
+  }, [clinicId, clinics, loadingClinics]);
   
   // Estado para controlar a paginação
   const [currentPage, setCurrentPage] = useState(0);
@@ -179,20 +179,20 @@ export default function AgentsPage() {
 
   // Função para navegar para a página de detalhes do agente
   const handleAgentClick = (agentId: string) => {
-    navigate(`/dashboard/company/${company.id}/agents/${agentId}`);
+    navigate(`/dashboard/clinic/${clinic.id}/agents/${agentId}`);
   };
 
   // Função para navegar para a página de criação de agente
   const handleAddAgent = () => {
-    // Navegar para a rota de criação de agente com o companyId na URL
-    if (companyId) {
-      navigate(`/dashboard/company/${companyId}/agents/create`);
+    // Navegar para a rota de criação de agente com o clinicId na URL
+    if (clinicId) {
+      navigate(`/dashboard/clinic/${clinicId}/agents/create`);
     } else {
-      // Fallback para a rota antiga se não houver companyId
-      navigate(`/dashboard/agents/create/company`, {
+      // Fallback para a rota antiga se não houver clinicId
+      navigate(`/dashboard/agents/create/clinic`, {
       state: { 
-        from: `/dashboard/company/${company.id}/agents`,
-        companyId: company.id 
+        from: `/dashboard/clinic/${clinic.id}/agents`,
+        clinicId: clinic.id 
       }
     });
     }
@@ -212,7 +212,7 @@ export default function AgentsPage() {
   };
 
   // Loading state
-  if (loadingCompanies) {
+  if (loadingClinics) {
     return (
       <div className="max-w-7xl -mt-4 px-2 sm:px-3 lg:px-4 pb-6">
         <div className="flex flex-col items-center justify-center py-12">
@@ -225,11 +225,11 @@ export default function AgentsPage() {
 
   return (
     <div className="max-w-7xl -mt-4 px-2 sm:px-3 lg:px-4 pb-6">
-      {/* Cabeçalho com nome da empresa e controles de paginação */}
+      {/* Cabeçalho com nome da clínica e controles de paginação */}
       <div className="flex flex-col sm:flex-row items-start gap-2 mb-5 pl-1">
         <div className="flex-1 mb-2 sm:mb-0">
           <h1 className="text-[21px] font-medium text-gray-900 mt-2">
-            Meus Agentes - {company.name}
+            Meus Agentes - {clinic.name}
           </h1>
           <p className="text-gray-500 text-sm">Gerenciamento de agentes de IA</p>
         </div>
@@ -298,7 +298,7 @@ export default function AgentsPage() {
         <div className="flex flex-col items-center justify-center py-12">
           <p className="text-red-500 mb-4">{error}</p>
           <button 
-            onClick={() => company.id && refetchAgents(company.id)}
+            onClick={() => clinic.id && refetchAgents(clinic.id)}
             className="px-4 py-2 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors"
           >
             Tentar novamente

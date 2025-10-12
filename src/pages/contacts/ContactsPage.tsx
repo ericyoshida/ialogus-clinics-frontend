@@ -4,7 +4,7 @@ import { CreateContactModal } from '@/components/contacts/CreateContactModal';
 import { EditContactModal } from '@/components/contacts/EditContactModal';
 import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { useToast } from '@/components/ui/ToastContainer';
-import { useCompanies } from '@/hooks/use-companies';
+import { useClinics } from '@/hooks/use-clinics';
 import { useCustomers } from '@/hooks/use-customers';
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll';
 import { Customer, customersService } from '@/services/customers';
@@ -24,7 +24,7 @@ interface ErrorObject {
 }
 
 const ContactsPage: React.FC = () => {
-  const { companyId } = useParams<{ companyId: string }>();
+  const { clinicId } = useParams<{ clinicId: string }>();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // Estado para o modal de edição
@@ -43,16 +43,16 @@ const ContactsPage: React.FC = () => {
 
   const { showError, showSuccess } = useToast();
 
-  const [company, setCompany] = useState<{
+  const [clinic, setClinic] = useState<{
     name: string;
     id: string | undefined;
   }>({
     name: "Carregando...",
-    id: companyId
+    id: clinicId
   });
 
-  // Buscar as empresas para encontrar o nome da empresa pelo ID
-  const { companies, loading: loadingCompanies } = useCompanies();
+  // Buscar as clínicas para encontrar o nome da clínica pelo ID
+  const { clinics, loading: loadingClinics } = useClinics();
 
   // Hook personalizado para gerenciar contatos com paginação e filtros
   const {
@@ -66,7 +66,7 @@ const ContactsPage: React.FC = () => {
     loadMore,
     refresh,
     createCustomer
-  } = useCustomers(companyId || '');
+  } = useCustomers(clinicId || '');
 
   // Hook para scroll infinito
   useInfiniteScroll({
@@ -77,24 +77,24 @@ const ContactsPage: React.FC = () => {
     scrollContainerRef
   });
 
-  // Atualizar o nome da empresa quando as empresas forem carregadas
+  // Atualizar o nome da clínica quando as clínicas forem carregadas
   useEffect(() => {
-    if (!loadingCompanies && companies.length > 0 && companyId) {
-      const foundCompany = companies.find(c => c.id === companyId);
+    if (!loadingClinics && clinics.length > 0 && clinicId) {
+      const foundClinic = clinics.find(c => c.id === clinicId);
       
-      if (foundCompany) {
-        setCompany({
-          name: foundCompany.name,
-          id: companyId
+      if (foundClinic) {
+        setClinic({
+          name: foundClinic.name,
+          id: clinicId
         });
       } else {
-        setCompany({
-          name: "Empresa não encontrada",
-          id: companyId
+        setClinic({
+          name: "Clínica não encontrada",
+          id: clinicId
         });
       }
     }
-  }, [companyId, companies, loadingCompanies]);
+  }, [clinicId, clinics, loadingClinics]);
 
   const getStatusBadge = (status: 'active' | 'waiting_response' | 'inactive') => {
     const statusConfig = {
@@ -312,11 +312,11 @@ const ContactsPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl -mt-4 px-2 sm:px-3 lg:px-4 pb-6">
-      {/* Cabeçalho com nome da empresa */}
+      {/* Cabeçalho com nome da clínica */}
       <div className="flex flex-col sm:flex-row items-start justify-between gap-2 mb-5 pl-1">
         <div className="flex-1 mb-2 sm:mb-0">
           <h1 className="text-[21px] font-medium text-gray-900 mt-2">
-            Contatos - {company.name}
+            Contatos - {clinic.name}
           </h1>
           <p className="text-gray-500 text-sm">Gerencie seus leads e contatos</p>
         </div>

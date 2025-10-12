@@ -1,14 +1,13 @@
 
-import React from 'react';
 import { IalogusCard } from '@/components/ui/ialogus-card';
 
-interface CompanyCardProps {
+interface ClinicCardProps {
   name: string;
   logo?: string;
   isGradient?: boolean;
 }
 
-export function CompanyCard({ name, logo, isGradient = false }: CompanyCardProps) {
+export function ClinicCard({ name, logo, isGradient = false }: ClinicCardProps) {
   return (
     <IalogusCard
       title={name}

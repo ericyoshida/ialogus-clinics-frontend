@@ -18,7 +18,7 @@ interface UseCustomersReturn {
   }) => Promise<Customer>;
 }
 
-export const useCustomers = (companyId: string): UseCustomersReturn => {
+export const useCustomers = (clinicId: string): UseCustomersReturn => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +35,7 @@ export const useCustomers = (companyId: string): UseCustomersReturn => {
   const filtersChangedRef = useRef(false);
 
   const fetchCustomers = useCallback(async (isLoadMore = false) => {
-    if (!companyId) return;
+    if (!clinicId) return;
 
     // Previne múltiplas chamadas simultâneas de loadMore
     if (isLoadMore && (loading || isLoadingMore)) return;
@@ -51,7 +51,7 @@ export const useCustomers = (companyId: string): UseCustomersReturn => {
         page: currentPage
       };
 
-      const response = await customersService.getCustomers(companyId, requestFilters);
+      const response = await customersService.getCustomers(clinicId, requestFilters);
 
       if (isLoadMore) {
         // Deduplica os dados antes de adicionar para evitar chaves duplicadas
@@ -81,7 +81,7 @@ export const useCustomers = (companyId: string): UseCustomersReturn => {
       setLoading(false);
       if (isLoadMore) setIsLoadingMore(false);
     }
-  }, [companyId]);
+  }, [clinicId]);
 
   const loadMore = useCallback(() => {
     if (!loading && !isLoadingMore && hasMore) {
@@ -106,12 +106,12 @@ export const useCustomers = (companyId: string): UseCustomersReturn => {
 
   // Carregamento inicial apenas uma vez
   useEffect(() => {
-    if (isInitialLoad && companyId) {
+    if (isInitialLoad && clinicId) {
       setIsInitialLoad(false);
       currentFilters.current = { ...filters, page: 1 };
       fetchCustomers(false);
     }
-  }, [companyId, isInitialLoad, fetchCustomers, filters]);
+  }, [clinicId, isInitialLoad, fetchCustomers, filters]);
 
   // Recarrega apenas quando os filtros mudam efetivamente
   useEffect(() => {
@@ -137,13 +137,13 @@ export const useCustomers = (companyId: string): UseCustomersReturn => {
       department?: string;
     }) => {
       try {
-        const newCustomer = await customersService.createCustomer(companyId, customerData);
+        const newCustomer = await customersService.createCustomer(clinicId, customerData);
         console.log('Contato criado no backend:', newCustomer);
         return newCustomer;
       } catch (error) {
         console.error('Erro na criação do contato:', error);
         throw error;
       }
-    }, [companyId])
+    }, [clinicId])
   };
 }; 

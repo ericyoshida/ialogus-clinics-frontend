@@ -1,7 +1,7 @@
 import { AgentCard } from '@/components/agents/AgentCard'
 import { BulkMessageStepIndicator } from '@/components/ui/bulk-message-step-indicator'
 import { useBulkMessageForm } from '@/hooks/use-bulk-message-form'
-import { useCompanies } from '@/hooks/use-companies'
+import { useClinics } from '@/hooks/use-clinics'
 import { useToast } from '@/hooks/use-toast'
 import { channelsService } from '@/services'
 import type { WhatsappChannel } from '@/services/channels'
@@ -76,36 +76,36 @@ function AddChannelCard({ onClick }: { onClick: () => void }) {
 
 export default function SelectChannelPage() {
   const navigate = useNavigate();
-  const { companyId } = useParams<{ companyId: string }>();
+  const { clinicId } = useParams<{ clinicId: string }>();
   const { toast } = useToast();
   const { selectedChannelId, updateFormData, clearFormData } = useBulkMessageForm();
   const [currentPage, setCurrentPage] = useState(0);
   
-  // Buscar empresas e canais
-  const { companies, loading: loadingCompanies } = useCompanies();
-  const companyName = companies.find(c => c.id === companyId)?.name || 'Carregando...';
+  // Buscar clínicas e canais
+  const { clinics, loading: loadingClinics } = useClinics();
+  const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...';
   
   // Estados para canais
   const [allChannels, setAllChannels] = useState<WhatsappChannel[]>([]);
   const [loadingChannels, setLoadingChannels] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Limpar dados do formulário apenas quando a empresa mudar (não quando navegar entre steps)
-  const [lastCompanyId, setLastCompanyId] = useState(companyId);
+  // Limpar dados do formulário apenas quando a clínica mudar (não quando navegar entre steps)
+  const [lastClinicId, setLastClinicId] = useState(clinicId);
   
   useEffect(() => {
-    if (companyId !== lastCompanyId) {
-      console.log('Empresa mudou, limpando dados do formulário - empresa:', companyId);
+    if (clinicId !== lastClinicId) {
+      console.log('Clínica mudou, limpando dados do formulário - clínica:', clinicId);
       clearFormData();
-      setLastCompanyId(companyId);
+      setLastClinicId(clinicId);
     }
-  }, [companyId, lastCompanyId, clearFormData]);
+  }, [clinicId, lastClinicId, clearFormData]);
 
-  // Buscar canais da empresa selecionada quando o componente montar
+  // Buscar canais da clínica selecionada quando o componente montar
   useEffect(() => {
-    const fetchCompanyChannels = async () => {
-      if (!companyId) {
-        setError('Nenhuma empresa selecionada');
+    const fetchClinicChannels = async () => {
+      if (!clinicId) {
+        setError('Nenhuma clínica selecionada');
         setLoadingChannels(false);
         return;
       }
@@ -114,21 +114,21 @@ export default function SelectChannelPage() {
         setLoadingChannels(true);
         setError(null);
         
-        // Buscar canais apenas da empresa selecionada
-        console.log('Buscando canais para a empresa:', companyId);
-        const companyChannels = await channelsService.getWhatsappChannelsByCompanyId(companyId);
+        // Buscar canais apenas da clínica selecionada
+        console.log('Buscando canais para a clínica:', clinicId);
+        const clinicChannels = await channelsService.getWhatsappChannelsByClinicId(clinicId);
         
-        setAllChannels(companyChannels);
+        setAllChannels(clinicChannels);
       } catch (err) {
-        console.error(`Erro ao buscar canais da empresa ${companyId}:`, err);
+        console.error(`Erro ao buscar canais da clínica ${clinicId}:`, err);
         setError('Erro ao carregar canais WhatsApp');
       } finally {
         setLoadingChannels(false);
       }
     };
 
-    fetchCompanyChannels();
-  }, [companyId]);
+    fetchClinicChannels();
+  }, [clinicId]);
 
   // Validar se o canal selecionado ainda existe após carregar a lista
   useEffect(() => {
@@ -136,7 +136,7 @@ export default function SelectChannelPage() {
     if (!loadingChannels && selectedChannelId) {
       // Se não houver canais ou o canal selecionado não existir
       if (allChannels.length === 0 || !allChannels.some(channel => channel.id === selectedChannelId)) {
-        console.log('Canal selecionado não é válido para esta empresa, limpando seleção');
+        console.log('Canal selecionado não é válido para esta clínica, limpando seleção');
         updateFormData({ selectedChannelId: null, selectedChannelData: null });
       }
     }
@@ -192,7 +192,7 @@ export default function SelectChannelPage() {
   const handleNext = () => {
     if (selectedChannelId) {
       // Navegar para a próxima etapa (Selecionar Agente)
-      navigate(`/dashboard/company/${companyId}/messages/bulk/agent`);
+      navigate(`/dashboard/clinic/${clinicId}/messages/bulk/agent`);
     } else {
       toast({
         title: "Seleção necessária",
@@ -204,7 +204,7 @@ export default function SelectChannelPage() {
 
   const handleBack = () => {
     // Voltar para o dashboard
-    navigate(`/dashboard/company/${companyId}`);
+    navigate(`/dashboard/clinic/${clinicId}`);
   };
 
   const handleCreateChannel = () => {
@@ -237,7 +237,7 @@ export default function SelectChannelPage() {
         <h1 className="text-[21px] font-medium text-gray-900 mt-2 flex items-center gap-2">
           Enviar Mensagem Quebra-gelo
           <span className="text-gray-400">|</span>
-          <span className="text-gray-600">{companyName}</span>
+          <span className="text-gray-600">{clinicName}</span>
         </h1>
         <p className="text-gray-500 text-sm mb-4">Defina os detalhes da mensagem a ser enviada para seus clientes.</p>
         

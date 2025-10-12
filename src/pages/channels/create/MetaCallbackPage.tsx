@@ -1,15 +1,14 @@
 import { useChannelCreationForm } from '@/hooks/use-channel-creation-form'
 import { useToast } from '@/hooks/use-toast'
-import { channelsService } from '@/services/channels'
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 export default function MetaCallbackPage() {
   const navigate = useNavigate()
   const { toast } = useToast()
   const [searchParams] = useSearchParams()
-  const { companyId: urlCompanyId } = useParams<{ companyId: string }>()
-  const { updateFormData, companyId: savedCompanyId } = useChannelCreationForm()
+  const { clinicId: urlClinicId } = useParams<{ clinicId: string }>()
+  const { updateFormData, clinicId: savedClinicId } = useChannelCreationForm()
   const [isProcessing, setIsProcessing] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -32,22 +31,22 @@ export default function MetaCallbackPage() {
   useEffect(() => {
     const processCallback = async () => {
       console.log('🔄 MetaCallbackPage - Estado inicial:', {
-        urlCompanyId,
-        savedCompanyId,
+        urlClinicId,
+        savedClinicId,
         searchParams: Object.fromEntries(searchParams.entries())
       })
       
-      // Tentar decodificar o state do META para obter o companyId
-      let companyIdFromState: string | undefined = urlCompanyId || savedCompanyId
+      // Tentar decodificar o state do META para obter o clinicId
+      let clinicIdFromState: string | undefined = urlClinicId || savedClinicId
       const oauthState = searchParams.get('state')
       
       if (oauthState) {
         try {
           const stateDecoded = JSON.parse(atob(oauthState))
           console.log('📦 Estado decodificado do META state:', stateDecoded)
-          if (stateDecoded.companyId) {
-            companyIdFromState = stateDecoded.companyId
-            console.log('🏢 CompanyId recuperado do state do META:', companyIdFromState)
+          if (stateDecoded.clinicId) {
+            clinicIdFromState = stateDecoded.clinicId
+            console.log('🏢 ClinicId recuperado do state do META:', clinicIdFromState)
           }
         } catch (e) {
           console.error('Erro ao decodificar state do META:', e)
@@ -70,9 +69,9 @@ export default function MetaCallbackPage() {
             console.log('👤 Restaurando usuário do app_state (fallback)...')
             localStorage.setItem('ialogus:user', decoded.user)
           }
-          if (!companyIdFromState && decoded.companyId) {
-            companyIdFromState = decoded.companyId
-            console.log('🏢 CompanyId recuperado do app_state (fallback):', companyIdFromState)
+          if (!clinicIdFromState && decoded.clinicId) {
+            clinicIdFromState = decoded.clinicId
+            console.log('🏢 ClinicId recuperado do app_state (fallback):', clinicIdFromState)
           }
         } catch (e) {
           console.error('Erro ao decodificar app_state:', e)
@@ -96,8 +95,8 @@ export default function MetaCallbackPage() {
         
         // Aguardar um momento e redirecionar de volta
         setTimeout(() => {
-          const redirectUrl = companyIdFromState 
-            ? `/dashboard/company/${companyIdFromState}/channels/create/meta-connection`
+          const redirectUrl = clinicIdFromState 
+            ? `/dashboard/clinic/${clinicIdFromState}/channels/create/meta-connection`
             : '/dashboard/channels/create/meta-connection'
           navigate(redirectUrl)
         }, 3000)
@@ -116,8 +115,8 @@ export default function MetaCallbackPage() {
         })
         
         setTimeout(() => {
-          const redirectUrl = companyIdFromState 
-            ? `/dashboard/company/${companyIdFromState}/channels/create/meta-connection`
+          const redirectUrl = clinicIdFromState 
+            ? `/dashboard/clinic/${clinicIdFromState}/channels/create/meta-connection`
             : '/dashboard/channels/create/meta-connection'
           navigate(redirectUrl)
         }, 3000)
@@ -132,7 +131,7 @@ export default function MetaCallbackPage() {
         metaAuthData: {
           accessToken: 'authorized', // O token real fica no backend
         },
-        companyId: companyIdFromState,
+        clinicId: clinicIdFromState,
         step: 2
       })
       
@@ -153,8 +152,8 @@ export default function MetaCallbackPage() {
       
       // Aguardar um momento para o usuário ver a mensagem
       setTimeout(() => {
-        const redirectUrl = companyIdFromState 
-          ? `/dashboard/company/${companyIdFromState}/channels/create/meta-connection`
+        const redirectUrl = clinicIdFromState 
+          ? `/dashboard/clinic/${clinicIdFromState}/channels/create/meta-connection`
           : '/dashboard/channels/create/meta-connection'
         navigate(redirectUrl)
       }, 1500)

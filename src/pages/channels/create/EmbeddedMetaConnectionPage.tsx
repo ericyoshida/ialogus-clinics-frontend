@@ -1,25 +1,25 @@
-import { Button } from '@/components/ui/button'
 import { MultiStepChannel } from '@/components/multi-step-channel'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
 import { IalogusInput } from '@/components/ui/ialogus-input'
+import { EmbeddedSignup } from '@/components/whatsapp/EmbeddedSignup'
 import { useChannelCreationForm } from '@/hooks/use-channel-creation-form'
+import { useClinics } from '@/hooks/use-clinics'
 import { useToast } from '@/hooks/use-toast'
 import { channelsService } from '@/services/channels'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { formatPhoneNumber, sanitizePhoneNumber } from '@/utils/phone'
 import { ArrowTopRightOnSquareIcon, CheckCircleIcon, InformationCircleIcon, SwitchHorizontalIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useCompanies } from '@/hooks/use-companies'
-import { sanitizePhoneNumber, formatPhoneNumber } from '@/utils/phone'
-import { EmbeddedSignup } from '@/components/whatsapp/EmbeddedSignup'
 
 type AuthMethod = 'embedded' | 'oauth'
 
 export default function EmbeddedMetaConnectionPage() {
   const navigate = useNavigate()
-  const { companyId } = useParams<{ companyId: string }>()
+  const { clinicId } = useParams<{ clinicId: string }>()
   const { toast } = useToast()
-  const { companies } = useCompanies()
-  const companyName = companies.find(c => c.id === companyId)?.name || 'Carregando...'
+  const { clinics } = useClinics()
+  const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...'
   const { 
     selectedAgentIds, 
     metaAuthData,
@@ -29,7 +29,7 @@ export default function EmbeddedMetaConnectionPage() {
     selectedPhoneNumberId,
     selectedPhoneNumber,
     channelName,
-    companyId: savedCompanyId,
+    clinicId: savedClinicId,
     updateFormData, 
     clearFormData 
   } = useChannelCreationForm()
@@ -44,12 +44,12 @@ export default function EmbeddedMetaConnectionPage() {
   const [localChannelName, setLocalChannelName] = useState(channelName || '')
   const [embeddedAccessToken, setEmbeddedAccessToken] = useState<string | null>(null)
   
-  // Salvar companyId no estado quando montar o componente
+  // Salvar clinicId no estado quando montar o componente
   useEffect(() => {
-    if (companyId && companyId !== savedCompanyId) {
-      updateFormData({ companyId })
+    if (clinicId && clinicId !== savedClinicId) {
+      updateFormData({ clinicId })
     }
-  }, [companyId, savedCompanyId, updateFormData])
+  }, [clinicId, savedClinicId, updateFormData])
   
   // Verificar se está autenticado
   const isAuthenticated = !!metaAuthData?.accessToken && !!businessAccounts
@@ -118,14 +118,14 @@ export default function EmbeddedMetaConnectionPage() {
       }
       
       // Obter URL de autorização do backend
-      const { authUrl } = await channelsService.initiateMetaOAuth(companyId || savedCompanyId)
+      const { authUrl } = await channelsService.initiateMetaOAuth(clinicId || savedClinicId)
       
       // Adicionar o estado atual como parâmetro na URL (fallback)
       const urlWithState = new URL(authUrl)
       const stateData = { 
         token: currentToken, 
         user: currentUser,
-        companyId: companyId || savedCompanyId,
+        clinicId: clinicId || savedClinicId,
         timestamp: Date.now()
       }
       console.log('📦 Enviando estado para OAuth:', stateData)
@@ -206,11 +206,11 @@ export default function EmbeddedMetaConnectionPage() {
     setIsCreatingChannel(true)
     
     try {
-      // Usar o ID da empresa da URL
-      if (!companyId) {
+      // Usar o ID da clínica da URL
+      if (!clinicId) {
         toast({
           title: "Erro",
-          description: "Nenhuma empresa selecionada. Por favor, selecione uma empresa.",
+          description: "Nenhuma clínica selecionada. Por favor, selecione uma clínica.",
           variant: "destructive"
         })
         return
@@ -238,10 +238,10 @@ export default function EmbeddedMetaConnectionPage() {
       let createdChannel
       if (embeddedAccessToken) {
         // Use embedded signup flow
-        createdChannel = await channelsService.createWhatsAppChannelEmbedded(companyId, channelData)
+        createdChannel = await channelsService.createWhatsAppChannelEmbedded(clinicId, channelData)
       } else {
         // Use regular OAuth flow
-        createdChannel = await channelsService.createWhatsAppChannel(companyId, channelData)
+        createdChannel = await channelsService.createWhatsAppChannel(clinicId, channelData)
       }
       
       toast({
@@ -253,7 +253,7 @@ export default function EmbeddedMetaConnectionPage() {
       clearFormData()
       
       // Redirecionar para a página de sucesso
-      navigate(`/dashboard/company/${companyId}/channels/create/success`)
+      navigate(`/dashboard/clinic/${clinicId}/channels/create/success`)
     } catch (error: any) {
       console.error('Erro ao criar canal:', error)
       
@@ -275,7 +275,7 @@ export default function EmbeddedMetaConnectionPage() {
   }
   
   const handleBack = () => {
-    navigate(`/dashboard/company/${companyId}/channels/create/agents`)
+    navigate(`/dashboard/clinic/${clinicId}/channels/create/agents`)
   }
 
   const handleSwitchAuthMethod = () => {
@@ -305,7 +305,7 @@ export default function EmbeddedMetaConnectionPage() {
         <h1 className="text-[21px] font-medium text-gray-900 mt-2 flex items-center gap-2">
           Criar Novo Canal
           <span className="text-gray-400">|</span>
-          <span className="text-gray-600">{companyName}</span>
+          <span className="text-gray-600">{clinicName}</span>
         </h1>
         <p className="text-gray-500 text-sm mb-4">Configure um novo canal de comunicação para seus agentes</p>
         
@@ -342,7 +342,7 @@ export default function EmbeddedMetaConnectionPage() {
           authMethod === 'embedded' ? (
             // Embedded Signup Flow
             <EmbeddedSignup
-              companyId={companyId || savedCompanyId || ''}
+              clinicId={clinicId || savedClinicId || ''}
               onSuccess={handleEmbeddedSignupSuccess}
               onError={handleEmbeddedSignupError}
             />

@@ -63,7 +63,7 @@ Este é um editor visual para criar fluxos de conversação em formato de blocos
 ### Navegação
 Acesse o editor através das rotas:
 - `/conversations/flow-editor`
-- `/company/:companyId/conversations/flow-editor`
+- `/clinic/:clinicId/conversations/flow-editor`
 
 ### Criando um Fluxo
 1. **Adicionar Blocos**: Clique no botão "+" flutuante

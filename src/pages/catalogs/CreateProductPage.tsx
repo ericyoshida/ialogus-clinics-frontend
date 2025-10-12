@@ -1,14 +1,14 @@
 import { IalogusInput } from '@/components/ui/ialogus-input'
 import { Textarea } from '@/components/ui/textarea'
+import { useClinics } from '@/hooks/use-clinics'
+import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
+import * as productsService from '@/services/products'
+import { type Calendar } from '@/services/products'
 import { ChevronDown, User } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useToast } from '@/hooks/use-toast'
-import * as productsService from '@/services/products'
-import { type Calendar } from '@/services/products'
-import { useCompanies } from '@/hooks/use-companies'
 
 // Componente de TextArea personalizado com o estilo Ialogus
 function IalogusTextarea({
@@ -309,12 +309,12 @@ function ServiceProviderSelect({
   value,
   onChange,
   required = false,
-  companyId
+  clinicId
 }: {
   value: string[];
   onChange: (value: string[]) => void;
   required?: boolean;
-  companyId?: string;
+  clinicId?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -364,15 +364,15 @@ function ServiceProviderSelect({
   // Carrega os prestadores de serviço da API
   useEffect(() => {
     const fetchServiceProviders = async () => {
-      if (!companyId) {
-        setError('ID da empresa não encontrado');
+      if (!clinicId) {
+        setError('ID da clínica não encontrado');
         return;
       }
 
       try {
         setIsLoading(true);
         setError(null);
-        const calendars = await productsService.getCompanyCalendars(companyId);
+        const calendars = await productsService.getClinicCalendars(clinicId);
         setProviders(calendars);
       } catch (err) {
         console.error('Erro ao buscar prestadores de serviço:', err);
@@ -383,7 +383,7 @@ function ServiceProviderSelect({
     };
 
     fetchServiceProviders();
-  }, [companyId]);
+  }, [clinicId]);
   
   // Obter nomes formatados para exibição
   const getSelectedProviderNames = () => {
@@ -579,9 +579,9 @@ function ServiceProviderSelect({
 
 export default function CreateProductPage() {
   const navigate = useNavigate();
-  const { companyId } = useParams<{ companyId: string }>();
-  const { companies } = useCompanies();
-  const companyName = companies.find(c => c.id === companyId)?.name || 'Carregando...';
+  const { clinicId } = useParams<{ clinicId: string }>();
+  const { clinics } = useClinics();
+  const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...';
   
   // Estados para os campos do formulário
   const [productName, setProductName] = useState('');
@@ -624,8 +624,8 @@ export default function CreateProductPage() {
       return;
     }
     
-    if (!companyId) {
-      setValidationError('ID da empresa não encontrado');
+    if (!clinicId) {
+      setValidationError('ID da clínica não encontrado');
       return;
     }
     
@@ -648,7 +648,7 @@ export default function CreateProductPage() {
       };
       
       // Chamar API para criar produto
-      await productsService.createProduct(companyId, productData);
+      await productsService.createProduct(clinicId, productData);
       
       // Mostrar mensagem de sucesso
       toast({
@@ -657,7 +657,7 @@ export default function CreateProductPage() {
       });
       
       // Navegar de volta para a tela de criação de catálogo
-      navigate(`/dashboard/company/${companyId}/catalogs/create`);
+      navigate(`/dashboard/clinic/${clinicId}/catalogs/create`);
     } catch (error) {
       console.error('Erro ao criar produto:', error);
       toast({
@@ -672,7 +672,7 @@ export default function CreateProductPage() {
   
   // Função para cancelar e voltar
   const handleCancel = () => {
-    navigate(`/dashboard/company/${companyId}/catalogs/create`);
+    navigate(`/dashboard/clinic/${clinicId}/catalogs/create`);
   };
   
   return (
@@ -682,7 +682,7 @@ export default function CreateProductPage() {
         <h1 className="text-[21px] font-medium text-gray-900 mt-2 flex items-center gap-2">
           Catálogo de Produtos | Cadastrar Novo Produto
           <span className="text-gray-400">|</span>
-          <span className="text-gray-600">{companyName}</span>
+          <span className="text-gray-600">{clinicName}</span>
         </h1>
       </div>
       
@@ -737,7 +737,7 @@ export default function CreateProductPage() {
               value={serviceProviders}
               onChange={setServiceProviders}
               required
-              companyId={companyId}
+              clinicId={clinicId}
             />
           </div>
         )}

@@ -1,11 +1,11 @@
 import { cn } from '@/lib/utils';
 
-interface AddCompanyCardProps {
+interface AddClinicCardProps {
   onClick?: () => void;
   className?: string;
 }
 
-export function AddCompanyCard({ onClick, className }: AddCompanyCardProps) {
+export function AddClinicCard({ onClick, className }: AddClinicCardProps) {
   return (
     <button
       onClick={onClick}
@@ -15,11 +15,11 @@ export function AddCompanyCard({ onClick, className }: AddCompanyCardProps) {
         "hover:scale-[1.02] hover:drop-shadow-[6px_6px_10px_rgba(0,0,0,0.15)]",
         className
       )}
-      aria-label="Adicionar nova empresa"
+      aria-label="Adicionar nova clínica"
     >
       <img 
-        src="/images/add-company.svg" 
-        alt="Adicionar empresa" 
+        src="/images/add-clinic.svg" 
+        alt="Adicionar clínica" 
         className="w-full h-full object-contain"
       />
     </button>

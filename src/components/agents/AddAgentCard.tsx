@@ -8,8 +8,8 @@ interface AddAgentCardProps {
 }
 
 export function AddAgentCard({ onClick, className }: AddAgentCardProps) {
-  // Get companyId from URL params
-  const { companyId } = useParams<{ companyId: string }>();
+  // Get clinicId from URL params
+  const { clinicId } = useParams<{ clinicId: string }>();
   
   // Estilos para o container principal (card)
   const containerStyle: CSSProperties = {
@@ -55,10 +55,10 @@ export function AddAgentCard({ onClick, className }: AddAgentCardProps) {
     );
   }
 
-  // Criar o caminho da URL com o companyId da URL atual
-  const to = companyId 
-    ? `/dashboard/company/${companyId}/agents/create` 
-    : '/dashboard/agents/create/company';
+  // Criar o caminho da URL com o clinicId da URL atual
+  const to = clinicId 
+    ? `/dashboard/clinic/${clinicId}/agents/create` 
+    : '/dashboard/agents/create/clinic';
 
   // Versão com Link para navegação direta
   return (

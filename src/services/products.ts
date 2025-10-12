@@ -74,14 +74,14 @@ export interface EditProductsListRequest {
 }
 
 /**
- * Busca as listas de produtos de uma empresa
- * @param clinicId ID da empresa
+ * Busca as listas de produtos de uma clínica
+ * @param clinicId ID da clínica
  * @returns Lista de catálogos de produtos
  */
 export const getProductsLists = async (clinicId: string): Promise<ProductsList[]> => {
   try {
-    console.log(`Buscando catálogos de produtos para a empresa ${clinicId}...`);
-    const response = await api.get<ProductsListsResponse>(`/seller-companies/${clinicId}/products-lists`);
+    console.log(`Buscando catálogos de produtos para a clínica ${clinicId}...`);
+    const response = await api.get<ProductsListsResponse>(`/clinics/${clinicId}/products-lists`);
     
     // Log da resposta para debug
     console.log('Resposta da API (products-lists):', JSON.stringify(response.data, null, 2));
@@ -94,14 +94,14 @@ export const getProductsLists = async (clinicId: string): Promise<ProductsList[]
     console.warn('Resposta da API não contém productsLists:', response.data);
     return [];
   } catch (error) {
-    console.error(`Erro ao buscar catálogos de produtos para a empresa ${clinicId}:`, error);
+    console.error(`Erro ao buscar catálogos de produtos para a clínica ${clinicId}:`, error);
     throw error;
   }
 };
 
 /**
  * Busca uma lista de produtos específica
- * @param clinicId ID da empresa
+ * @param clinicId ID da clínica
  * @param productsListId ID da lista de produtos
  * @returns Detalhes da lista de produtos
  */
@@ -110,9 +110,9 @@ export const getProductsListDetails = async (
   productsListId: string
 ): Promise<ProductsList | null> => {
   try {
-    console.log(`Buscando detalhes do catálogo ${productsListId} para a empresa ${clinicId}...`);
+    console.log(`Buscando detalhes do catálogo ${productsListId} para a clínica ${clinicId}...`);
     const response = await api.get<ProductsList>(
-      `/seller-companies/${clinicId}/products-lists/${productsListId}`
+      `/clinics/${clinicId}/products-lists/${productsListId}`
     );
     
     console.log('Detalhes do catálogo recebidos:', response.data);
@@ -124,14 +124,14 @@ export const getProductsListDetails = async (
 };
 
 /**
- * Busca todos os produtos de uma empresa
- * @param clinicId ID da empresa
+ * Busca todos os produtos de uma clínica
+ * @param clinicId ID da clínica
  * @returns Lista de produtos
  */
-export const getCompanyProducts = async (clinicId: string): Promise<Product[]> => {
+export const getClinicProducts = async (clinicId: string): Promise<Product[]> => {
   try {
-    console.log(`Buscando produtos para a empresa ${clinicId}...`);
-    const response = await api.get<ProductsResponse>(`/seller-companies/${clinicId}/products`);
+    console.log(`Buscando produtos para a clínica ${clinicId}...`);
+    const response = await api.get<ProductsResponse>(`/clinics/${clinicId}/products`);
     
     // Log da resposta para debug
     console.log('Resposta da API (products):', JSON.stringify(response.data, null, 2));
@@ -144,20 +144,20 @@ export const getCompanyProducts = async (clinicId: string): Promise<Product[]> =
     console.warn('Resposta da API não contém products:', response.data);
     return [];
   } catch (error) {
-    console.error(`Erro ao buscar produtos para a empresa ${clinicId}:`, error);
+    console.error(`Erro ao buscar produtos para a clínica ${clinicId}:`, error);
     throw error;
   }
 };
 
 /**
- * Busca todos os calendários dos prestadores de serviço de uma empresa
- * @param clinicId ID da empresa
+ * Busca todos os calendários dos prestadores de serviço de uma clínica
+ * @param clinicId ID da clínica
  * @returns Lista de calendários
  */
-export const getCompanyCalendars = async (clinicId: string): Promise<Calendar[]> => {
+export const getClinicCalendars = async (clinicId: string): Promise<Calendar[]> => {
   try {
-    console.log(`Buscando calendários para a empresa ${clinicId}...`);
-    const response = await api.get<CalendarsResponse>(`/seller-companies/${clinicId}/calendars`);
+    console.log(`Buscando calendários para a clínica ${clinicId}...`);
+    const response = await api.get<CalendarsResponse>(`/clinics/${clinicId}/calendars`);
     
     // Log da resposta para debug
     console.log('Resposta da API (calendars):', JSON.stringify(response.data, null, 2));
@@ -170,14 +170,14 @@ export const getCompanyCalendars = async (clinicId: string): Promise<Calendar[]>
     console.warn('Resposta da API não contém calendars:', response.data);
     return [];
   } catch (error) {
-    console.error(`Erro ao buscar calendários para a empresa ${clinicId}:`, error);
+    console.error(`Erro ao buscar calendários para a clínica ${clinicId}:`, error);
     throw error;
   }
 };
 
 /**
- * Cria um novo produto para uma empresa
- * @param clinicId ID da empresa
+ * Cria um novo produto para uma clínica
+ * @param clinicId ID da clínica
  * @param productData Dados do produto a ser criado
  * @returns O produto criado
  */
@@ -186,23 +186,23 @@ export const createProduct = async (
   productData: CreateProductRequest
 ): Promise<Product> => {
   try {
-    console.log(`Criando produto para a empresa ${clinicId}...`, productData);
+    console.log(`Criando produto para a clínica ${clinicId}...`, productData);
     const response = await api.post<Product>(
-      `/seller-companies/${clinicId}/products`,
+      `/clinics/${clinicId}/products`,
       productData
     );
     
     console.log('Produto criado:', response.data);
     return response.data;
   } catch (error) {
-    console.error(`Erro ao criar produto para a empresa ${clinicId}:`, error);
+    console.error(`Erro ao criar produto para a clínica ${clinicId}:`, error);
     throw error;
   }
 };
 
 /**
- * Cria uma nova lista de produtos para uma empresa
- * @param clinicId ID da empresa
+ * Cria uma nova lista de produtos para uma clínica
+ * @param clinicId ID da clínica
  * @param productsListData Dados da lista de produtos a ser criada
  * @returns A lista de produtos criada
  */
@@ -211,16 +211,16 @@ export const createProductsList = async (
   productsListData: CreateProductsListRequest
 ): Promise<ProductsList> => {
   try {
-    console.log(`Criando lista de produtos para a empresa ${clinicId}...`, productsListData);
+    console.log(`Criando lista de produtos para a clínica ${clinicId}...`, productsListData);
     const response = await api.post<ProductsList>(
-      `/seller-companies/${clinicId}/products-lists`,
+      `/clinics/${clinicId}/products-lists`,
       productsListData
     );
     
     console.log('Lista de produtos criada:', response.data);
     return response.data;
   } catch (error) {
-    console.error(`Erro ao criar lista de produtos para a empresa ${clinicId}:`, error);
+    console.error(`Erro ao criar lista de produtos para a clínica ${clinicId}:`, error);
     throw error;
   }
 };

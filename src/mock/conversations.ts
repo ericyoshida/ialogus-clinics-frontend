@@ -7,7 +7,7 @@ export type ConversationItem = {
   id: string;
   avatarUrl: string;
   contactName: string;
-  companyName: string;
+  clinicName: string;
   lastMessageAt: Date;
   unreadCount: number;
   channel: Channel;
@@ -67,7 +67,7 @@ export const mockConversations: ConversationItem[] = [
     id: '1',
     avatarUrl: 'https://i.pravatar.cc/150?img=1',
     contactName: 'João Silva',
-    companyName: 'TechSoft',
+    clinicName: 'TechSoft',
     lastMessageAt: new Date(Date.now() - 1 * 60 * 1000), // 1 minute ago
     unreadCount: 3,
     channel: 'whatsapp',
@@ -138,7 +138,7 @@ export const mockConversations: ConversationItem[] = [
     id: '2',
     avatarUrl: 'https://i.pravatar.cc/150?img=2',
     contactName: 'Maria Oliveira',
-    companyName: 'SuperMarket',
+    clinicName: 'SuperMarket',
     lastMessageAt: new Date(Date.now() - 10 * 60 * 1000), // 10 minutes ago
     unreadCount: 0,
     channel: 'instagram',
@@ -183,7 +183,7 @@ export const mockConversations: ConversationItem[] = [
     id: '3',
     avatarUrl: 'https://i.pravatar.cc/150?img=3',
     contactName: 'Carlos Pereira',
-    companyName: 'Construtech',
+    clinicName: 'Construtech',
     lastMessageAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
     unreadCount: 5,
     channel: 'whatsapp',
@@ -222,7 +222,7 @@ export const mockConversations: ConversationItem[] = [
     id: '4',
     avatarUrl: 'https://i.pravatar.cc/150?img=4',
     contactName: 'Ana Santos',
-    companyName: 'BeautyShop',
+    clinicName: 'BeautyShop',
     lastMessageAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
     unreadCount: 0,
     channel: 'sms',
@@ -255,7 +255,7 @@ export const mockConversations: ConversationItem[] = [
     id: '5',
     avatarUrl: 'https://i.pravatar.cc/150?img=5',
     contactName: 'Pedro Almeida',
-    companyName: 'TechCorp',
+    clinicName: 'TechCorp',
     lastMessageAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
     unreadCount: 2,
     channel: 'email',
@@ -288,7 +288,7 @@ export const mockConversations: ConversationItem[] = [
     id: '6',
     avatarUrl: 'https://i.pravatar.cc/150?img=6',
     contactName: 'Fernanda Lima',
-    companyName: 'FashionStyle',
+    clinicName: 'FashionStyle',
     lastMessageAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
     unreadCount: 0,
     channel: 'instagram',
@@ -333,7 +333,7 @@ export const mockConversations: ConversationItem[] = [
     id: '7',
     avatarUrl: 'https://i.pravatar.cc/150?img=7',
     contactName: 'Roberto Gomes',
-    companyName: 'InvestBank',
+    clinicName: 'InvestBank',
     lastMessageAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
     unreadCount: 1,
     channel: 'whatsapp',
@@ -372,7 +372,7 @@ export const mockConversations: ConversationItem[] = [
     id: '8',
     avatarUrl: 'https://i.pravatar.cc/150?img=8',
     contactName: 'Juliana Costa',
-    companyName: 'HealthCare',
+    clinicName: 'HealthCare',
     lastMessageAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // 14 days ago
     unreadCount: 0,
     channel: 'whatsapp',

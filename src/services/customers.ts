@@ -71,7 +71,7 @@ export const customersService = {
       }
       
       const queryString = params.toString();
-      const url = `/seller-companies/${clinicId}/customers${queryString ? `?${queryString}` : ''}`;
+      const url = `/clinics/${clinicId}/customers${queryString ? `?${queryString}` : ''}`;
       
       const response = await api.get<CustomersResponse>(url);
       return response.data;
@@ -104,7 +104,7 @@ export const customersService = {
       
       console.log('Dados enviados para criação:', payload);
       
-      const response = await api.post<Customer>(`/seller-companies/${clinicId}/customers`, payload);
+      const response = await api.post<Customer>(`/clinics/${clinicId}/customers`, payload);
       return response.data;
     } catch (error: unknown) {
       console.error('Erro ao criar cliente:', error);
@@ -118,7 +118,7 @@ export const customersService = {
       if (apiError.response?.status === 400) {
         const errorData = apiError.response.data;
         if (errorData?.message === 'CUSTOMER_ALREADY_EXISTS') {
-          throw new Error(errorData.details || 'Este número de telefone já está cadastrado para esta empresa.');
+          throw new Error(errorData.details || 'Este número de telefone já está cadastrado para esta clínica.');
         }
         // Tratar outros erros 400
         if (errorData?.message) {

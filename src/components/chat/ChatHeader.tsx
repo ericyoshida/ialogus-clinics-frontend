@@ -33,7 +33,7 @@ export function ChatHeader({
       return `@${conversation.contactName.toLowerCase().replace(/\s+/g, '')}`;
     } else {
       // Para outros canais (email, etc)
-      return conversation.companyName || '';
+      return conversation.clinicName || '';
     }
   };
 

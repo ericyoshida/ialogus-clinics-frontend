@@ -118,8 +118,8 @@ export function ContactDetailsSidebar({
         <div className="mb-4">
           <h2 className="text-lg font-bold truncate">{conversation.contactName}</h2>
           <p className="text-sm text-gray-600 truncate">{conversation.phoneNumber}</p>
-          {conversation.companyName && (
-            <p className="text-sm text-gray-600 truncate mt-1">{conversation.companyName}</p>
+          {conversation.clinicName && (
+            <p className="text-sm text-gray-600 truncate mt-1">{conversation.clinicName}</p>
           )}
         </div>
 

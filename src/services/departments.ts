@@ -11,7 +11,7 @@ export interface Department {
 
 /**
  * Cria um novo departamento
- * @param clinicId ID da empresa
+ * @param clinicId ID da clínica
  * @param data Dados do departamento
  * @returns Departamento criado
  */
@@ -20,10 +20,10 @@ export const createDepartment = async (clinicId: string, data: {
   macroDepartmentName: string;
 }): Promise<Department> => {
   try {
-    console.log(`Criando departamento para a empresa ${clinicId}...`);
+    console.log(`Criando departamento para a clínica ${clinicId}...`);
     console.log('Dados:', data);
     
-    const response = await api.post(`/seller-companies/${clinicId}/departments`, data);
+    const response = await api.post(`/clinics/${clinicId}/departments`, data);
     console.log('Departamento criado com sucesso:', response.data);
     
     return response.data;

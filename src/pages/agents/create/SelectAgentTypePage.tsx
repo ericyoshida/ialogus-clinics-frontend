@@ -1,7 +1,7 @@
+import { MultiStepAgent } from '@/components/multi-step-agent'
 import { FeatureCard } from '@/components/ui/feature-card'
 import { IalogusInput } from '@/components/ui/ialogus-input'
-import { MultiStepAgent } from '@/components/multi-step-agent'
-import { useCompanies } from '@/hooks/use-companies'
+import { useClinics } from '@/hooks/use-clinics'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -81,27 +81,27 @@ function AgentTypeCard({
 
 export default function SelectAgentTypePage() {
   const navigate = useNavigate();
-  const { companyId } = useParams<{ companyId: string }>();
+  const { clinicId } = useParams<{ clinicId: string }>();
   
   // Estado para os dados do agente
   const [agentName, setAgentName] = useState('');
   const [agentType, setAgentType] = useState<'sales' | 'support' | null>(null);
   const [nameError, setNameError] = useState('');
   
-  // Buscar nome da empresa
-  const { companies } = useCompanies();
-  const companyName = companies.find(c => c.id === companyId)?.name || 'Carregando...';
+  // Buscar nome da clínica
+  const { clinics } = useClinics();
+  const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...';
   
-  // Validar se temos um companyId
+  // Validar se temos um clinicId
   useEffect(() => {
-    if (!companyId) {
+    if (!clinicId) {
       navigate('/dashboard');
       return;
     }
     
-    // Salvar companyId no localStorage para o fluxo
-    localStorage.setItem('temp_selected_company', companyId);
-  }, [companyId, navigate]);
+    // Salvar clinicId no localStorage para o fluxo
+    localStorage.setItem('temp_selected_clinic', clinicId);
+  }, [clinicId, navigate]);
   
   // Carregar dados salvos do localStorage quando o componente é montado
   useEffect(() => {
@@ -169,12 +169,12 @@ export default function SelectAgentTypePage() {
     console.log(`Agente: ${agentName}, Tipo: ${agentType}`);
     
     // Navegar para a próxima etapa
-    navigate(`/dashboard/company/${companyId}/agents/create/conversation-flow`);
+    navigate(`/dashboard/clinic/${clinicId}/agents/create/conversation-flow`);
   };
   
   // Função para voltar à etapa anterior
   const handleBack = () => {
-    navigate(`/dashboard/company/${companyId}/agents`);
+    navigate(`/dashboard/clinic/${clinicId}/agents`);
   };
   
   return (
@@ -184,7 +184,7 @@ export default function SelectAgentTypePage() {
         <h1 className="text-[21px] font-medium text-gray-900 mt-2 flex items-center gap-2">
           Criar Novo Agente
           <span className="text-gray-400">|</span>
-          <span className="text-gray-600">{companyName}</span>
+          <span className="text-gray-600">{clinicName}</span>
         </h1>
         <p className="text-gray-500 text-sm mb-4">Etapa 1: Defina o tipo do agente</p>
         

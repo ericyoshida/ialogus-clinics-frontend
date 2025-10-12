@@ -48,19 +48,19 @@ interface AgentsResponse {
 }
 
 /**
- * Busca os agentes associados a uma empresa específica
- * @param companyId ID da empresa
+ * Busca os agentes associados a uma clínica específica
+ * @param clinicId ID da clínica
  * @returns Array de agentes
  */
-export const getCompanyAgents = async (companyId: string): Promise<Agent[]> => {
+export const getClinicAgents = async (clinicId: string): Promise<Agent[]> => {
   try {
     const userId = getUserId();
     if (!userId) {
       throw new Error('Usuário não autenticado');
     }
 
-    console.log(`Buscando agentes para a empresa ${companyId} do usuário ${userId}...`);
-    const response = await api.get<AgentsResponse>(`/accounts/${userId}/seller-companies/${companyId}/bot-models`);
+    console.log(`Buscando agentes para a clínica ${clinicId} do usuário ${userId}...`);
+    const response = await api.get<AgentsResponse>(`/accounts/${userId}/clinics/${clinicId}/bot-models`);
     console.log('Resposta completa da API:', response.data);
     
     // Verificar se a resposta contém a propriedade botModels
@@ -79,20 +79,20 @@ export const getCompanyAgents = async (companyId: string): Promise<Agent[]> => {
     console.warn('Formato de resposta não reconhecido:', response.data);
     return [];
   } catch (error) {
-    console.error(`Erro ao buscar agentes da empresa ${companyId}:`, error);
+    console.error(`Erro ao buscar agentes da clínica ${clinicId}:`, error);
     throw error;
   }
 };
 
-export const getAgentById = async (companyId: string, agentId: string): Promise<Agent | null> => {
+export const getAgentById = async (clinicId: string, agentId: string): Promise<Agent | null> => {
   try {
     const userId = getUserId();
     if (!userId) {
       throw new Error('Usuário não autenticado');
     }
 
-    console.log(`Buscando agente ${agentId} da empresa ${companyId}...`);
-    const response = await api.get(`/accounts/${userId}/seller-companies/${companyId}/bot-models/${agentId}`);
+    console.log(`Buscando agente ${agentId} da clínica ${clinicId}...`);
+    const response = await api.get(`/accounts/${userId}/clinics/${clinicId}/bot-models/${agentId}`);
     console.log('Resposta recebida:', response.data);
     
     // Verificar se a resposta é diretamente o agente
@@ -108,7 +108,7 @@ export const getAgentById = async (companyId: string, agentId: string): Promise<
     console.warn('Agente não encontrado ou formato não reconhecido:', response.data);
     return null;
   } catch (error) {
-    console.error(`Erro ao buscar agente ${agentId} da empresa ${companyId}:`, error);
+    console.error(`Erro ao buscar agente ${agentId} da clínica ${clinicId}:`, error);
     return null;
   }
 };
@@ -177,7 +177,7 @@ export const createBotModel = async (departmentId: string, data: {
 };
 
 export const agentsService = {
-  getCompanyAgents,
+  getClinicAgents,
   getAgentById,
   getBotModelsByWhatsappChannelId,
   createBotModel,

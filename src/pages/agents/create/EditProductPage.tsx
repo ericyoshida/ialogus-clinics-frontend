@@ -1,13 +1,13 @@
 import { IalogusInput } from '@/components/ui/ialogus-input'
 import { Textarea } from '@/components/ui/textarea'
+import { useClinics } from '@/hooks/use-clinics'
 import { cn } from '@/lib/utils'
 import { ChevronDown, Loader2, User } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useToast } from '../../../hooks/use-toast'
-import { editProduct, getCompanyCalendars, type Calendar, type Product } from '../../../services/products'
-import { useCompanies } from '@/hooks/use-companies'
+import { editProduct, getClinicCalendars, type Calendar, type Product } from '../../../services/products'
 
 // Componente de TextArea personalizado com o estilo Ialogus
 function IalogusTextarea({
@@ -315,12 +315,12 @@ function ServiceProviderSelect({
   value,
   onChange,
   required = false,
-  companyId
+  clinicId
 }: {
   value: string[];
   onChange: (value: string[]) => void;
   required?: boolean;
-  companyId?: string;
+  clinicId?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -370,15 +370,15 @@ function ServiceProviderSelect({
   // Carrega os prestadores de serviço da API
   useEffect(() => {
     const fetchServiceProviders = async () => {
-      if (!companyId) {
-        setError('ID da empresa não encontrado');
+      if (!clinicId) {
+        setError('ID da clínica não encontrado');
         return;
       }
 
       try {
         setIsLoading(true);
         setError(null);
-        const calendars = await getCompanyCalendars(companyId);
+        const calendars = await getClinicCalendars(clinicId);
         setProviders(calendars);
       } catch (err) {
         console.error('Erro ao buscar prestadores de serviço:', err);
@@ -389,7 +389,7 @@ function ServiceProviderSelect({
     };
 
     fetchServiceProviders();
-  }, [companyId]);
+  }, [clinicId]);
   
   // Obter nomes formatados para exibição
   const getSelectedProviderNames = () => {
@@ -585,11 +585,11 @@ function ServiceProviderSelect({
 
 export default function EditProductPage() {
   const navigate = useNavigate();
-  const { productId, companyId } = useParams<{ productId: string; companyId: string }>();
+  const { productId, clinicId } = useParams<{ productId: string; clinicId: string }>();
   const location = useLocation();
   const { toast } = useToast();
-  const { companies } = useCompanies();
-  const companyName = companies.find(c => c.id === companyId)?.name || 'Carregando...';
+  const { clinics } = useClinics();
+  const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...';
   
   // Obter dados do produto passados via state
   const productData = location.state?.productData as Product | undefined;
@@ -614,7 +614,7 @@ export default function EditProductPage() {
           description: "ID do produto não fornecido",
           variant: "destructive",
         });
-        navigate(`/dashboard/company/${companyId}/agents/create/product-catalog/create`);
+        navigate(`/dashboard/clinic/${clinicId}/agents/create/product-catalog/create`);
         return;
       }
 
@@ -626,7 +626,7 @@ export default function EditProductPage() {
           description: "Dados do produto não encontrados. Retornando ao catálogo.",
           variant: "destructive",
         });
-        navigate(`/dashboard/company/${companyId}/agents/create/product-catalog/create`);
+        navigate(`/dashboard/clinic/${clinicId}/agents/create/product-catalog/create`);
         return;
       }
 
@@ -661,7 +661,7 @@ export default function EditProductPage() {
         });
         
         // Redirecionar de volta para o catálogo
-        navigate(`/dashboard/company/${companyId}/agents/create/product-catalog/create`);
+        navigate(`/dashboard/clinic/${clinicId}/agents/create/product-catalog/create`);
       } finally {
         setLoading(false);
       }
@@ -701,8 +701,8 @@ export default function EditProductPage() {
       return;
     }
     
-    if (!companyId || !productId) {
-      setValidationError('ID da empresa ou produto não encontrado');
+    if (!clinicId || !productId) {
+      setValidationError('ID da clínica ou produto não encontrado');
       return;
     }
     
@@ -734,7 +734,7 @@ export default function EditProductPage() {
       });
       
       // Navegar de volta para a tela anterior
-      navigate(`/dashboard/company/${companyId}/agents/create/product-catalog/create`);
+      navigate(`/dashboard/clinic/${clinicId}/agents/create/product-catalog/create`);
     } catch (error) {
       console.error('Erro ao atualizar produto:', error);
       toast({
@@ -749,7 +749,7 @@ export default function EditProductPage() {
   
   // Função para cancelar e voltar
   const handleCancel = () => {
-    navigate(`/dashboard/company/${companyId}/agents/create/product-catalog/create`);
+    navigate(`/dashboard/clinic/${clinicId}/agents/create/product-catalog/create`);
   };
 
   // Mostrar loading enquanto carrega os dados
@@ -771,7 +771,7 @@ export default function EditProductPage() {
         <h1 className="text-[21px] font-medium text-gray-900 mt-2 flex items-center gap-2">
           Catálogo de Produtos | Editar Produto
           <span className="text-gray-400">|</span>
-          <span className="text-gray-600">{companyName}</span>
+          <span className="text-gray-600">{clinicName}</span>
         </h1>
       </div>
       
@@ -826,7 +826,7 @@ export default function EditProductPage() {
               value={selectedServiceProviders}
               onChange={setSelectedServiceProviders}
               required
-              companyId={companyId}
+              clinicId={clinicId}
             />
           </div>
         )}

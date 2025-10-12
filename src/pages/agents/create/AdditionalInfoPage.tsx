@@ -1,12 +1,12 @@
 import { MultiStepAgent } from '@/components/multi-step-agent'
 import { Textarea } from '@/components/ui/textarea'
+import { useClinics } from '@/hooks/use-clinics'
 import { cn } from '@/lib/utils'
+import { agentsService } from '@/services/agents'
+import { ApiService } from '@/services/api'
+import { departmentsService } from '@/services/departments'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useCompanies } from '@/hooks/use-companies'
-import { agentsService } from '@/services/agents'
-import { departmentsService } from '@/services/departments'
-import { ApiService } from '@/services/api'
 import { toast } from 'sonner'
 
 
@@ -116,23 +116,23 @@ function IalogusTextarea({
 
 export default function AdditionalInfoPage() {
   const navigate = useNavigate();
-  const { companyId } = useParams<{ companyId: string }>();
+  const { clinicId } = useParams<{ clinicId: string }>();
   
-  // Buscar nome da empresa
-  const { companies } = useCompanies();
-  const companyName = companies.find(c => c.id === companyId)?.name || 'Carregando...';
+  // Buscar nome da clínica
+  const { clinics } = useClinics();
+  const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...';
   
   // Estado para armazenar as informações adicionais
   const [additionalInfo, setAdditionalInfo] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   
-  // Validar se temos um companyId
+  // Validar se temos um clinicId
   useEffect(() => {
-    if (!companyId) {
+    if (!clinicId) {
       navigate('/dashboard');
       return;
     }
-  }, [companyId, navigate]);
+  }, [clinicId, navigate]);
   
   // Carregar dados salvos no localStorage se disponíveis
   useEffect(() => {
@@ -151,7 +151,7 @@ export default function AdditionalInfoPage() {
   
   // Função para voltar à etapa anterior
   const handleBack = () => {
-    navigate(`/dashboard/company/${companyId}/agents/create/product-catalog`);
+    navigate(`/dashboard/clinic/${clinicId}/agents/create/product-catalog`);
   };
   
   // Função para finalizar a criação do agente
@@ -194,13 +194,13 @@ export default function AdditionalInfoPage() {
       const departmentName = `${macroDepartmentDisplayName} - ${conversationFlowName}`;
       
       console.log('Criando departamento:', {
-        clinicId: companyId,
+        clinicId: clinicId,
         departmentName,
         macroDepartmentName
       });
       
       // Primeiro criar o departamento
-      const department = await departmentsService.createDepartment(companyId!, {
+      const department = await departmentsService.createDepartment(clinicId!, {
         departmentName,
         macroDepartmentName
       });
@@ -235,7 +235,7 @@ export default function AdditionalInfoPage() {
       if (conversationFlowId === 'sales_general' || conversationFlowId === 'sales_scheduling') {
         console.log('Criando flowchart a partir do template:', conversationFlowId);
         
-        const flowchartResult = await ApiService.createFlowchartFromTemplate(companyId!, {
+        const flowchartResult = await ApiService.createFlowchartFromTemplate(clinicId!, {
           templateType: conversationFlowId as 'sales_general' | 'sales_scheduling',
           name: conversationFlowName
         });
@@ -276,11 +276,11 @@ export default function AdditionalInfoPage() {
       localStorage.removeItem('temp_agent_type');
       localStorage.removeItem('temp_conversation_flow');
       localStorage.removeItem('temp_conversation_flow_name');
-      localStorage.removeItem('temp_selected_company');
+      localStorage.removeItem('temp_selected_clinic');
       localStorage.removeItem('temp_human_chat_conditions');
       
       // Navegar para a página de sucesso
-      navigate(`/dashboard/company/${companyId}/agents/create/success`);
+      navigate(`/dashboard/clinic/${clinicId}/agents/create/success`);
     } catch (error) {
       console.error('Erro ao criar agente:', error);
       toast.error('Erro ao criar agente. Tente novamente.');
@@ -295,7 +295,7 @@ export default function AdditionalInfoPage() {
         <h1 className="text-[21px] font-medium text-gray-900 mt-2 flex items-center gap-2">
           Criar Novo Agente
           <span className="text-gray-400">|</span>
-          <span className="text-gray-600">{companyName}</span>
+          <span className="text-gray-600">{clinicName}</span>
         </h1>
         <p className="text-gray-500 text-sm mb-4">Etapa 4: Adicione informações complementares</p>
         
@@ -330,7 +330,7 @@ export default function AdditionalInfoPage() {
             <p className="text-xs text-gray-500 mt-2">
               Adicione aqui regras de negócio, modo de falar do agente, informações adicionais do negócio, 
               instruções específicas sobre como o agente deve abordar determinados assuntos, 
-              restrições de venda, políticas da empresa ou qualquer outra orientação relevante.
+              restrições de venda, políticas da clínica ou qualquer outra orientação relevante.
               Estas informações serão utilizadas para personalizar o comportamento do seu agente.
             </p>
           </div>

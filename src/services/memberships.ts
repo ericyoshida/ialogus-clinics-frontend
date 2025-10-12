@@ -18,10 +18,10 @@ interface MembershipsResponse {
   memberships: Membership[];
 }
 
-export const getMembershipsByCompanyId = async (companyId: string): Promise<Membership[]> => {
+export const getMembershipsByClinicId = async (clinicId: string): Promise<Membership[]> => {
   try {
-    console.log(`Buscando memberships para empresa ID: ${companyId}`);
-    const response = await api.get<MembershipsResponse>(`/seller-companies/${companyId}/memberships`);
+    console.log(`Buscando memberships para clínica ID: ${clinicId}`);
+    const response = await api.get<MembershipsResponse>(`/clinics/${clinicId}/memberships`);
     console.log('Memberships recebidas:', response.data);
     return response.data.memberships;
   } catch (error) {

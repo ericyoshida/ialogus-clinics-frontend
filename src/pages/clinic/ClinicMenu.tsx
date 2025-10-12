@@ -1,5 +1,5 @@
 import { FeatureCard } from '@/components/ui/feature-card';
-import { useCompanies } from '@/hooks/use-companies';
+import { useClinics } from '@/hooks/use-clinics';
 import {
     ChartBarIcon,
     ChatBubbleLeftRightIcon,
@@ -11,37 +11,37 @@ import {
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-export default function CompanyMenu() {
-  const { companyId } = useParams<{ companyId: string }>();
+export default function ClinicMenu() {
+  const { clinicId } = useParams<{ clinicId: string }>();
   const navigate = useNavigate();
   
-  const [company, setCompany] = useState({
+  const [clinic, setClinic] = useState({
     name: "Carregando...",
-    id: companyId
+    id: clinicId
   });
   
-  // Buscar as empresas para encontrar o nome pelo ID
-  const { companies, loading } = useCompanies();
+  // Buscar as clínicas para encontrar o nome pelo ID
+  const { clinics, loading } = useClinics();
   
-  // Atualizar o nome da empresa quando as empresas forem carregadas
+  // Atualizar o nome da clínica quando as clínicas forem carregadas
   useEffect(() => {
-    if (!loading && companies.length > 0 && companyId) {
-      const foundCompany = companies.find(c => c.id === companyId);
+    if (!loading && clinics.length > 0 && clinicId) {
+      const foundClinic = clinics.find(c => c.id === clinicId);
       
-      if (foundCompany) {
-        setCompany({
-          name: foundCompany.name,
-          id: companyId
+      if (foundClinic) {
+        setClinic({
+          name: foundClinic.name,
+          id: clinicId
         });
       } else {
-        // Se não encontrou a empresa, mas temos o ID
-        setCompany({
-          name: "Empresa não encontrada",
-          id: companyId || ""
+        // Se não encontrou a clínica, mas temos o ID
+        setClinic({
+          name: "Clínica não encontrada",
+          id: clinicId || ""
         });
       }
     }
-  }, [companyId, companies, loading]);
+  }, [clinicId, clinics, loading]);
 
   const menuItems = [
     {
@@ -49,35 +49,35 @@ export default function CompanyMenu() {
       title: 'Meus Agentes',
       icon: <UserGroupIcon className="w-6 h-6" />,
       gradientColors: { from: '#4F46E5', to: '#8B5CF6' }, // Roxo para agentes
-      onClick: () => navigate(`/dashboard/company/${company.id}/agents`)
+      onClick: () => navigate(`/dashboard/clinic/${clinic.id}/agents`)
     },
     {
       id: 'members',
-      title: 'Membros da Empresa',
+      title: 'Membros da Clínica',
       icon: <UsersIcon className="w-6 h-6" />,
       gradientColors: { from: '#10B981', to: '#059669' }, // Verde para membros
-      onClick: () => navigate(`/dashboard/company/${company.id}/members`)
+      onClick: () => navigate(`/dashboard/clinic/${clinic.id}/members`)
     },
     {
       id: 'catalog',
       title: 'Catálogo de Produtos',
       icon: <ShoppingBagIcon className="w-6 h-6" />,
       gradientColors: { from: '#EB9B45', to: '#E05C5C' }, // Laranja para catálogo
-      onClick: () => navigate(`/dashboard/company/${company.id}/catalogs`)
+      onClick: () => navigate(`/dashboard/clinic/${clinic.id}/catalogs`)
     },
     {
       id: 'channels',
       title: 'Canais de Comunicação',
       icon: <ChatBubbleLeftRightIcon className="w-6 h-6" />,
       gradientColors: { from: '#3B82F6', to: '#2563EB' }, // Azul para canais
-      onClick: () => navigate(`/dashboard/company/${company.id}/channels`)
+      onClick: () => navigate(`/dashboard/clinic/${clinic.id}/channels`)
     },
     {
       id: 'contacts',
       title: 'Contatos',
       icon: <PhoneIcon className="w-6 h-6" />,
       gradientColors: { from: '#F59E0B', to: '#D97706' }, // Âmbar para contatos
-      onClick: () => navigate(`/dashboard/company/${company.id}/contacts`)
+      onClick: () => navigate(`/dashboard/clinic/${clinic.id}/contacts`)
     },
     {
       id: 'dashboard',
@@ -135,10 +135,10 @@ export default function CompanyMenu() {
 
   return (
     <div className="max-w-7xl -mt-4 px-2 sm:px-3 lg:px-4 pb-6">
-      {/* Cabeçalho com nome da empresa */}
+      {/* Cabeçalho com nome da clínica */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center mb-5 pl-1">
         <div className="flex-1 mb-2 sm:mb-0">
-          <h1 className="text-[21px] font-medium text-gray-900 mt-2">{company.name}</h1>
+          <h1 className="text-[21px] font-medium text-gray-900 mt-2">{clinic.name}</h1>
           <p className="text-gray-500 text-sm">Menu administrativo</p>
         </div>
       </div>

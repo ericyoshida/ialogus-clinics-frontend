@@ -1,14 +1,14 @@
-import { ArrowPathIcon } from '@heroicons/react/24/outline';
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useCompanies } from '@/hooks/use-companies';
 import { BulkMessageStepIndicator } from '@/components/ui/bulk-message-step-indicator';
 import { ConfirmationModal } from '@/components/ui/confirmation-modal';
 import { FeatureCard } from '@/components/ui/feature-card';
 import { useBulkMessageForm } from '@/hooks/use-bulk-message-form';
+import { useClinics } from '@/hooks/use-clinics';
 import { useToast } from '@/hooks/use-toast';
 import { api, messageTemplatesService } from '@/services';
 import { WhatsappMessageTemplate } from '@/services/messageTemplates';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 // Lista de etapas do fluxo de envio de mensagens - agora com 4 etapas
 const BULK_MESSAGE_STEPS = [
@@ -167,13 +167,13 @@ function SelectableTemplateCard({
 
 export default function SelectTemplatePage() {
   const navigate = useNavigate();
-  const { companyId } = useParams<{ companyId: string }>();
+  const { clinicId } = useParams<{ clinicId: string }>();
   const { selectedChannelId, selectedAgentId, selectedTemplateId, updateFormData } = useBulkMessageForm();
   const { toast } = useToast();
   
-  // Buscar nome da empresa
-  const { companies } = useCompanies();
-  const companyName = companies.find(c => c.id === companyId)?.name || 'Carregando...';
+  // Buscar nome da clínica
+  const { clinics } = useClinics();
+  const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...';
   
   // Estados para templates
   const [allTemplates, setAllTemplates] = useState<WhatsappMessageTemplate[]>([]);
@@ -290,7 +290,7 @@ export default function SelectTemplatePage() {
 
   // Função para adicionar novo template
   const handleAddNewTemplate = () => {
-    navigate(`/dashboard/company/${companyId}/messages/bulk/template/create`);
+    navigate(`/dashboard/clinic/${clinicId}/messages/bulk/template/create`);
   };
 
   // Função para editar template
@@ -298,7 +298,7 @@ export default function SelectTemplatePage() {
     const template = allTemplates.find(t => t.whatsappMessageTemplateId === templateId);
     if (template) {
       // Passar os dados do template via state da navegação
-      navigate(`/dashboard/company/${companyId}/messages/bulk/template/edit/${templateId}`, {
+      navigate(`/dashboard/clinic/${clinicId}/messages/bulk/template/edit/${templateId}`, {
         state: { templateData: template }
       });
     } else {
@@ -390,12 +390,12 @@ export default function SelectTemplatePage() {
 
   // Função para avançar para próxima etapa
   const handleNext = () => {
-    navigate(`/dashboard/company/${companyId}/messages/bulk/contacts`);
+    navigate(`/dashboard/clinic/${clinicId}/messages/bulk/contacts`);
   };
 
   // Função para voltar para etapa anterior
   const handleBack = () => {
-    navigate(`/dashboard/company/${companyId}/messages/bulk/agent`);
+    navigate(`/dashboard/clinic/${clinicId}/messages/bulk/agent`);
   };
 
   // Verificar se pode prosseguir
@@ -408,7 +408,7 @@ export default function SelectTemplatePage() {
         <h1 className="text-[21px] font-medium text-gray-900 mt-2 flex items-center gap-2">
           Enviar Mensagem Quebra-gelo
           <span className="text-gray-400">|</span>
-          <span className="text-gray-600">{companyName}</span>
+          <span className="text-gray-600">{clinicName}</span>
         </h1>
         <p className="text-gray-500 text-sm mb-4">Defina os detalhes da mensagem a ser enviada para seus clientes.</p>
         

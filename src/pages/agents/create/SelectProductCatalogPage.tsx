@@ -1,12 +1,12 @@
-import { FeatureCard } from '@/components/ui/feature-card'
 import { MultiStepAgent } from '@/components/multi-step-agent'
+import { FeatureCard } from '@/components/ui/feature-card'
+import { useClinics } from '@/hooks/use-clinics'
 import { useToast } from '@/hooks/use-toast'
 import { productsService } from '@/services'
 import { ProductsList } from '@/services/products'
 import { Edit2, Loader2, MoreVertical, Trash2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useCompanies } from '@/hooks/use-companies'
 
 
 // Card de adicionar novo catálogo
@@ -224,12 +224,12 @@ function ProductCatalogCard({
 
 export default function SelectProductCatalogPage() {
   const navigate = useNavigate();
-  const { companyId } = useParams<{ companyId: string }>();
+  const { clinicId } = useParams<{ clinicId: string }>();
   const { toast } = useToast();
   
-  // Buscar nome da empresa
-  const { companies } = useCompanies();
-  const companyName = companies.find(c => c.id === companyId)?.name || 'Carregando...';
+  // Buscar nome da clínica
+  const { clinics } = useClinics();
+  const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...';
   
   // Estado para o catálogo selecionado
   const [selectedCatalog, setSelectedCatalog] = useState<string | null>(null);
@@ -258,26 +258,26 @@ export default function SelectProductCatalogPage() {
     return gradients[idSum % gradients.length];
   };
   
-  // Validar se temos um companyId
+  // Validar se temos um clinicId
   useEffect(() => {
-    if (!companyId) {
+    if (!clinicId) {
       navigate('/dashboard');
       return;
     }
-  }, [companyId, navigate]);
+  }, [clinicId, navigate]);
   
   // Efeito para carregar catálogos quando o componente montar
   useEffect(() => {
     // Função para buscar catálogos
     const fetchCatalogs = async () => {
-      if (!companyId) return;
+      if (!clinicId) return;
       
       try {
         setLoading(true);
         setError(null);
         
         // Buscar catálogos da API
-        const productCatalogs = await productsService.getProductsLists(companyId);
+        const productCatalogs = await productsService.getProductsLists(clinicId);
         setCatalogs(productCatalogs);
         
         // Verificar se o catálogo selecionado anteriormente ainda existe
@@ -303,7 +303,7 @@ export default function SelectProductCatalogPage() {
     };
     
     fetchCatalogs();
-  }, [companyId]);
+  }, [clinicId]);
   
   // Função para selecionar um catálogo
   const selectCatalog = (catalogId: string) => {
@@ -316,7 +316,7 @@ export default function SelectProductCatalogPage() {
   const handleAddNewCatalog = () => {
     console.log('Adicionar novo catálogo de produtos');
     // Navegar para a página de criação de catálogo
-    navigate(`/dashboard/company/${companyId}/agents/create/product-catalog/create`);
+    navigate(`/dashboard/clinic/${clinicId}/agents/create/product-catalog/create`);
   };
   
   // Função para avançar para a próxima etapa
@@ -335,12 +335,12 @@ export default function SelectProductCatalogPage() {
     localStorage.setItem('selected_catalog', selectedCatalog);
     
     // Navegar para a próxima etapa: informações adicionais
-    navigate(`/dashboard/company/${companyId}/agents/create/additional-info`);
+    navigate(`/dashboard/clinic/${clinicId}/agents/create/additional-info`);
   };
   
   // Função para voltar à etapa anterior
   const handleBack = () => {
-    navigate(`/dashboard/company/${companyId}/agents/create/conversation-flow`);
+    navigate(`/dashboard/clinic/${clinicId}/agents/create/conversation-flow`);
   };
   
   // Função para tentar novamente em caso de erro
@@ -349,14 +349,14 @@ export default function SelectProductCatalogPage() {
     setLoading(true);
     setError(null);
     
-    if (!companyId) {
-      setError('Nenhuma empresa selecionada. Por favor, retorne à etapa 1.');
+    if (!clinicId) {
+      setError('Nenhuma clínica selecionada. Por favor, retorne à etapa 1.');
       setLoading(false);
       return;
     }
     
     // Buscar catálogos novamente
-    productsService.getProductsLists(companyId)
+    productsService.getProductsLists(clinicId)
       .then(productCatalogs => {
         setCatalogs(productCatalogs);
         setLoading(false);
@@ -378,7 +378,7 @@ export default function SelectProductCatalogPage() {
       localStorage.setItem('temp_editing_catalog_products', JSON.stringify(catalog.products.map(p => p.productId)));
       
       // Navegar para a página de criação em modo de edição
-      navigate(`/dashboard/company/${companyId}/agents/create/product-catalog/create`);
+      navigate(`/dashboard/clinic/${clinicId}/agents/create/product-catalog/create`);
     }
   };
 
@@ -453,7 +453,7 @@ export default function SelectProductCatalogPage() {
         <h1 className="text-[21px] font-medium text-gray-900 mt-2 flex items-center gap-2">
           Criar Novo Agente
           <span className="text-gray-400">|</span>
-          <span className="text-gray-600">{companyName}</span>
+          <span className="text-gray-600">{clinicName}</span>
         </h1>
         <p className="text-gray-500 text-sm mb-4">Etapa 3: Selecione o catálogo de produtos</p>
         

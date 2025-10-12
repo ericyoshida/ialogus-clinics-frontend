@@ -1,51 +1,51 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from '@/components/ui/select';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from '@/components/ui/table';
-import { 
-  ArrowLeftIcon, 
-  MagnifyingGlassIcon, 
-  UserPlusIcon,
-  EllipsisVerticalIcon,
-  PencilIcon,
-  TrashIcon,
-  UserIcon
-} from '@heroicons/react/24/outline';
+import { useAuth } from '@/contexts/AuthContext';
+import { useClinics } from '@/hooks/use-clinics';
 import { toast } from '@/hooks/use-toast';
 import { api } from '@/services';
-import { useCompanies } from '@/hooks/use-companies';
-import { useAuth } from '@/contexts/AuthContext';
+import {
+    ArrowLeftIcon,
+    EllipsisVerticalIcon,
+    MagnifyingGlassIcon,
+    PencilIcon,
+    TrashIcon,
+    UserIcon,
+    UserPlusIcon
+} from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 interface Member {
   membershipId: string;
@@ -60,9 +60,9 @@ interface Member {
 }
 
 export default function Members() {
-  const { companyId } = useParams<{ companyId: string }>();
+  const { clinicId } = useParams<{ clinicId: string }>();
   const navigate = useNavigate();
-  const { companies } = useCompanies();
+  const { clinics } = useClinics();
   const { user: currentUser } = useAuth();
   
   const [members, setMembers] = useState<Member[]>([]);
@@ -79,7 +79,7 @@ export default function Members() {
   const [emailToInvite, setEmailToInvite] = useState('');
   const [isInviting, setIsInviting] = useState(false);
   
-  const company = companies.find(c => c.id === companyId);
+  const clinic = clinics.find(c => c.id === clinicId);
   
   const roleOptions = [
     { value: 'ADMIN', label: 'Administrador' },
@@ -87,11 +87,11 @@ export default function Members() {
     { value: 'SALES_REPRESENTATIVE', label: 'Representante de Vendas' }
   ];
   
-  // Buscar membros da empresa
+  // Buscar membros da clínica
   const fetchMembers = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/seller-companies/${companyId}/memberships`);
+      const response = await api.get(`/clinics/${clinicId}/memberships`);
       setMembers(response.data.memberships);
       setFilteredMembers(response.data.memberships);
     } catch (error) {
@@ -107,10 +107,10 @@ export default function Members() {
   };
   
   useEffect(() => {
-    if (companyId) {
+    if (clinicId) {
       fetchMembers();
     }
-  }, [companyId]);
+  }, [clinicId]);
   
   // Filtrar membros por pesquisa
   useEffect(() => {
@@ -135,7 +135,7 @@ export default function Members() {
     
     setIsInviting(true);
     try {
-      await api.post(`/seller-companies/${companyId}/memberships/invite-by-email`, {
+      await api.post(`/clinics/${clinicId}/memberships/invite-by-email`, {
         email: emailToInvite.toLowerCase().trim(),
       });
       
@@ -278,14 +278,14 @@ export default function Members() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate(`/dashboard/company/${companyId}`)}
+            onClick={() => navigate(`/dashboard/clinic/${clinicId}`)}
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold">Membros da Empresa</h1>
+            <h1 className="text-2xl font-semibold">Membros da Clínica</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {company?.name || 'Carregando...'}
+              {clinic?.name || 'Carregando...'}
             </p>
           </div>
         </div>
@@ -300,7 +300,7 @@ export default function Members() {
         <CardHeader>
           <CardTitle>Gerenciar Membros</CardTitle>
           <CardDescription>
-            Convide, edite ou remova membros da empresa
+            Convide, edite ou remova membros da clínica
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -403,7 +403,7 @@ export default function Members() {
           <DialogHeader>
             <DialogTitle>Convidar Novo Membro</DialogTitle>
             <DialogDescription>
-              Digite o email do usuário que deseja convidar para a empresa.
+              Digite o email do usuário que deseja convidar para a clínica.
             </DialogDescription>
           </DialogHeader>
           
@@ -478,7 +478,7 @@ export default function Members() {
           <DialogHeader>
             <DialogTitle>Remover Membro</DialogTitle>
             <DialogDescription>
-              Tem certeza que deseja remover {selectedMember?.user.name} da empresa?
+              Tem certeza que deseja remover {selectedMember?.user.name} da clínica?
               Esta ação não pode ser desfeita.
             </DialogDescription>
           </DialogHeader>

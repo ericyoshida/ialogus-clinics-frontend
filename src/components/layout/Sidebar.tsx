@@ -1,12 +1,12 @@
 import { useAuth } from '@/contexts/AuthContext'
-import { useCompanies } from '@/hooks/use-companies'
+import { useClinics } from '@/hooks/use-clinics'
 import { cn } from '@/lib/utils'
-import { Company } from '@/services/companies'
+import { Clinic } from '@/services/clinics'
 import React, { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 // Adicionando interface estendida para incluir clinicId
-interface CompanyWithClinicId extends Company {
+interface ClinicWithClinicId extends Clinic {
   clinicId?: string;
 }
 
@@ -130,7 +130,7 @@ const SidebarSection = ({ title, children, isCollapsed, mobile }: SidebarSection
   );
 }
 
-interface CompanyItemProps {
+interface ClinicItemProps {
   name: string;
   isActive?: boolean;
   onClick: () => void;
@@ -140,13 +140,13 @@ interface CompanyItemProps {
   mobile?: boolean;
 }
 
-const CompanyItem = ({ name, isActive, onClick, svgPath, index, isCollapsed, mobile }: CompanyItemProps) => {
+const ClinicItem = ({ name, isActive, onClick, svgPath, index, isCollapsed, mobile }: ClinicItemProps) => {
   const [isHovered, setIsHovered] = useState(false);
   
   // Determina o caminho do SVG com base no índice (ciclo de 1-2-3)
   const getSvgPath = () => {
     const svgIndex = (index % 3) + 1;
-    return `/images/ialogus-company-${svgIndex}.svg`;
+    return `/images/ialogus-clinic-${svgIndex}.svg`;
   };
 
   const path = svgPath || getSvgPath();
@@ -254,11 +254,11 @@ interface SidebarProps {
 
 export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
   const { user } = useAuth();
-  const { companies, loading, error } = useCompanies();
+  const { clinics, loading, error } = useClinics();
   const location = useLocation();
   const navigate = useNavigate();
   const path = location.pathname;
-  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+  const [selectedClinic, setSelectedClinic] = useState<string | null>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   
@@ -276,14 +276,14 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
     console.log('=== FIM SIDEBAR DEBUG ===')
   }, [user])
   
-  // Usar o hook useCompanies para buscar as empresas do usuário
+  // Usar o hook useClinics para buscar as clínicas do usuário
   
-  // Função para extrair o ID da empresa da URL
-  const extractCompanyIdFromUrl = (path: string) => {
-    // Verifica se a URL contém /company/ que indica uma página de empresa
-    if (path.includes('/dashboard/company/')) {
-      // Extrai o segmento após /company/
-      const match = path.match(/\/dashboard\/company\/([^/]+)/);
+  // Função para extrair o ID da clínica da URL
+  const extractClinicIdFromUrl = (path: string) => {
+    // Verifica se a URL contém /clinic/ que indica uma página de clínica
+    if (path.includes('/dashboard/clinic/')) {
+      // Extrai o segmento após /clinic/
+      const match = path.match(/\/dashboard\/clinic\/([^/]+)/);
       if (match && match[1]) {
         return match[1];
       }
@@ -292,8 +292,8 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
   };
   
   useEffect(() => {
-    // Remover seleção automática da primeira empresa
-    // Agora nenhuma empresa será selecionada por padrão
+    // Remover seleção automática da primeira clínica
+    // Agora nenhuma clínica será selecionada por padrão
     
     // Verificar o tamanho da tela e colapsar automaticamente em telas menores
     // Não colapsar automaticamente se for a versão mobile overlay
@@ -320,62 +320,62 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
     }
   }, [mobile]);
 
-  // Atualizar a empresa selecionada com base na URL
+  // Atualizar a clínica selecionada com base na URL
   useEffect(() => {
-    // Debug das empresas carregadas
-    if (companies.length > 0) {
-      console.log("Empresas disponíveis:", companies.map(c => ({ 
+    // Debug das clínicas carregadas
+    if (clinics.length > 0) {
+      console.log("Clínicas disponíveis:", clinics.map(c => ({ 
         id: c.id, 
         name: c.name,
-        clinicId: (c as CompanyWithClinicId).clinicId || 'não disponível'
+        clinicId: (c as ClinicWithClinicId).clinicId || 'não disponível'
       })));
     }
     
-    // Tenta extrair o ID da empresa da URL atual
-    const companyIdFromUrl = extractCompanyIdFromUrl(path);
-    if (companyIdFromUrl) {
-      console.log("ID de empresa encontrado na URL:", companyIdFromUrl);
+    // Tenta extrair o ID da clínica da URL atual
+    const clinicIdFromUrl = extractClinicIdFromUrl(path);
+    if (clinicIdFromUrl) {
+      console.log("ID de clínica encontrado na URL:", clinicIdFromUrl);
     }
     
     // Se encontrou um ID na URL, usa ele
-    if (companyIdFromUrl) {
-      // Verifica se o ID corresponde a uma empresa existente
-      const companyExists = companies.some(c => c.id === companyIdFromUrl);
+    if (clinicIdFromUrl) {
+      // Verifica se o ID corresponde a uma clínica existente
+      const clinicExists = clinics.some(c => c.id === clinicIdFromUrl);
       
-      if (companyExists) {
-        setSelectedCompany(companyIdFromUrl);
+      if (clinicExists) {
+        setSelectedClinic(clinicIdFromUrl);
         // Também atualiza o localStorage para manter consistência
-        localStorage.setItem('selectedCompanyId', companyIdFromUrl);
+        localStorage.setItem('selectedClinicId', clinicIdFromUrl);
       } else {
-        console.log(`Empresa com ID ${companyIdFromUrl} não encontrada nos dados atuais`);
+        console.log(`Clínica com ID ${clinicIdFromUrl} não encontrada nos dados atuais`);
       }
     } else {
-      // Se não houver empresa na URL, verifica o localStorage
-      const savedCompanyId = localStorage.getItem('selectedCompanyId');
-      if (savedCompanyId && !selectedCompany) {
-        // Verifica se a empresa ainda existe
-        const companyExists = companies.some(c => c.id === savedCompanyId);
-        if (companyExists) {
-          setSelectedCompany(savedCompanyId);
+      // Se não houver clínica na URL, verifica o localStorage
+      const savedClinicId = localStorage.getItem('selectedClinicId');
+      if (savedClinicId && !selectedClinic) {
+        // Verifica se a clínica ainda existe
+        const clinicExists = clinics.some(c => c.id === savedClinicId);
+        if (clinicExists) {
+          setSelectedClinic(savedClinicId);
         } else {
-          console.log(`Empresa salva com ID ${savedCompanyId} não encontrada nos dados atuais`);
+          console.log(`Clínica salva com ID ${savedClinicId} não encontrada nos dados atuais`);
         }
       }
     }
-  }, [path, companies, selectedCompany]);
+  }, [path, clinics, selectedClinic]);
 
-  // Verificar se a empresa com o ID selecionado existe nos dados atuais
+  // Verificar se a clínica com o ID selecionado existe nos dados atuais
   useEffect(() => {
-    if (companies.length > 0 && selectedCompany) {
-      const companyExists = companies.some(c => c.id === selectedCompany);
+    if (clinics.length > 0 && selectedClinic) {
+      const clinicExists = clinics.some(c => c.id === selectedClinic);
       
-      if (!companyExists) {
-        // Se a empresa selecionada não existe mais, desselecionar
-        setSelectedCompany(null);
-        localStorage.removeItem('selectedCompanyId');
+      if (!clinicExists) {
+        // Se a clínica selecionada não existe mais, desselecionar
+        setSelectedClinic(null);
+        localStorage.removeItem('selectedClinicId');
       }
     }
-  }, [companies, selectedCompany]);
+  }, [clinics, selectedClinic]);
 
   const getActiveIcon = (path: string, Icon: React.ReactElement) => {
     const isActive = location.pathname.includes(path);
@@ -384,44 +384,44 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
     });
   };
 
-  const handleCompanySelect = (company: Company) => {
-    // Verificar se a empresa tem um ID válido
-    if (!company || !company.id) {
-      console.error('Tentativa de selecionar empresa sem ID:', company);
+  const handleClinicSelect = (clinic: Clinic) => {
+    // Verificar se a clínica tem um ID válido
+    if (!clinic || !clinic.id) {
+      console.error('Tentativa de selecionar clínica sem ID:', clinic);
       return;
     }
     
-    // Salvar o ID da empresa selecionada no localStorage
-    localStorage.setItem('selectedCompanyId', company.id);
+    // Salvar o ID da clínica selecionada no localStorage
+    localStorage.setItem('selectedClinicId', clinic.id);
     
     const currentPath = location.pathname;
-    const newPath = `/dashboard/company/${company.id}`;
+    const newPath = `/dashboard/clinic/${clinic.id}`;
     
     // Log para depuração
-    console.log('Navegando para empresa:', {
-      id: company.id,
-      clinicId: (company as CompanyWithClinicId).clinicId || 'não disponível',
-      name: company.name,
+    console.log('Navegando para clínica:', {
+      id: clinic.id,
+      clinicId: (clinic as ClinicWithClinicId).clinicId || 'não disponível',
+      name: clinic.name,
       newPath
     });
     
     // Atualizar estado local
-    setSelectedCompany(company.id);
+    setSelectedClinic(clinic.id);
     
-    // Se for mobile, fechar a sidebar após selecionar uma empresa
+    // Se for mobile, fechar a sidebar após selecionar uma clínica
     if (mobile && onCloseMobile) {
       onCloseMobile();
     }
     
-    // Se estiver em uma página de empresa e apenas mudando a empresa
-    if (currentPath.includes('/dashboard/company/')) {
-      // Forçar navegação mesmo que pareça ser a mesma rota (diferente empresa)
+    // Se estiver em uma página de clínica e apenas mudando a clínica
+    if (currentPath.includes('/dashboard/clinic/')) {
+      // Forçar navegação mesmo que pareça ser a mesma rota (diferente clínica)
       navigate('/', { replace: true }); // Primeiro navega para outra página para forçar remontagem
       setTimeout(() => {
-        navigate(newPath); // Depois navega para a nova página da empresa
+        navigate(newPath); // Depois navega para a nova página da clínica
       }, 0);
     } else {
-      // Navegação normal para a página da empresa
+      // Navegação normal para a página da clínica
       navigate(newPath);
     }
   };
@@ -542,9 +542,9 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
           </SidebarSection>
         )}
 
-        <SidebarSection title="Empresas" isCollapsed={isCollapsed} mobile={mobile}>
+        <SidebarSection title="Clínicas" isCollapsed={isCollapsed} mobile={mobile}>
           {loading ? (
-            // Mostrar indicador de carregamento quando estiver buscando as empresas
+            // Mostrar indicador de carregamento quando estiver buscando as clínicas
             <div className={cn(
               "flex items-center py-2",
               isCollapsed ? "justify-center px-2" : (mobile ? "px-3" : "px-6")
@@ -553,7 +553,7 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
               {!isCollapsed && <div className="animate-pulse h-4 bg-gray-200 rounded w-24"></div>}
             </div>
           ) : error ? (
-            // Mostrar mensagem de erro se houver falha ao buscar empresas
+            // Mostrar mensagem de erro se houver falha ao buscar clínicas
             <div className={cn(
               "text-red-500 text-sm",
               isCollapsed ? "text-center px-2" : (mobile ? "px-3" : "px-6")
@@ -561,25 +561,25 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
               {!isCollapsed && error}
               {isCollapsed && "Erro"}
             </div>
-          ) : companies.length === 0 ? (
-            // Mensagem quando não há empresas
+          ) : clinics.length === 0 ? (
+            // Mensagem quando não há clínicas
             <div className={cn(
               "text-gray-500 text-sm",
               isCollapsed ? "text-center px-2" : (mobile ? "px-3" : "px-6")
             )}>
-              {!isCollapsed && "Nenhuma empresa encontrada"}
+              {!isCollapsed && "Nenhuma clínica encontrada"}
               {isCollapsed && "0"}
             </div>
           ) : (
-            // Listar as empresas do usuário
-            companies
-              .filter(company => Boolean(company.id)) // Garante que só empresas com ID são mostradas
-              .map((company, index) => (
-                <CompanyItem 
-                  key={company.id}
-                  name={company.name} 
-                  isActive={selectedCompany === company.id}
-                  onClick={() => handleCompanySelect(company)}
+            // Listar as clínicas do usuário
+            clinics
+              .filter(clinic => Boolean(clinic.id)) // Garante que só clínicas com ID são mostradas
+              .map((clinic, index) => (
+                <ClinicItem 
+                  key={clinic.id}
+                  name={clinic.name} 
+                  isActive={selectedClinic === clinic.id}
+                  onClick={() => handleClinicSelect(clinic)}
                   index={index}
                   isCollapsed={isCollapsed}
                   mobile={mobile}
@@ -588,7 +588,7 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
           )}
         </SidebarSection>
 
-        {selectedCompany && (
+        {selectedClinic && (
           <SidebarSection title="Gestão" isCollapsed={isCollapsed} mobile={mobile}>
             <div 
               onMouseEnter={() => setHoveredItem('agents')} 
@@ -609,7 +609,7 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
                   }}
                 />}
                 label="Agentes" 
-                to={selectedCompany ? `/dashboard/company/${selectedCompany}/agents` : "/dashboard/agents"} 
+                to={selectedClinic ? `/dashboard/clinic/${selectedClinic}/agents` : "/dashboard/agents"} 
                 isActive={path.includes('/agents')}
                 isCollapsed={isCollapsed}
                 mobile={mobile}
@@ -634,7 +634,7 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
                   }}
                 />}
                 label="Conversas" 
-                to={selectedCompany ? `/dashboard/company/${selectedCompany}/conversations` : "/dashboard/conversations"} 
+                to={selectedClinic ? `/dashboard/clinic/${selectedClinic}/conversations` : "/dashboard/conversations"} 
                 isActive={path.includes('/conversations')}
                 isCollapsed={isCollapsed}
                 mobile={mobile}
@@ -650,17 +650,17 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
                   alt="Contatos"
                   className={mobile ? "w-4 h-4" : "w-5 h-5"} 
                   style={{
-                    filter: (path.includes('/company/') && path.includes('/contacts')) 
+                    filter: (path.includes('/clinic/') && path.includes('/contacts')) 
                       ? 'invert(48%) sepia(93%) saturate(2467%) hue-rotate(346deg) brightness(97%) contrast(95%) drop-shadow(0 0 1px rgba(0,0,0,0.5))' 
                       : hoveredItem === 'contacts' 
                         ? 'invert(48%) sepia(93%) saturate(2467%) hue-rotate(346deg) brightness(97%) contrast(95%)' 
                         : undefined,
-                    transform: (path.includes('/company/') && path.includes('/contacts')) ? 'scale(1.1)' : 'scale(1)'
+                    transform: (path.includes('/clinic/') && path.includes('/contacts')) ? 'scale(1.1)' : 'scale(1)'
                   }}
                 />}
                 label="Contatos" 
-                to={selectedCompany ? `/dashboard/company/${selectedCompany}/contacts` : "/dashboard/contacts"} 
-                isActive={path.includes('/company/') && path.includes('/contacts')}
+                to={selectedClinic ? `/dashboard/clinic/${selectedClinic}/contacts` : "/dashboard/contacts"} 
+                isActive={path.includes('/clinic/') && path.includes('/contacts')}
                 isCollapsed={isCollapsed}
                 mobile={mobile}
               />
@@ -693,7 +693,7 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
                   />
                 </svg>}
                 label="Envio em Massa" 
-                to={selectedCompany ? `/dashboard/company/${selectedCompany}/messages/bulk/channel` : "/dashboard/messages/bulk/channel"} 
+                to={selectedClinic ? `/dashboard/clinic/${selectedClinic}/messages/bulk/channel` : "/dashboard/messages/bulk/channel"} 
                 isActive={path.includes('/messages')}
                 isCollapsed={isCollapsed}
                 mobile={mobile}
@@ -718,7 +718,7 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
                   }}
                 />}
                 label="Calendários" 
-                to={selectedCompany ? `/dashboard/company/${selectedCompany}/calendar` : "/dashboard/calendar"} 
+                to={selectedClinic ? `/dashboard/clinic/${selectedClinic}/calendar` : "/dashboard/calendar"} 
                 isActive={path.includes('/calendar')}
                 isCollapsed={isCollapsed}
                 mobile={mobile}

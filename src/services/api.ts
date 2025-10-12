@@ -1,6 +1,6 @@
-import { MessageNodeData } from '@/pages/conversations/FlowEditorPage'
-import axios from 'axios'
-import { API_CONFIG } from '@/config/api'
+import { API_CONFIG } from '@/config/api';
+import { MessageNodeData } from '@/pages/conversations/FlowEditorPage';
+import axios from 'axios';
 
 // Configuração do axios (export default original)
 const api = axios.create({
@@ -40,7 +40,7 @@ api.interceptors.response.use(
 export default api;
 
 // Export da instância para uso no ApiService
-export { api }
+export { api };
 
 // Novas interfaces e serviços para o FlowEditor
 export interface CreateMessageBlockRequest {
@@ -82,7 +82,7 @@ export class ApiService {
     clinicId: string,
     data: CreateMessagesFlowchartRequest
   ): Promise<CreateMessagesFlowchartResponse> {
-    const response = await api.post(`/seller-companies/${clinicId}/messages-flowcharts`, data);
+    const response = await api.post(`/clinics/${clinicId}/messages-flowcharts`, data);
     return response.data;
   }
 
@@ -120,7 +120,7 @@ export class ApiService {
     }
   ): Promise<{ messagesFlowchart: { id: string; name: string } }> {
     const response = await api.post(
-      `/seller-companies/${clinicId}/messages-flowcharts/from-template`,
+      `/clinics/${clinicId}/messages-flowcharts/from-template`,
       data
     );
     return response.data;
@@ -158,7 +158,7 @@ export class ApiService {
   static async listMessagesFlowcharts(
     clinicId: string
   ): Promise<{ messagesFlowcharts: Array<{ id: string; name: string; createdAt: string }> }> {
-    const response = await api.get(`/seller-companies/${clinicId}/messages-flowcharts`);
+    const response = await api.get(`/clinics/${clinicId}/messages-flowcharts`);
     return response.data;
   }
 

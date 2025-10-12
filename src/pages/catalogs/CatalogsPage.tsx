@@ -1,28 +1,28 @@
 import { AddCatalogCard } from '@/components/catalogs/AddCatalogCard'
 import { CatalogCard } from '@/components/catalogs/CatalogCard'
+import { useClinics } from '@/hooks/use-clinics'
 import { useToast } from '@/hooks/use-toast'
-import { useCompanies } from '@/hooks/use-companies'
 import * as productsService from '@/services/products'
-import { Product, ProductsList } from '@/services/products'
+import { ProductsList } from '@/services/products'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 export default function CatalogsPage() {
   const navigate = useNavigate();
-  const { companyId } = useParams<{ companyId: string }>();
+  const { clinicId } = useParams<{ clinicId: string }>();
   const { toast } = useToast();
   
-  const [company, setCompany] = useState<{
+  const [clinic, setClinic] = useState<{
     name: string;
     id: string | undefined;
   }>({
     name: "Carregando...",
-    id: companyId
+    id: clinicId
   });
   
-  // Buscar as empresas para encontrar o nome da empresa pelo ID
-  const { companies, loading: loadingCompanies } = useCompanies();
+  // Buscar as clínicas para encontrar o nome da clínica pelo ID
+  const { clinics, loading: loadingClinics } = useClinics();
   
   // Estados para gerenciar os catálogos
   const [catalogs, setCatalogs] = useState<ProductsList[]>([]);
@@ -40,24 +40,24 @@ export default function CatalogsPage() {
   // State para armazenar o número de colunas baseado no tamanho da tela
   const [columns, setColumns] = useState(4);
   
-  // Atualizar o nome da empresa quando as empresas forem carregadas
+  // Atualizar o nome da clínica quando as clínicas forem carregadas
   useEffect(() => {
-    if (!loadingCompanies && companies.length > 0 && companyId) {
-      const foundCompany = companies.find(c => c.id === companyId);
+    if (!loadingClinics && clinics.length > 0 && clinicId) {
+      const foundClinic = clinics.find(c => c.id === clinicId);
       
-      if (foundCompany) {
-        setCompany({
-          name: foundCompany.name,
-          id: companyId
+      if (foundClinic) {
+        setClinic({
+          name: foundClinic.name,
+          id: clinicId
         });
       } else {
-        setCompany({
-          name: "Empresa não encontrada",
-          id: companyId
+        setClinic({
+          name: "Clínica não encontrada",
+          id: clinicId
         });
       }
     }
-  }, [companyId, companies, loadingCompanies]);
+  }, [clinicId, clinics, loadingClinics]);
   
   // Efeito para atualizar o número de colunas quando a tela mudar de tamanho
   useEffect(() => {
@@ -86,17 +86,17 @@ export default function CatalogsPage() {
   // Carregar catálogos quando o componente montar
   useEffect(() => {
     fetchCatalogs();
-  }, [companyId]);
+  }, [clinicId]);
   
   // Função para buscar catálogos
   const fetchCatalogs = async () => {
-    if (!companyId) return;
+    if (!clinicId) return;
     
     try {
       setLoading(true);
       setError(null);
       
-      const productCatalogs = await productsService.getProductsLists(companyId);
+      const productCatalogs = await productsService.getProductsLists(clinicId);
       setCatalogs(productCatalogs);
     } catch (err) {
       console.error('Erro ao buscar catálogos de produtos:', err);
@@ -176,7 +176,7 @@ export default function CatalogsPage() {
   
   // Função para adicionar novo catálogo
   const handleAddCatalog = () => {
-    navigate(`/dashboard/company/${company.id}/catalogs/create`);
+    navigate(`/dashboard/clinic/${clinic.id}/catalogs/create`);
   };
   
   // Função para editar catálogo
@@ -186,7 +186,7 @@ export default function CatalogsPage() {
     localStorage.setItem('temp_editing_catalog_name', catalog.productsListName);
     localStorage.setItem('temp_editing_catalog_products', JSON.stringify(catalog.products.map(p => p.productId)));
     
-    navigate(`/dashboard/company/${company.id}/catalogs/edit/${catalog.productsListId}`);
+    navigate(`/dashboard/clinic/${clinic.id}/catalogs/edit/${catalog.productsListId}`);
   };
   
   // Função para deletar catálogo
@@ -227,7 +227,7 @@ export default function CatalogsPage() {
   };
   
   // Loading state
-  if (loadingCompanies) {
+  if (loadingClinics) {
     return (
       <div className="max-w-7xl -mt-4 px-2 sm:px-3 lg:px-4 pb-6">
         <div className="flex flex-col items-center justify-center py-12">
@@ -240,11 +240,11 @@ export default function CatalogsPage() {
   
   return (
     <div className="max-w-7xl -mt-4 px-2 sm:px-3 lg:px-4 pb-6">
-      {/* Cabeçalho com nome da empresa e controles de paginação */}
+      {/* Cabeçalho com nome da clínica e controles de paginação */}
       <div className="flex flex-col sm:flex-row items-start gap-2 mb-5 pl-1">
         <div className="flex-1 mb-2 sm:mb-0">
           <h1 className="text-[21px] font-medium text-gray-900 mt-2">
-            Catálogos de Produtos - {company.name}
+            Catálogos de Produtos - {clinic.name}
           </h1>
           <p className="text-gray-500 text-sm">Gerenciamento de catálogos e produtos</p>
         </div>

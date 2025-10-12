@@ -1,21 +1,21 @@
-import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { useCompanies } from '@/hooks/use-companies'
+import { useClinics } from '@/hooks/use-clinics'
+import { useNavigate, useParams } from 'react-router-dom'
 
 export default function ChannelSuccessPage() {
   const navigate = useNavigate()
-  const { companyId } = useParams<{ companyId: string }>()
+  const { clinicId } = useParams<{ clinicId: string }>()
   
-  // Buscar nome da empresa
-  const { companies } = useCompanies()
-  const companyName = companies.find(c => c.id === companyId)?.name || ''
+  // Buscar nome da clínica
+  const { clinics } = useClinics()
+  const clinicName = clinics.find(c => c.id === clinicId)?.name || ''
 
   const handleGoToConversations = () => {
-    navigate(`/dashboard/company/${companyId}/conversations`)
+    navigate(`/dashboard/clinic/${clinicId}/conversations`)
   }
 
   const handleGoToChannels = () => {
-    navigate(`/dashboard/company/${companyId}/channels`)
+    navigate(`/dashboard/clinic/${clinicId}/channels`)
   }
 
   return (
@@ -57,7 +57,7 @@ export default function ChannelSuccessPage() {
 
             {/* Informação adicional */}
             <p className="text-sm text-gray-500 mt-8">
-              Você está gerenciando: <span className="font-medium">{companyName}</span>
+              Você está gerenciando: <span className="font-medium">{clinicName}</span>
             </p>
           </div>
 

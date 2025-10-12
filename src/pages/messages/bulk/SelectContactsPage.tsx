@@ -2,7 +2,7 @@ import { CreateContactModal } from '@/components/contacts/CreateContactModal';
 import { BulkMessageStepIndicator } from '@/components/ui/bulk-message-step-indicator';
 import { useToast } from '@/components/ui/ToastContainer';
 import { useBulkMessageForm } from '@/hooks/use-bulk-message-form';
-import { useCompanies } from '@/hooks/use-companies';
+import { useClinics } from '@/hooks/use-clinics';
 import { useCustomers } from '@/hooks/use-customers';
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll';
 import { bulkMessagesService } from '@/services/bulkMessages';
@@ -22,7 +22,7 @@ const BULK_MESSAGE_STEPS = [
 
 const SelectContactsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { companyId } = useParams<{ companyId: string }>();
+  const { clinicId } = useParams<{ clinicId: string }>();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isRequestInProgress = useRef(false); // Novo ref para rastrear requisições em andamento
   const { 
@@ -37,9 +37,9 @@ const SelectContactsPage: React.FC = () => {
   } = useBulkMessageForm();
   const { showError, showSuccess } = useToast();
 
-  // Buscar as empresas para obter uma empresa válida
-  const { companies, loading: loadingCompanies } = useCompanies();
-  const companyName = companies.find(c => c.id === companyId)?.name || 'Carregando...';
+  // Buscar as clínicas para obter uma clínica válida
+  const { clinics, loading: loadingClinics } = useClinics();
+  const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...';
 
   // Estados para seleção
   const [selectedContactsSet, setSelectedContactsSet] = useState<Set<string>>(new Set(savedSelectedContacts || []));
@@ -53,7 +53,7 @@ const SelectContactsPage: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
 
-  // Hook para gerenciar contatos - só executa quando temos um companyId válido
+  // Hook para gerenciar contatos - só executa quando temos um clinicId válido
   const {
     customers,
     loading,
@@ -65,7 +65,7 @@ const SelectContactsPage: React.FC = () => {
     loadMore,
     refresh,
     createCustomer
-  } = useCustomers(companyId);
+  } = useCustomers(clinicId);
 
   // Hook para scroll infinito
   useInfiniteScroll({
@@ -108,11 +108,11 @@ const SelectContactsPage: React.FC = () => {
 
   // Função para carregar TODOS os contatos válidos para seleção
   const loadAllValidContacts = useCallback(async () => {
-    if (!companyId) return [];
+    if (!clinicId) return [];
 
     try {
       // Primeiro, buscar a primeira página para obter o totalCount
-      const initialResponse = await customersService.getCustomers(companyId, {
+      const initialResponse = await customersService.getCustomers(clinicId, {
         page: 1,
         perPage: 20,
         name: nameFilter,
@@ -126,7 +126,7 @@ const SelectContactsPage: React.FC = () => {
       }
 
       // Agora buscar todos os contatos usando o totalCount real
-      const response = await customersService.getCustomers(companyId, {
+      const response = await customersService.getCustomers(clinicId, {
         page: 1,
         perPage: totalCount, // Usar o número real total
         name: nameFilter, // Aplicar o filtro de nome atual
@@ -139,7 +139,7 @@ const SelectContactsPage: React.FC = () => {
       console.error('Erro ao carregar todos os contatos:', error);
       return [];
     }
-  }, [companyId, nameFilter]);
+  }, [clinicId, nameFilter]);
 
   // Gerenciar select all (TODOS os contatos válidos, não apenas os visíveis)
   const handleSelectAll = async () => {
@@ -284,7 +284,7 @@ const SelectContactsPage: React.FC = () => {
 
   // Navegação
   const handleBack = () => {
-    navigate(`/dashboard/company/${companyId}/messages/bulk/template`);
+    navigate(`/dashboard/clinic/${clinicId}/messages/bulk/template`);
   };
 
   const handleNext = useCallback(async () => {
@@ -343,7 +343,7 @@ const SelectContactsPage: React.FC = () => {
         whatsappMessageTemplateId: selectedTemplateData.whatsappMessageTemplateId
       });
 
-      navigate(`/dashboard/company/${companyId}/messages/bulk/results?${params.toString()}`);
+      navigate(`/dashboard/clinic/${clinicId}/messages/bulk/results?${params.toString()}`);
       
     } catch (error) {
       console.error('❌ Erro ao enviar mensagem em massa:', error);
@@ -387,25 +387,25 @@ const SelectContactsPage: React.FC = () => {
     );
   }
 
-  // Mostrar loading enquanto as empresas estão sendo carregadas
-  if (loadingCompanies) {
+  // Mostrar loading enquanto as clínicas estão sendo carregadas
+  if (loadingClinics) {
     return (
       <div className="max-w-7xl h-[calc(100vh-80px)] flex items-center justify-center -mt-4 px-2 sm:px-3 lg:px-4">
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-[#F15A24] mr-2" />
-          <span className="text-gray-600">Carregando empresas...</span>
+          <span className="text-gray-600">Carregando clínicas...</span>
         </div>
       </div>
     );
   }
 
-  // Verificar se não há empresas disponíveis
-  if (!loadingCompanies && companies.length === 0) {
+  // Verificar se não há clínicas disponíveis
+  if (!loadingClinics && clinics.length === 0) {
     return (
       <div className="max-w-7xl h-[calc(100vh-80px)] flex items-center justify-center -mt-4 px-2 sm:px-3 lg:px-4">
         <div className="text-center">
-          <p className="text-lg font-medium text-gray-600">Nenhuma empresa encontrada</p>
-          <p className="text-sm mt-1 text-gray-500">É necessário ter pelo menos uma empresa para visualizar os contatos.</p>
+          <p className="text-lg font-medium text-gray-600">Nenhuma clínica encontrada</p>
+          <p className="text-sm mt-1 text-gray-500">É necessário ter pelo menos uma clínica para visualizar os contatos.</p>
         </div>
       </div>
     );
@@ -418,7 +418,7 @@ const SelectContactsPage: React.FC = () => {
         <h1 className="text-[21px] font-medium text-gray-900 mt-2 flex items-center gap-2">
           Enviar Mensagem Quebra-gelo
           <span className="text-gray-400">|</span>
-          <span className="text-gray-600">{companyName}</span>
+          <span className="text-gray-600">{clinicName}</span>
         </h1>
         <p className="text-gray-500 text-sm mb-4">Defina os detalhes da mensagem a ser enviada para seus clientes.</p>
         

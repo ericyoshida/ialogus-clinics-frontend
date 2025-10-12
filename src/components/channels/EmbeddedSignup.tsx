@@ -1,9 +1,9 @@
-import { useEffect, useState, useCallback } from 'react'
-import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
+import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { channelsService } from '@/services/channels'
+import { CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
+import { useCallback, useEffect, useState } from 'react'
 
 // Configurações do Meta conforme fornecidas
 const META_APP_ID = '249811214391254'
@@ -11,7 +11,7 @@ const META_CONFIG_ID = '1898175917407594'
 const META_SDK_VERSION = 'v23.0'
 
 interface EmbeddedSignupProps {
-  companyId: string
+  clinicId: string
   onSuccess: (data: {
     accessToken: string
     wabaId: string
@@ -39,7 +39,7 @@ declare global {
   }
 }
 
-export function EmbeddedSignup({ companyId, onSuccess, onError }: EmbeddedSignupProps) {
+export function EmbeddedSignup({ clinicId, onSuccess, onError }: EmbeddedSignupProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [sdkLoaded, setSdkLoaded] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
@@ -158,7 +158,7 @@ export function EmbeddedSignup({ companyId, onSuccess, onError }: EmbeddedSignup
               // Processar o código de forma assíncrona
               channelsService.exchangeEmbeddedSignupCode({
                 code,
-                companyId
+                clinicId
               })
               .then((result) => {
                 // Processar a resposta
@@ -222,7 +222,7 @@ export function EmbeddedSignup({ companyId, onSuccess, onError }: EmbeddedSignup
       })
       onError?.(error)
     }
-  }, [sdkLoaded, companyId, handleSessionInfoReceived, toast, onError])
+  }, [sdkLoaded, clinicId, handleSessionInfoReceived, toast, onError])
 
   // Verificar se estamos em HTTP (não HTTPS)
   const isHttps = window.location.protocol === 'https:' || window.location.hostname === 'localhost'

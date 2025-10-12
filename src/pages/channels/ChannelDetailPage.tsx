@@ -2,7 +2,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { IalogusCard } from '@/components/ui/ialogus-card'
 import { IalogusButton } from '@/components/ui/ialogus-button'
 import { IalogusInput } from '@/components/ui/ialogus-input'
 import { Separator } from '@/components/ui/separator'
@@ -10,27 +9,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAgents } from '@/hooks/use-agents'
 import { useChannels } from '@/hooks/use-channels'
-import { useCompanies } from '@/hooks/use-companies'
+import { useClinics } from '@/hooks/use-clinics'
 import { cn } from '@/lib/utils'
 import { channelsService } from '@/services/channels'
-import { 
-  ArrowLeftIcon, 
-  ChartBarIcon, 
-  ChatBubbleLeftRightIcon, 
-  CheckCircleIcon, 
-  ClockIcon, 
-  Cog6ToothIcon,
-  PencilIcon, 
-  PhoneIcon, 
-  PlusIcon, 
-  UserGroupIcon, 
-  XCircleIcon,
-  ChartBarSquareIcon
+import { formatPhoneNumber } from '@/utils/phone'
+import {
+    ArrowLeftIcon,
+    ChartBarIcon,
+    ChartBarSquareIcon,
+    ChatBubbleLeftRightIcon,
+    CheckCircleIcon,
+    ClockIcon,
+    Cog6ToothIcon,
+    PencilIcon,
+    PlusIcon,
+    UserGroupIcon,
+    XCircleIcon
 } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
-import { formatPhoneNumber } from '@/utils/phone'
 
 // Componente do ícone do WhatsApp
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -141,11 +139,11 @@ function AgentCard({ agent, onRemove, isRemoving }: { agent: any; onRemove: () =
 
 export default function ChannelDetailPage() {
   const navigate = useNavigate()
-  const { companyId, channelId } = useParams<{ companyId: string; channelId: string }>()
+  const { clinicId, channelId } = useParams<{ clinicId: string; channelId: string }>()
   const { isAuthenticated } = useAuth()
-  const { companies } = useCompanies()
-  const { channels, refetchChannels } = useChannels(companyId)
-  const { agents } = useAgents(companyId)
+  const { clinics } = useClinics()
+  const { channels, refetchChannels } = useChannels(clinicId)
+  const { agents } = useAgents(clinicId)
   
   const [channel, setChannel] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -238,7 +236,7 @@ export default function ChannelDetailPage() {
   }
 
   const handleUpdateReceptionist = async () => {
-    if (!channel || !companyId) return;
+    if (!channel || !clinicId) return;
     
     setUpdatingReceptionist(true)
     
@@ -264,7 +262,7 @@ export default function ChannelDetailPage() {
       setEditingReceptionist(false)
       
       // Recarrega os canais para manter a lista atualizada
-      refetchChannels(companyId)
+      refetchChannels(clinicId)
     } catch (error) {
       console.error('Erro ao atualizar nome do recepcionista:', error)
       toast.error('Erro ao atualizar nome do recepcionista')
@@ -276,7 +274,7 @@ export default function ChannelDetailPage() {
   }
 
   const handleAddAgent = async (agentId: string) => {
-    if (!selectedAgents.includes(agentId) && channel && companyId) {
+    if (!selectedAgents.includes(agentId) && channel && clinicId) {
       setUpdatingAgents(true)
       
       try {
@@ -303,7 +301,7 @@ export default function ChannelDetailPage() {
         toast.success('Agente adicionado ao canal')
         
         // Recarrega os canais para manter a lista atualizada
-        refetchChannels(companyId)
+        refetchChannels(clinicId)
       } catch (error) {
         console.error('Erro ao adicionar agente:', error)
         toast.error('Erro ao adicionar agente ao canal')
@@ -314,7 +312,7 @@ export default function ChannelDetailPage() {
   }
 
   const handleRemoveAgent = async (agentId: string) => {
-    if (channel && companyId) {
+    if (channel && clinicId) {
       setUpdatingAgents(true)
       
       try {
@@ -341,7 +339,7 @@ export default function ChannelDetailPage() {
         toast.success('Agente removido do canal')
         
         // Recarrega os canais para manter a lista atualizada
-        refetchChannels(companyId)
+        refetchChannels(clinicId)
       } catch (error) {
         console.error('Erro ao remover agente:', error)
         toast.error('Erro ao remover agente do canal')

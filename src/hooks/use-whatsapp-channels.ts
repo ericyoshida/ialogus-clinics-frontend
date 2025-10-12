@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
 import { channelsService, WhatsappChannel } from '@/services/channels';
+import { useEffect, useState } from 'react';
 
 export function useWhatsappChannels(clinicId?: string) {
   const [channels, setChannels] = useState<WhatsappChannel[]>([]);
@@ -16,7 +16,7 @@ export function useWhatsappChannels(clinicId?: string) {
       try {
         setIsLoading(true);
         setError(null);
-        const fetchedChannels = await channelsService.getWhatsappChannelsByCompanyId(clinicId);
+        const fetchedChannels = await channelsService.getWhatsappChannelsByClinicId(clinicId);
         setChannels(fetchedChannels);
       } catch (err) {
         console.error('Error fetching WhatsApp channels:', err);

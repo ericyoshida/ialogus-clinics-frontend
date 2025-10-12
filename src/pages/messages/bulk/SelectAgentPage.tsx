@@ -1,13 +1,13 @@
 import { AgentCard } from '@/components/agents/AgentCard'
 import { BulkMessageStepIndicator } from '@/components/ui/bulk-message-step-indicator'
 import { useBulkMessageForm } from '@/hooks/use-bulk-message-form'
+import { useClinics } from '@/hooks/use-clinics'
+import { useToast } from '@/hooks/use-toast'
 import { agentsService } from '@/services'
 import type { Agent } from '@/services/agents'
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useCompanies } from '@/hooks/use-companies'
-import { useToast } from '@/hooks/use-toast'
 
 // Lista de etapas do fluxo de envio de mensagens - agora com 4 etapas
 const BULK_MESSAGE_STEPS = [
@@ -22,12 +22,12 @@ function SelectableBotModelCard({
   agent, 
   selected, 
   onClick,
-  companyId
+  clinicId
 }: { 
   agent: Agent;
   selected: boolean;
   onClick: () => void;
-  companyId?: string;
+  clinicId?: string;
 }) {
   const navigate = useNavigate();
 
@@ -52,7 +52,7 @@ function SelectableBotModelCard({
     console.log('Editar agente:', agent.botName);
     // No contexto do fluxo de envio em massa, não navegar para outra página
     // TODO: Implementar modal de edição ou outra solução
-    // navigate(`/dashboard/company/${companyId}/agents?editAgent=${agent.botModelId}`);
+    // navigate(`/dashboard/clinic/${clinicId}/agents?editAgent=${agent.botModelId}`);
   };
 
   const handleDeleteAgent = (e?: React.MouseEvent) => {
@@ -111,14 +111,14 @@ function AddAgentCard({ onClick }: { onClick: () => void }) {
 
 export default function SelectAgentPage() {
   const navigate = useNavigate();
-  const { companyId } = useParams<{ companyId: string }>();
+  const { clinicId } = useParams<{ clinicId: string }>();
   const { selectedChannelId, selectedAgentId, updateFormData, formData } = useBulkMessageForm();
   const [currentPage, setCurrentPage] = useState(0);
   const { toast } = useToast();
   
-  // Buscar nome da empresa
-  const { companies } = useCompanies();
-  const companyName = companies.find(c => c.id === companyId)?.name || 'Carregando...';
+  // Buscar nome da clínica
+  const { clinics } = useClinics();
+  const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...';
   
   // Estados para bot models
   const [allAgents, setAllAgents] = useState<Agent[]>([]);
@@ -141,7 +141,7 @@ export default function SelectAgentPage() {
         setLoadingAgents(true);
         setError(null);
         console.log('🔍 Buscando bot models para o canal:', selectedChannelId);
-        console.log('🏢 Empresa atual:', companyId);
+        console.log('🏢 Clínica atual:', clinicId);
         
         const botModelsData = await agentsService.getBotModelsByWhatsappChannelId(selectedChannelId);
         console.log('✅ Bot models carregados:', botModelsData);
@@ -161,7 +161,7 @@ export default function SelectAgentPage() {
     };
 
     fetchBotModels();
-  }, [selectedChannelId, companyId]); // Removido formData das dependências
+  }, [selectedChannelId, clinicId]); // Removido formData das dependências
 
   // Configurações de paginação
   const agentsPerPage = 6;
@@ -202,7 +202,7 @@ export default function SelectAgentPage() {
           departmentId: selectedBotModel.departmentId,
           departmentName: selectedBotModel.departmentName,
           botName: selectedBotModel.botName,
-          companyId: '', // Este campo não está disponível no Agent, usando string vazia
+          clinicId: '', // Este campo não está disponível no Agent, usando string vazia
         },
         step: 1 
       });
@@ -215,7 +215,7 @@ export default function SelectAgentPage() {
   const handleNext = () => {
     if (selectedAgentId) {
       // Navegar para a próxima etapa (Selecionar Templates)
-      navigate(`/dashboard/company/${companyId}/messages/bulk/template`);
+      navigate(`/dashboard/clinic/${clinicId}/messages/bulk/template`);
     } else {
       toast({
         title: "Seleção necessária",
@@ -227,12 +227,12 @@ export default function SelectAgentPage() {
 
   const handleBack = () => {
     // Voltar para seleção de canal
-    navigate(`/dashboard/company/${companyId}/messages/bulk/channel`);
+    navigate(`/dashboard/clinic/${clinicId}/messages/bulk/channel`);
   };
 
   const handleCreateAgent = () => {
     // Navegar para a página de criação de agentes
-    navigate(`/dashboard/company/${companyId}/agents/create`);
+    navigate(`/dashboard/clinic/${clinicId}/agents/create`);
   };
 
   // Verificar se pode prosseguir
@@ -248,7 +248,7 @@ export default function SelectAgentPage() {
         <h1 className="text-[21px] font-medium text-gray-900 mt-2 flex items-center gap-2">
           Enviar Mensagem Quebra-gelo
           <span className="text-gray-400">|</span>
-          <span className="text-gray-600">{companyName}</span>
+          <span className="text-gray-600">{clinicName}</span>
         </h1>
         <p className="text-gray-500 text-sm mb-4">Defina os detalhes da mensagem a ser enviada para seus clientes.</p>
         
@@ -316,7 +316,7 @@ export default function SelectAgentPage() {
                   agent={agent}
                   selected={selectedAgentId === agent.botModelId}
                   onClick={() => handleBotModelSelect(agent.botModelId)}
-                  companyId={companyId}
+                  clinicId={clinicId}
                 />
               ))}
             </div>

@@ -7,7 +7,7 @@ export interface BulkMessageFormData {
     departmentId: string;
     departmentName: string;
     botName: string;
-    companyId: string;
+    clinicId: string;
   };
   selectedChannelId?: string;
   selectedChannelData?: {

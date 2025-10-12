@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-interface CompanyFeatureCardProps {
+interface ClinicFeatureCardProps {
   name: string;
   id: string;
   icon?: React.ReactNode;
@@ -11,7 +11,7 @@ interface CompanyFeatureCardProps {
   svgPath?: string;
 }
 
-export function CompanyFeatureCard({ name, id, icon, onClick, svgPath }: CompanyFeatureCardProps) {
+export function ClinicFeatureCard({ name, id, icon, onClick, svgPath }: ClinicFeatureCardProps) {
   const navigate = useNavigate();
   // Verifica se o nome é muito longo para considerar usar uma fonte menor
   const isLongName = name.length > 15;
@@ -28,8 +28,8 @@ export function CompanyFeatureCard({ name, id, icon, onClick, svgPath }: Company
     if (onClick) {
       onClick();
     } else {
-      // Navegar para a página de menu da empresa usando o ID como parâmetro
-      navigate(`/dashboard/company/${id}`);
+      // Navegar para a página de menu da clínica usando o ID como parâmetro
+      navigate(`/dashboard/clinic/${id}`);
     }
   };
   
