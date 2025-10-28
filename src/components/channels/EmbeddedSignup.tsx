@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 // Configurações do Meta conforme fornecidas
 const META_APP_ID = '249811214391254'
-const META_CONFIG_ID = '1898175917407594'
+const META_CONFIG_ID = '1581688783211060'
 const META_SDK_VERSION = 'v23.0'
 
 interface EmbeddedSignupProps {
