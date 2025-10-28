@@ -320,16 +320,16 @@ export default function ConversationsPage() {
 
       const conversation: ExtendedConversationItem = {
         id: chatLog.chatLogId,
-        avatarUrl: `https://i.pravatar.cc/150?u=${chatLog.contactId}`,
-        contactName: chatLog.contactName,
+        avatarUrl: `https://i.pravatar.cc/150?u=${chatLog.patientId}`,
+        contactName: chatLog.patientName,
         clinicName: '',
         lastMessageAt: new Date(chatLog.updatedAt),
         unreadCount: 0,
         channel: mapChannelNameToType(chatLog.channelName),
-        statusColors: mapLeadEngagementToColors(chatLog.currentLeadEngagement),
+        statusColors: ['#C4C4C4', '#C4C4C4', '#C4C4C4'], // Default colors as lead engagement is not available
         selected: true,
         lastMessage: lastMessageText,
-        phoneNumber: chatLog.contactPhoneNumber,
+        phoneNumber: chatLog.patientPhoneNumber,
         isAgentActive: chatLog.canAiAnswer,
         messages: [],
         tags: [],
@@ -339,7 +339,7 @@ export default function ConversationsPage() {
           totalMessagesFromSeller: 0,
           interactionDuration: 0
         },
-        currentLeadEngagement: chatLog.currentLeadEngagement,
+        currentLeadEngagement: undefined, // Lead engagement is not provided by backend
         // WhatsApp service window properties from API
         hasActiveWhatsappServiceWindow: chatLog.hasActiveWhatsappServiceWindow || false,
         whatsappServiceWindowExpiresAt: chatLog.whatsappServiceWindowExpiresAt || null,

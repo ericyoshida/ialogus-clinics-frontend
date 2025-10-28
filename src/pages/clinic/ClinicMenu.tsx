@@ -1,13 +1,5 @@
 import { FeatureCard } from '@/components/ui/feature-card';
 import { useClinics } from '@/hooks/use-clinics';
-import {
-    ChartBarIcon,
-    ChatBubbleLeftRightIcon,
-    PhoneIcon,
-    ShoppingBagIcon,
-    UserGroupIcon,
-    UsersIcon
-} from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -43,47 +35,53 @@ export default function ClinicMenu() {
     }
   }, [clinicId, clinics, loading]);
 
-  const menuItems = [
+  const menuItems: Array<{
+    id: string;
+    title: string;
+    svgPath: string;
+    gradientColors: { from: string; to: string };
+    onClick: () => void;
+  }> = [
     {
       id: 'agents',
       title: 'Meus Agentes',
-      icon: <UserGroupIcon className="w-6 h-6" />,
-      gradientColors: { from: '#4F46E5', to: '#8B5CF6' }, // Roxo para agentes
+      svgPath: '/images/agents.svg',
+      gradientColors: { from: '#F6921E', to: '#EE413D' },
       onClick: () => navigate(`/dashboard/clinic/${clinic.id}/agents`)
     },
     {
       id: 'members',
       title: 'Membros da Clínica',
-      icon: <UsersIcon className="w-6 h-6" />,
-      gradientColors: { from: '#10B981', to: '#059669' }, // Verde para membros
+      svgPath: '/images/membros.svg',
+      gradientColors: { from: '#F6921E', to: '#EE413D' },
       onClick: () => navigate(`/dashboard/clinic/${clinic.id}/members`)
     },
     {
       id: 'catalog',
       title: 'Catálogo de Produtos',
-      icon: <ShoppingBagIcon className="w-6 h-6" />,
-      gradientColors: { from: '#EB9B45', to: '#E05C5C' }, // Laranja para catálogo
+      svgPath: '/images/catalogo.svg',
+      gradientColors: { from: '#F6921E', to: '#EE413D' },
       onClick: () => navigate(`/dashboard/clinic/${clinic.id}/catalogs`)
     },
     {
       id: 'channels',
       title: 'Canais de Comunicação',
-      icon: <ChatBubbleLeftRightIcon className="w-6 h-6" />,
-      gradientColors: { from: '#3B82F6', to: '#2563EB' }, // Azul para canais
+      svgPath: '/images/canais.svg',
+      gradientColors: { from: '#F6921E', to: '#EE413D' },
       onClick: () => navigate(`/dashboard/clinic/${clinic.id}/channels`)
     },
     {
       id: 'contacts',
       title: 'Contatos',
-      icon: <PhoneIcon className="w-6 h-6" />,
-      gradientColors: { from: '#F59E0B', to: '#D97706' }, // Âmbar para contatos
+      svgPath: '/images/contatos.svg',
+      gradientColors: { from: '#F6921E', to: '#EE413D' },
       onClick: () => navigate(`/dashboard/clinic/${clinic.id}/contacts`)
     },
     {
       id: 'dashboard',
       title: 'Dashboard',
-      icon: <ChartBarIcon className="w-6 h-6" />,
-      gradientColors: { from: '#EC4899', to: '#BE185D' }, // Rosa para dashboard
+      svgPath: '/images/dashboard.svg',
+      gradientColors: { from: '#F6921E', to: '#EE413D' },
       onClick: () => console.log('Dashboard clicked')
     }
   ];
@@ -151,9 +149,15 @@ export default function ClinicMenu() {
             <div style={cardStyle}>
               <FeatureCard
                 title={item.title}
-                icon={item.icon}
                 gradientColors={item.gradientColors}
-                decorativeElement="circle"
+                decorativeElement="svg"
+                svgPath={item.svgPath}
+                svgStyle={{
+                  width: '140px',
+                  height: '140px',
+                  bottom: '-10px',
+                  right: '-10px'
+                }}
                 onClick={item.onClick}
                 className="h-full w-full"
               />

@@ -9,18 +9,20 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 
-function SelectableAgentCard({ 
-  agent, 
-  selected, 
+function SelectableAgentCard({
+  agent,
+  selected,
   onClick
-}: { 
+}: {
   agent: Agent
   selected: boolean
   onClick: () => void
 }) {
   const navigate = useNavigate()
+  const { clinicId } = useParams<{ clinicId: string }>()
 
-  const formatName = (name: string) => {
+  const formatName = (name?: string) => {
+    if (!name) return 'Sem nome'
     return name
       .replace(/_/g, ' ')
       .split(' ')
@@ -28,20 +30,13 @@ function SelectableAgentCard({
       .join(' ')
   }
 
-  const getAgentType = (departmentName: string) => {
-    if (departmentName.toLowerCase().includes('vendas')) {
-      return 'Vendas'
-    }
-    return 'Suporte ao Cliente'
-  }
-
   const handleEditAgent = () => {
-    console.log('Editar agente:', agent.botName)
-    navigate(`/dashboard/agents?editAgent=${agent.botModelId}`)
+    console.log('Editar agente:', agent.agentName)
+    navigate(`/dashboard/clinic/${clinicId}/agents/${agent.agentId}`)
   }
 
   const handleDeleteAgent = () => {
-    console.log('Deletar agente:', agent.botName)
+    console.log('Deletar agente:', agent.agentName)
   }
 
   return (
@@ -51,11 +46,11 @@ function SelectableAgentCard({
           Selecionado
         </div>
       )}
-      
+
       <div className="w-full h-full">
         <AgentCard
-          name={formatName(agent.botName)}
-          type={getAgentType(agent.departmentName)}
+          name={formatName(agent.agentName)}
+          type="Agente"
           conversationsToday={agent.todayActiveConversationsCount || 0}
           activeChannels={agent.connectedChannels?.map(channel => channel.channelType.toLowerCase()) || ['chat']}
           onClick={onClick}
@@ -67,9 +62,9 @@ function SelectableAgentCard({
           deleteLabel="Gerenciar"
         />
       </div>
-      
+
       {selected && (
-        <div 
+        <div
           className="absolute inset-0 z-5 rounded-lg pointer-events-none bg-orange-500 opacity-10"
         />
       )}
@@ -163,14 +158,14 @@ export default function SelectAgentsPage() {
   useEffect(() => {
     if (!loadingAgents && allAgents.length >= 0 && selectedAgentIds.length > 0) {
       // Verificar se algum agente selecionado não existe na lista de agentes da clínica
-      const validAgentIds = allAgents.map(agent => agent.botModelId)
+      const validAgentIds = allAgents.map(agent => agent.agentId)
       const invalidSelections = selectedAgentIds.filter(id => !validAgentIds.includes(id))
-      
+
       if (invalidSelections.length > 0) {
         console.log('Removendo agentes selecionados que não pertencem a esta clínica:', invalidSelections)
         // Atualizar para manter apenas os agentes válidos
         const validSelections = selectedAgentIds.filter(id => validAgentIds.includes(id))
-        updateFormData({ 
+        updateFormData({
           selectedAgentIds: validSelections,
           selectedAgentsData: validSelections.length > 0 ? undefined : []
         })
@@ -201,14 +196,12 @@ export default function SelectAgentsPage() {
 
   const handleAgentToggle = (agent: Agent) => {
     const agentData = {
-      botModelId: agent.botModelId,
-      departmentId: agent.departmentId,
-      departmentName: agent.departmentName,
-      botName: agent.botName,
-      clinicId: '',
+      agentId: agent.agentId,
+      agentName: agent.agentName,
+      clinicId: agent.clinicId,
     }
-    
-    toggleAgentSelection(agent.botModelId, agentData)
+
+    toggleAgentSelection(agent.agentId, agentData)
   }
 
   const handleNext = () => {
@@ -300,13 +293,13 @@ export default function SelectAgentsPage() {
               <AddAgentCard onClick={handleCreateAgent} />
               
               {currentAgents.map((agent) => {
-                const isSelected = selectedAgentIds.includes(agent.botModelId)
+                const isSelected = selectedAgentIds.includes(agent.agentId)
                 if (isSelected) {
-                  console.log(`Agente ${agent.botModelId} está marcado como selecionado`)
+                  console.log(`Agente ${agent.agentId} está marcado como selecionado`)
                 }
                 return (
                   <SelectableAgentCard
-                    key={agent.botModelId}
+                    key={agent.agentId}
                     agent={agent}
                     selected={isSelected}
                     onClick={() => handleAgentToggle(agent)}

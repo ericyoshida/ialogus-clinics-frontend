@@ -340,7 +340,7 @@ export default function SelectProductCatalogPage() {
   
   // Função para voltar à etapa anterior
   const handleBack = () => {
-    navigate(`/dashboard/clinic/${clinicId}/agents/create/conversation-flow`);
+    navigate(`/dashboard/clinic/${clinicId}/agents/create`);
   };
   
   // Função para tentar novamente em caso de erro
@@ -455,12 +455,13 @@ export default function SelectProductCatalogPage() {
           <span className="text-gray-400">|</span>
           <span className="text-gray-600">{clinicName}</span>
         </h1>
-        <p className="text-gray-500 text-sm mb-4">Etapa 3: Selecione o catálogo de produtos</p>
-        
+        <p className="text-gray-500 text-sm mb-4">Etapa 2: Selecione o catálogo de produtos</p>
+
         {/* Indicador de multistep abaixo do título */}
         <div className="w-full mb-6">
-          <MultiStepAgent 
-            currentStep={3} 
+          <MultiStepAgent
+            currentStep={2}
+            totalSteps={3}
             className="max-w-full"
           />
         </div>

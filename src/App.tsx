@@ -22,11 +22,10 @@ import NotFound from "./pages/NotFound"
 import { LLMCostTracking } from "./pages/admin/LLMCostTracking"
 import AgentsPage from "./pages/agents/AgentsPage"
 import AdditionalInfoPage from "./pages/agents/create/AdditionalInfoPage"
+import AgentNamePage from "./pages/agents/create/AgentNamePage"
 import CreateProductCatalogPage from "./pages/agents/create/CreateProductCatalogPage"
 import CreateProductPageAgent from './pages/agents/create/CreateProductPage'
 import EditProductPage from './pages/agents/create/EditProductPage'
-import SelectAgentTypePage from "./pages/agents/create/SelectAgentTypePage"
-import SelectConversationFlowPage from "./pages/agents/create/SelectConversationFlowPage"
 import SelectProductCatalogPage from "./pages/agents/create/SelectProductCatalogPage"
 import SuccessPage from "./pages/agents/create/SuccessPage"
 import ForgotPassword from "./pages/auth/ForgotPassword"
@@ -124,26 +123,14 @@ const App = () => (
                   <Route path="clinic/:clinicId/catalogs/products/edit/:productId" element={<CreateProductPage />} />
                   
                   {/* Rotas para criação de agente com clinicId */}
-                  <Route path="clinic/:clinicId/agents/create" element={<SelectAgentTypePage />} />
-                  <Route path="clinic/:clinicId/agents/create/agent-type" element={<SelectAgentTypePage />} />
-                  <Route path="clinic/:clinicId/agents/create/conversation-flow" element={<SelectConversationFlowPage />} />
+                  <Route path="clinic/:clinicId/agents/create" element={<AgentNamePage />} />
                   <Route path="clinic/:clinicId/agents/create/product-catalog" element={<SelectProductCatalogPage />} />
                   <Route path="clinic/:clinicId/agents/create/product-catalog/create" element={<CreateProductCatalogPage />} />
                   <Route path="clinic/:clinicId/agents/create/product-catalog/create/product" element={<CreateProductPageAgent />} />
                   <Route path="clinic/:clinicId/agents/create/product-catalog/edit/product/:productId" element={<EditProductPage />} />
                   <Route path="clinic/:clinicId/agents/create/additional-info" element={<AdditionalInfoPage />} />
                   <Route path="clinic/:clinicId/agents/create/success" element={<SuccessPage />} />
-                  
-                  {/* Rotas legadas de criação de agente - manter para compatibilidade */}
-                  {/* <Route path="agents/create/clinic" element={<SelectClinicPage />} />
-                  <Route path="agents/create/agent-type" element={<SelectAgentTypePage />} />
-                  <Route path="agents/create/conversation-flow" element={<SelectConversationFlowPage />} />
-                  <Route path="agents/create/product-catalog" element={<SelectProductCatalogPage />} />
-                  <Route path="agents/create/product-catalog/create" element={<CreateProductCatalogPage />} />
-                  <Route path="agents/create/product-catalog/create/product" element={<CreateProductPage />} />
-                  <Route path="agents/create/product-catalog/edit/product/:productId" element={<EditProductPage />} />
-                  <Route path="agents/create/additional-info" element={<AdditionalInfoPage />} /> */}
-                  
+
                   {/* Rotas para envio em massa de mensagens com clinicId */}
                   <Route path="clinic/:clinicId/messages/bulk/channel" element={<SelectChannelPage />} />
                   <Route path="clinic/:clinicId/messages/bulk/agent" element={<SelectAgentPage />} />

@@ -198,17 +198,9 @@ export default function AgentsPage() {
     }
   };
 
-  // Obter o tipo de agente com base no departamento
-  const getAgentType = (departmentName: string) => {
-    // Lista de departamentos considerados como "Vendas"
-    const salesDepartments = ['vendas', 'marketing', 'comercial', 'produtos'];
-    
-    // Verificar se o nome do departamento contém alguma palavra relacionada a vendas
-    const isLikelySales = salesDepartments.some(dept => 
-      departmentName.toLowerCase().includes(dept)
-    );
-    
-    return isLikelySales ? 'Vendas' : 'Suporte ao Cliente';
+  // Obter o tipo de agente (padrão: Atendimento)
+  const getAgentType = () => {
+    return 'Atendimento';
   };
 
   // Loading state
@@ -328,11 +320,11 @@ export default function AgentsPage() {
                   
                   {/* Renderizar agentes colocando-os após o card de adicionar */}
                   {currentAgents.map((agent, index) => (
-                    <div key={agent.botModelId} style={cardStyle} className="mx-auto">
+                    <div key={agent.agentId} style={cardStyle} className="mx-auto">
                       <AgentCard
-                        name={agent.botName}
-                        type={getAgentType(agent.departmentName)}
-                        onClick={() => handleAgentClick(agent.botModelId)}
+                        name={agent.agentName}
+                        type={getAgentType()}
+                        onClick={() => handleAgentClick(agent.agentId)}
                         conversationsToday={agent.todayActiveConversationsCount || 0}
                         activeChannels={agent.connectedChannels?.map(channel => channel.channelType) || ['chat']}
                       />

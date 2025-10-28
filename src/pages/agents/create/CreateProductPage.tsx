@@ -119,17 +119,17 @@ function IalogusTextarea({
 }
 
 // Componente para seleção de tipo com opções lado a lado
-function ProductTypeSelector({
+function ShowPriceSelector({
   value,
   onChange
 }: {
-  value: string;
-  onChange: (value: string) => void;
+  value: boolean;
+  onChange: (value: boolean) => void;
 }) {
   return (
     <div className="w-full">
       <label className="text-xs font-medium text-gray-600 mb-1 block">
-        Tipo
+        Informar preço ao cliente durante o agendamento?
       </label>
       <div className="flex w-fit">
         <div className="relative">
@@ -137,53 +137,53 @@ function ProductTypeSelector({
             type="button"
             className={cn(
               "py-2.5 px-10 text-base transition-colors",
-              value === 'product' 
-                ? "bg-orange-50 text-orange-500 font-bold" 
+              value
+                ? "bg-orange-50 text-orange-500 font-bold"
                 : "bg-white text-gray-700 hover:bg-gray-50"
             )}
-            onClick={() => onChange('product')}
+            onClick={() => onChange(true)}
           >
-            Produto
+            Sim
           </button>
           {/* Barra colorida na parte inferior */}
           <div className="absolute bottom-0 left-0 right-0 overflow-hidden">
-            <div 
+            <div
               className={cn(
-                'w-full transition-all duration-200', 
-                value === 'product' ? 'h-1' : 'h-0.5'
+                'w-full transition-all duration-200',
+                value ? 'h-1' : 'h-0.5'
               )}
               style={{
-                background: value === 'product' 
-                  ? 'linear-gradient(90deg, #F6921E 14%, #EE413D 86%)' 
+                background: value
+                  ? 'linear-gradient(90deg, #F6921E 14%, #EE413D 86%)'
                   : 'linear-gradient(90deg, #e5e7eb 0%, #e5e7eb 30%, #8b8fff 70%, #0000cc 100%)'
               }}
             />
           </div>
         </div>
-        
+
         <div className="relative">
           <button
             type="button"
             className={cn(
               "py-2.5 px-10 text-base transition-colors",
-              value === 'service' 
-                ? "bg-orange-50 text-orange-500 font-bold" 
+              !value
+                ? "bg-orange-50 text-orange-500 font-bold"
                 : "bg-white text-gray-700 hover:bg-gray-50"
             )}
-            onClick={() => onChange('service')}
+            onClick={() => onChange(false)}
           >
-            Serviço
+            Não
           </button>
           {/* Barra colorida na parte inferior */}
           <div className="absolute bottom-0 left-0 right-0 overflow-hidden">
-            <div 
+            <div
               className={cn(
-                'w-full transition-all duration-200', 
-                value === 'service' ? 'h-1' : 'h-0.5'
+                'w-full transition-all duration-200',
+                !value ? 'h-1' : 'h-0.5'
               )}
               style={{
-                background: value === 'service' 
-                  ? 'linear-gradient(90deg, #F6921E 14%, #EE413D 86%)' 
+                background: !value
+                  ? 'linear-gradient(90deg, #F6921E 14%, #EE413D 86%)'
                   : 'linear-gradient(90deg, #e5e7eb 0%, #e5e7eb 30%, #8b8fff 70%, #0000cc 100%)'
               }}
             />
@@ -362,12 +362,13 @@ function ServiceProviderSelect({
   
   // Carrega os prestadores de serviço da API
   useEffect(() => {
-    const fetchServiceProviders = async () => {
-      if (!clinicId) {
-        setError('ID da clínica não encontrado');
-        return;
-      }
+    // Não fazer nada se ainda estiver carregando as clínicas ou se não tiver clinicId
+    if (!clinicId) {
+      console.log('Aguardando clinicId...', { clinicId });
+      return;
+    }
 
+    const fetchServiceProviders = async () => {
       try {
         setIsLoading(true);
         setError(null);
@@ -579,14 +580,18 @@ function ServiceProviderSelect({
 export default function CreateProductPage() {
   const navigate = useNavigate();
   const { clinicId } = useParams<{ clinicId: string }>();
-  const { clinics } = useClinics();
-  const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...';
-  
+  const { clinics, loading: clinicsLoading } = useClinics();
+
+  // Buscar nome da clínica apenas quando não estiver carregando
+  const clinicName = clinicsLoading
+    ? 'Carregando...'
+    : (clinics.find(c => c.id === clinicId)?.name || 'Clínica');
+
   // Estados para os campos do formulário
   const [productName, setProductName] = useState('');
   const [productDescription, setProductDescription] = useState('');
   const [productPrice, setProductPrice] = useState('');
-  const [productType, setProductType] = useState('product'); // 'product' ou 'service'
+  const [showPrice, setShowPrice] = useState(false); // Se deve mostrar o preço ao cliente
   const [serviceProviders, setServiceProviders] = useState<string[]>([]); // IDs dos prestadores de serviço
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState('');
@@ -594,7 +599,7 @@ export default function CreateProductPage() {
   
   // Carregar dados salvos no localStorage quando o componente é montado
   useEffect(() => {
-    // Verificar se há dados salvos para este produto específico
+    // Verificar se há dados salvos para este serviço específico
     const tempProductDataJson = localStorage.getItem('temp_product_data');
     if (tempProductDataJson) {
       try {
@@ -602,10 +607,10 @@ export default function CreateProductPage() {
         setProductName(tempProductData.name || '');
         setProductDescription(tempProductData.description || '');
         setProductPrice(tempProductData.price || '');
-        setProductType(tempProductData.type || 'product');
+        setShowPrice(tempProductData.showPrice || false);
         setServiceProviders(tempProductData.serviceProviders || []);
       } catch (error) {
-        console.error('Erro ao carregar dados do produto do localStorage:', error);
+        console.error('Erro ao carregar dados do serviço do localStorage:', error);
       }
     }
   }, []);
@@ -618,13 +623,13 @@ export default function CreateProductPage() {
         name: productName,
         description: productDescription,
         price: productPrice,
-        type: productType,
+        showPrice,
         serviceProviders
       };
-      
+
       localStorage.setItem('temp_product_data', JSON.stringify(productData));
     }
-  }, [productName, productDescription, productPrice, productType, serviceProviders]);
+  }, [productName, productDescription, productPrice, showPrice, serviceProviders]);
   
   // Função para formatar o preço enquanto o usuário digita
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -649,56 +654,77 @@ export default function CreateProductPage() {
     }
   };
   
-  // Função para salvar o produto
+  // Função para salvar o serviço
   const handleSave = async () => {
+    // Verificar se temos o clinicId
+    if (!clinicId) {
+      setValidationError('ID da clínica não disponível. Por favor, volte e tente novamente.');
+      toast({
+        title: "Erro",
+        description: "ID da clínica não disponível. Por favor, volte e tente novamente.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Validação do formulário
     if (!productName.trim()) {
-      setValidationError('O nome do produto é obrigatório');
+      setValidationError('O nome do serviço é obrigatório');
       return;
     }
-    
-    if (!clinicId) {
-      setValidationError('ID da clínica não encontrado');
+
+    if (serviceProviders.length === 0) {
+      setValidationError('Selecione pelo menos um prestador de serviço');
       return;
     }
-    
+
+    if (showPrice && !productPrice.trim()) {
+      setValidationError('O preço é obrigatório quando você escolhe informá-lo ao cliente');
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       setValidationError('');
-      
-      // Formatar o preço para API (remover formatação)
-      const formattedPrice = productPrice
-        .replace(/\./g, '')
-        .replace(',', '.')
-        .trim();
-      
+
+      // Formatar o preço para API
+      let formattedPrice = "0"; // Valor padrão se não mostrar preço
+
+      if (showPrice && productPrice) {
+        // Remover formatação brasileira e converter para formato aceito pela API
+        formattedPrice = productPrice
+          .replace(/\./g, '')
+          .replace(',', '.')
+          .trim();
+      }
+
       // Preparar dados para envio
       const productData = {
         name: productName,
         description: productDescription,
         listPrice: formattedPrice,
-        serviceProviderCalendarIds: productType === 'service' ? serviceProviders : []
+        serviceProviderCalendarIds: serviceProviders
       };
-      
-      // Chamar API para criar produto
+
+      // Chamar API para criar serviço
       await createProduct(clinicId, productData);
-      
+
       // Limpar dados temporários
       localStorage.removeItem('temp_product_data');
-      
+
       // Mostrar mensagem de sucesso
       toast({
-        title: "Produto criado com sucesso",
-        description: `O produto ${productName} foi criado com sucesso.`,
+        title: "Serviço criado com sucesso",
+        description: `O serviço ${productName} foi criado com sucesso.`,
       });
-      
+
       // Navegar de volta para a tela anterior
       navigate(`/dashboard/clinic/${clinicId}/agents/create/product-catalog/create`);
     } catch (error) {
-      console.error('Erro ao criar produto:', error);
+      console.error('Erro ao criar serviço:', error);
       toast({
-        title: "Erro ao criar produto",
-        description: "Ocorreu um erro ao criar o produto. Tente novamente.",
+        title: "Erro ao criar serviço",
+        description: "Ocorreu um erro ao criar o serviço. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -708,9 +734,9 @@ export default function CreateProductPage() {
   
   // Função para cancelar e voltar
   const handleCancel = () => {
-    // Não limpar os dados temporários do produto ao cancelar para permitir
+    // Não limpar os dados temporários do serviço ao cancelar para permitir
     // que o usuário possa retornar e continuar a edição futuramente
-    
+
     // Navegar de volta para a página de criação de catálogo sem limpar os dados
     navigate(`/dashboard/clinic/${clinicId}/agents/create/product-catalog/create`);
   };
@@ -720,19 +746,19 @@ export default function CreateProductPage() {
       {/* Cabeçalho com título */}
       <div className="flex flex-col mb-5">
         <h1 className="text-[21px] font-medium text-gray-900 mt-2 flex items-center gap-2">
-          Catálogo de Produtos | Cadastrar Novo Produto
+          Catálogo de Serviços | Cadastrar Novo Serviço
           <span className="text-gray-400">|</span>
           <span className="text-gray-600">{clinicName}</span>
         </h1>
       </div>
-      
+
       {/* Formulário */}
       <div className="max-w-xl">
-        {/* Nome do produto */}
+        {/* Nome do serviço */}
         <div className="mb-5">
           <div className="w-full overflow-hidden rounded-md">
             <IalogusInput
-              label="Nome do Produto"
+              label="Nome do Serviço"
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
               className="w-full bg-white focus:bg-orange-50"
@@ -740,8 +766,8 @@ export default function CreateProductPage() {
             />
           </div>
         </div>
-        
-        {/* Descrição do produto (com TextArea) */}
+
+        {/* Descrição do serviço (com TextArea) */}
         <div className="mb-5">
           <div className="w-full overflow-hidden rounded-md">
             <IalogusTextarea
@@ -752,35 +778,35 @@ export default function CreateProductPage() {
             />
           </div>
         </div>
-        
-        {/* Preço do produto com prefixo R$ */}
+
+        {/* Seleção: Mostrar preço ao cliente? */}
         <div className="mb-5">
-          <PriceInputWithPrefix
-            value={productPrice}
-            onChange={handlePriceChange}
-            required
+          <ShowPriceSelector
+            value={showPrice}
+            onChange={setShowPrice}
           />
         </div>
-        
-        {/* Seleção de tipo: Produto ou Serviço (lado a lado) */}
-        <div className="mb-5">
-          <ProductTypeSelector
-            value={productType}
-            onChange={setProductType}
-          />
-        </div>
-        
-        {/* Campo de prestador de serviço (mostrado apenas quando o tipo é 'service') */}
-        {productType === 'service' && (
-          <div className="mb-5 animate-fadeIn relative">
-            <ServiceProviderSelect
-              value={serviceProviders}
-              onChange={setServiceProviders}
+
+        {/* Preço do serviço com prefixo R$ (mostrado apenas se showPrice for true) */}
+        {showPrice && (
+          <div className="mb-5 animate-fadeIn">
+            <PriceInputWithPrefix
+              value={productPrice}
+              onChange={handlePriceChange}
               required
-              clinicId={clinicId}
             />
           </div>
         )}
+
+        {/* Campo de prestador de serviço (sempre visível) */}
+        <div className="mb-5 relative">
+          <ServiceProviderSelect
+            value={serviceProviders}
+            onChange={setServiceProviders}
+            required
+            clinicId={clinicId}
+          />
+        </div>
         
         {/* Exibir mensagem de erro de validação, se houver */}
         {validationError && (

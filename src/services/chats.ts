@@ -2,7 +2,7 @@ import { api } from '.';
 
 // Interface for the query parameters
 export interface ChatLogsQueryParams {
-  botModelId?: string;
+  agentId?: string;
   query?: string;
   take?: string;
   cursor?: string;
@@ -22,7 +22,7 @@ export interface ChatMessagesQueryParams {
 // Interface for the last message object
 export interface LastMessageObject {
   message: string;
-  isFromCustomer: boolean;
+  isFromPatient: boolean;
   createdAt: string;
   messageType?: 'text' | 'image' | 'document' | 'audio' | 'video';
   mediaFilename?: string | null;
@@ -56,19 +56,19 @@ export interface ChatMessage {
 // Interface for each chat log item
 export interface ChatLogItem {
   chatLogId: string;
-  contactId: string;
-  contactName: string;
-  contactPhoneNumber: string;
-  lastMessage: string | LastMessageObject;
+  patientId: string;
+  patientName: string;
+  patientPhoneNumber: string;
+  lastMessage: LastMessageObject;
   isActive: boolean;
   isWaitingForResponse: boolean;
   canAiAnswer: boolean;
-  currentLeadEngagement: number;
-  channelName: 'whatsapp' | 'instagram' | 'facebook-messager' | 'telegram';
+  channelName: string;
   channelId: string;
   clinicId: string;
   createdAt: string;
   updatedAt: string;
+  lastMessageAt: string;
   lastChatLogMetrics: ChatLogMetrics;
   hasMediaMessages?: boolean;
   // WhatsApp service window properties
@@ -80,13 +80,13 @@ export interface ChatLogItem {
 // Interface for the pagination info
 export interface PaginationInfo {
   take: number;
-  nextCursor?: string;
+  nextCursor: string | null;
   hasMore: boolean;
 }
 
 // Interface for the response from the backend
 export interface ChatLogsResponse {
-  contactsChatLogItems: ChatLogItem[];
+  patientsChatLogItems: ChatLogItem[];
   pagination: PaginationInfo;
 }
 
@@ -140,7 +140,7 @@ export const getChatLogs = async (
     
     console.log('URL final:', url);
     const response = await api.get<ChatLogsResponse>(url);
-    
+
     console.log('Chat logs received:', response.data);
     return response.data;
   } catch (error) {

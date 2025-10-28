@@ -70,7 +70,7 @@ export function SidebarConversations({
     isActive: undefined,
     leadEngagements: undefined,
     lastInteractionDateAfter: undefined,
-    botModelId: undefined,
+    agentId: undefined,
     query: undefined,
     channelId: undefined
   });
@@ -92,7 +92,7 @@ export function SidebarConversations({
     console.log('📋 Sidebar: Lista de conversas atualizada:', {
       total: conversations.length,
       unreadCount: unreadConversations.size,
-      firstConversation: conversations[0]?.contactName
+      firstConversation: conversations[0]?.patientName
     });
   }, [conversations, unreadConversations]);
 
@@ -203,14 +203,14 @@ export function SidebarConversations({
         return;
       }
       
-      console.log(`📊 Conversas recebidas: ${response.contactsChatLogItems.length}`);
-      
+      console.log(`📊 Conversas recebidas: ${response.patientsChatLogItems.length}`);
+
       // If this is the first load or a filter change (no cursor), replace all data
       if (!cursor) {
-        setConversations(response.contactsChatLogItems);
+        setConversations(response.patientsChatLogItems);
       } else {
         // If loading more, append to existing data
-        setConversations(prev => [...prev, ...response.contactsChatLogItems]);
+        setConversations(prev => [...prev, ...response.patientsChatLogItems]);
       }
       
       setPagination({
@@ -552,14 +552,14 @@ export function SidebarConversations({
 
     return {
       id: chatLog.chatLogId,
-      contactName: chatLog.contactName,
+      contactName: chatLog.patientName,
       clinicName: '', // This field isn't in the API response
       lastMessageDate: new Date(chatLog.updatedAt),
       messagePreview,
       unreadCount: unreadCount, // Use the actual count from the Map
       channel: mapChannelName(chatLog.channelName),
       channelPhoneNumber: undefined,
-      leadTemperature: chatLog.currentLeadEngagement as 1 | 2 | 3 | 4 | 5,
+      leadTemperature: undefined, // This field is not provided by the backend
       conversationStatus: getConversationStatus(chatLog),
       selected: chatLog.chatLogId === (localSelectedId || selectedConversationId),
       mediaType: mediaType, // Always show media icon when there's media

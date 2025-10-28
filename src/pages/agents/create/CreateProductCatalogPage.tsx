@@ -16,10 +16,10 @@ const normalizeText = (text: string): string => {
     .replace(/[\u0300-\u036f]/g, '');
 };
 
-// Card de adicionar produtos
+// Card de adicionar serviços
 function AddProductCard({ clinicId }: { clinicId?: string }) {
   const navigate = useNavigate();
-  
+
   const handleClick = () => {
     navigate(`/dashboard/clinic/${clinicId}/agents/create/product-catalog/create/product`);
   };
@@ -27,44 +27,46 @@ function AddProductCard({ clinicId }: { clinicId?: string }) {
   return (
     <div
       onClick={handleClick}
-      className="w-[140px] flex-shrink-0 bg-white border border-dashed border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer pb-2"
+      className="w-[140px] flex-shrink-0 bg-white border border-dashed border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer pb-1"
     >
-      {/* Área da imagem - mesma altura dos outros cards */}
-      <div className="w-full h-[100px] flex items-center justify-center p-2">
-        <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
-          <svg 
-            width="32" 
-            height="32" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            xmlns="http://www.w3.org/2000/svg" 
+      {/* Área da imagem - reduzida para deixar card mais quadrado */}
+      <div className="w-full h-[80px] flex items-center justify-center p-2">
+        <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
             className="text-gray-600"
           >
             <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
       </div>
-      
-      {/* Nome do produto - mesma estrutura dos outros cards */}
-      <div className="text-center px-2 mt-1">
-        <p 
+
+      {/* Nome do serviço - altura reduzida */}
+      <div className="text-center px-2">
+        <p
           className="text-xs font-medium text-gray-800 leading-tight"
           style={{
-            minHeight: '3.75rem', // Mesma altura dos outros cards
-            maxHeight: '3.75rem',
+            minHeight: '3rem',
+            maxHeight: '3rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
           }}
         >
-          Adicionar Produto
+          Adicionar Serviço
         </p>
+        {/* Espaço para manter altura consistente com outros cards */}
+        <div className="h-[16px]"></div>
       </div>
     </div>
   );
 }
 
-// Card de produto com checkbox
+// Card de serviço com checkbox
 function ProductCard({ 
   product, 
   selected, 
@@ -86,8 +88,8 @@ function ProductCard({
   const [showMenu, setShowMenu] = useState(false);
 
   return (
-    <div 
-      className={`w-[140px] flex-shrink-0 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden border ${selected ? 'border-orange-400' : 'border-gray-100'} pb-2 relative cursor-pointer`}
+    <div
+      className={`w-[140px] flex-shrink-0 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden border ${selected ? 'border-orange-400' : 'border-gray-100'} pb-1 relative cursor-pointer`}
       onClick={onToggle}
     >
       {/* Checkbox no canto superior direito */}
@@ -102,7 +104,7 @@ function ProductCard({
           className="h-4 w-4 rounded-sm border-gray-300 text-orange-500 focus:ring-orange-500"
         />
       </div>
-      
+
       {/* Menu dropdown no canto superior esquerdo */}
       <div className="absolute top-1 left-1 z-10">
         <div className="relative">
@@ -116,19 +118,19 @@ function ProductCard({
           >
             <MoreVertical size={12} />
           </button>
-          
+
           {/* Menu dropdown */}
           {showMenu && (
             <>
               {/* Overlay para fechar o menu */}
-              <div 
-                className="fixed inset-0 z-20" 
+              <div
+                className="fixed inset-0 z-20"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowMenu(false);
                 }}
               />
-              
+
               {/* Menu */}
               <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-30 min-w-[120px]">
                 <button
@@ -158,23 +160,23 @@ function ProductCard({
           )}
         </div>
       </div>
-      
-      {/* Imagem centralizada */}
-      <div className="w-full h-[100px] flex items-center justify-center p-2 bg-white">
+
+      {/* Imagem centralizada - altura reduzida */}
+      <div className="w-full h-[80px] flex items-center justify-center p-2 bg-white">
         {product.imagePath ? (
-          <img 
+          <img
             src={product.imagePath}
             alt={product.name}
             className="max-w-full max-h-full object-contain"
           />
         ) : (
-          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
-            <svg 
-              width="32" 
-              height="32" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              xmlns="http://www.w3.org/2000/svg" 
+          <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
               className="text-gray-400"
             >
               <path d="M20 9H4V8C4 6.89543 4.89543 6 6 6H18C19.1046 6 20 6.89543 20 8V9ZM4 11H20V16C20 17.1046 19.1046 18 18 18H6C4.89543 18 4 17.1046 4 16V11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -182,10 +184,11 @@ function ProductCard({
           </div>
         )}
       </div>
-      
-      {/* Nome do produto abaixo da imagem - melhorado para 3 linhas com ellipsis apenas na última */}
-      <div className="text-center px-2 mt-1">
-        <div 
+
+
+      {/* Nome do serviço abaixo da imagem - altura reduzida */}
+      <div className="text-center px-2">
+        <div
           className="text-xs font-medium text-gray-700 leading-tight"
           title={product.name}
           style={{
@@ -194,27 +197,30 @@ function ProductCard({
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
             wordBreak: 'break-word',
-            minHeight: '3.75rem',
-            maxHeight: '3.75rem',
-            lineHeight: '1.25rem' // Altura específica para cada linha
+            minHeight: '3rem',
+            maxHeight: '3rem',
+            lineHeight: '1rem'
           }}
         >
           {product.name}
         </div>
-        {product.price !== undefined && (
-          <p className="text-xs text-gray-500 mt-1">R$ {product.price.toFixed(2)}</p>
-        )}
+        {/* Espaço para o preço sem padding acima */}
+        <div className="h-[16px] flex items-center justify-center">
+          {product.price !== undefined && product.price > 0 && (
+            <p className="text-xs text-gray-500">R$ {product.price.toFixed(2)}</p>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-// Card menor para produtos selecionados
-function SelectedProductCard({ 
-  product, 
+// Card menor para serviços selecionados
+function SelectedProductCard({
+  product,
   onRemove
-}: { 
-  product: { 
+}: {
+  product: {
     id: string;
     name: string;
     imagePath?: string;
@@ -223,23 +229,23 @@ function SelectedProductCard({
   onRemove: () => void;
 }) {
   return (
-    <div className="w-[110px] flex-shrink-0 bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 pb-1 relative">
-      {/* Imagem centralizada */}
-      <div className="w-full h-[80px] flex items-center justify-center p-2 bg-white">
+    <div className="w-[110px] flex-shrink-0 bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 relative">
+      {/* Imagem centralizada - altura reduzida */}
+      <div className="w-full h-[65px] flex items-center justify-center p-1.5 bg-white">
         {product.imagePath ? (
-          <img 
+          <img
             src={product.imagePath}
             alt={product.name}
             className="max-w-full max-h-full object-contain"
           />
         ) : (
-          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-            <svg 
-              width="24" 
-              height="24" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              xmlns="http://www.w3.org/2000/svg" 
+          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
               className="text-gray-400"
             >
               <path d="M20 9H4V8C4 6.89543 4.89543 6 6 6H18C19.1046 6 20 6.89543 20 8V9ZM4 11H20V16C20 17.1046 19.1046 18 18 18H6C4.89543 18 4 17.1046 4 16V11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -247,38 +253,36 @@ function SelectedProductCard({
           </div>
         )}
       </div>
-      
-      {/* Nome do produto abaixo da imagem - melhorado para 3 linhas com ellipsis apenas na última */}
-      <div className="text-center px-2">
-        <div 
+
+
+      {/* Nome do serviço abaixo da imagem */}
+      <div className="text-center px-1.5 mb-1">
+        <div
           className="text-xs font-medium text-gray-700 leading-tight"
           title={product.name}
           style={{
             display: '-webkit-box',
-            WebkitLineClamp: 3,
+            WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
             wordBreak: 'break-word',
-            minHeight: '3.75rem',
-            maxHeight: '3.75rem',
-            lineHeight: '1.25rem' // Altura específica para cada linha
+            minHeight: '2rem',
+            maxHeight: '2rem',
+            lineHeight: '1rem'
           }}
         >
           {product.name}
         </div>
-        {product.price !== undefined && (
-          <p className="text-xs text-gray-500 mt-1">R$ {product.price.toFixed(2)}</p>
-        )}
       </div>
-      
+
       {/* Botão de remover */}
-      <div className="flex justify-center mt-1 mb-1">
-        <button 
+      <div className="flex justify-center pb-1">
+        <button
           onClick={onRemove}
-          className="text-red-500 hover:text-red-700 transition-colors p-1 rounded-full hover:bg-red-50"
-          title="Remover produto"
+          className="text-red-500 hover:text-red-700 transition-colors p-0.5 rounded-full hover:bg-red-50"
+          title="Remover serviço"
         >
-          <Trash2 size={14} />
+          <Trash2 size={12} />
         </button>
       </div>
     </div>
@@ -308,7 +312,7 @@ function DeleteConfirmationDialog({
           Confirmar Exclusão
         </h3>
         <p className="text-sm text-gray-600 mb-6">
-          Tem certeza que deseja excluir o produto <strong>"{productName}"</strong>? 
+          Tem certeza que deseja excluir o serviço <strong>"{productName}"</strong>?
           Esta ação não pode ser desfeita.
         </p>
         <div className="flex justify-end space-x-3">
@@ -343,9 +347,13 @@ export default function CreateProductCatalogPage() {
   const navigate = useNavigate();
   const { clinicId } = useParams<{ clinicId: string }>();
   const { toast } = useToast();
-  const { clinics } = useClinics();
-  const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...';
-  
+  const { clinics, loading: clinicsLoading } = useClinics();
+
+  // Buscar nome da clínica apenas quando não estiver carregando
+  const clinicName = clinicsLoading
+    ? 'Carregando...'
+    : (clinics.find(c => c.id === clinicId)?.name || 'Clínica');
+
   // Estado para o nome do catálogo
   const [catalogName, setCatalogName] = useState('');
   
@@ -376,20 +384,26 @@ export default function CreateProductCatalogPage() {
   
   // Carregar produtos da API quando o componente montar
   useEffect(() => {
+    // Não fazer nada se ainda estiver carregando as clínicas ou se não tiver clinicId
+    if (clinicsLoading || !clinicId) {
+      console.log('Aguardando clinicId ou clínicas carregarem...', { clinicsLoading, clinicId });
+      return;
+    }
+
     // Verificar se está em modo de edição
     const editingId = localStorage.getItem('temp_editing_catalog_id');
     if (editingId) {
       setIsEditMode(true);
       setEditingCatalogId(editingId);
-      
+
       // Carregar dados do catálogo para edição
       const catalogName = localStorage.getItem('temp_editing_catalog_name');
       const catalogProducts = localStorage.getItem('temp_editing_catalog_products');
-      
+
       if (catalogName) {
         setCatalogName(catalogName);
       }
-      
+
       if (catalogProducts) {
         try {
           const productsIds = JSON.parse(catalogProducts);
@@ -399,27 +413,22 @@ export default function CreateProductCatalogPage() {
         }
       }
     }
-    
+
     // Função para carregar produtos da API
     const fetchProducts = async () => {
       try {
         setLoading(true);
         setError(null);
-        
-        // Usar o ID da clínica da URL
-        if (!clinicId) {
-          throw new Error('Nenhuma clínica selecionada.');
-        }
-        
+
         console.log('Carregando produtos para clínica:', clinicId);
-        
+
         // Carregar produtos da API
         const products = await productsService.getClinicProducts(clinicId);
-        
+
         console.log('Produtos carregados:', products);
-        
+
         setApiProducts(products);
-        
+
         // Carregar produtos selecionados do localStorage se existirem
         const savedSelectedProducts = localStorage.getItem('temp_selected_products');
         if (savedSelectedProducts && !isEditMode) {
@@ -430,13 +439,13 @@ export default function CreateProductCatalogPage() {
             console.error('Erro ao carregar produtos selecionados:', error);
           }
         }
-        
+
         // Carregar nome do catálogo do localStorage se existir
         const savedCatalogName = localStorage.getItem('temp_catalog_name');
         if (savedCatalogName && !isEditMode) {
           setCatalogName(savedCatalogName);
         }
-        
+
       } catch (error) {
         console.error('Erro ao carregar produtos:', error);
         setError(error instanceof Error ? error.message : 'Erro ao carregar produtos');
@@ -449,9 +458,9 @@ export default function CreateProductCatalogPage() {
         setLoading(false);
       }
     };
-    
+
     fetchProducts();
-  }, [toast, isEditMode, clinicId]);
+  }, [toast, isEditMode, clinicId, clinicsLoading]);
   
   // Salvar o nome do catálogo no localStorage quando ele mudar
   useEffect(() => {
@@ -509,29 +518,28 @@ export default function CreateProductCatalogPage() {
   };
   
   // Função para tentar novamente em caso de erro
-  const handleRetry = () => {
+  const handleRetry = async () => {
     // Reiniciar o processo de busca de produtos
     setLoading(true);
     setError(null);
-    
-    // Usar o ID da clínica da URL
+
+    // Verificar se temos o clinicId
     if (!clinicId) {
-      setError('Nenhuma clínica selecionada.');
+      setError('ID da clínica não disponível. Por favor, volte e tente novamente.');
       setLoading(false);
       return;
     }
-    
-    // Buscar produtos novamente
-    productsService.getClinicProducts(clinicId)
-      .then(products => {
-        setApiProducts(products);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Erro ao buscar produtos:', err);
-        setError(err instanceof Error ? err.message : 'Erro ao carregar produtos.');
-        setLoading(false);
-      });
+
+    try {
+      // Buscar produtos novamente
+      const products = await productsService.getClinicProducts(clinicId);
+      setApiProducts(products);
+    } catch (err) {
+      console.error('Erro ao buscar produtos:', err);
+      setError(err instanceof Error ? err.message : 'Erro ao carregar produtos.');
+    } finally {
+      setLoading(false);
+    }
   };
   
   // Função para adicionar novo produto (temporariamente apenas navega)
@@ -544,6 +552,16 @@ export default function CreateProductCatalogPage() {
   
   // Função para salvar o catálogo
   const handleSave = async () => {
+    // Verificar se temos o clinicId
+    if (!clinicId) {
+      toast({
+        title: "Erro",
+        description: "ID da clínica não disponível. Por favor, volte e tente novamente.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!catalogName.trim()) {
       toast({
         title: "Campo obrigatório",
@@ -552,7 +570,7 @@ export default function CreateProductCatalogPage() {
       });
       return;
     }
-    
+
     if (selectedProducts.size === 0) {
       toast({
         title: "Seleção necessária",
@@ -561,14 +579,9 @@ export default function CreateProductCatalogPage() {
       });
       return;
     }
-    
+
     try {
       setIsSubmitting(true);
-      
-      // Usar o ID da clínica da URL
-      if (!clinicId) {
-        throw new Error('Nenhuma clínica selecionada.');
-      }
       
       // Preparar dados para o backend conforme o schema esperado
       const catalogData = {
@@ -684,18 +697,18 @@ export default function CreateProductCatalogPage() {
       }
       
       toast({
-        title: "Produto excluído",
-        description: `O produto "${productToDelete.productName}" foi excluído com sucesso.`,
+        title: "Serviço excluído",
+        description: `O serviço "${productToDelete.productName}" foi excluído com sucesso.`,
       });
-      
+
       // Fechar dialog
       setShowDeleteDialog(false);
       setProductToDelete(null);
     } catch (error) {
-      console.error('Erro ao excluir produto:', error);
+      console.error('Erro ao excluir serviço:', error);
       toast({
-        title: "Erro ao excluir produto",
-        description: "Ocorreu um erro ao excluir o produto. Tente novamente.",
+        title: "Erro ao excluir serviço",
+        description: "Ocorreu um erro ao excluir o serviço. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -759,14 +772,14 @@ export default function CreateProductCatalogPage() {
         </div>
       )}
       
-      {/* Box de seleção de produtos */}
+      {/* Box de seleção de serviços */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
         {/* Cabeçalho com título e filtro */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
           <h2 className="text-base font-medium text-gray-600">
-            Selecione o Produto ou Serviço
+            Selecione o Serviço
           </h2>
-          
+
           {/* Filtro de nome */}
           <div className="relative w-full sm:w-[240px]">
             <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
@@ -781,25 +794,25 @@ export default function CreateProductCatalogPage() {
             />
           </div>
         </div>
-        
-        {/* Lista horizontal de produtos com scroll */}
+
+        {/* Lista horizontal de serviços com scroll */}
         <div className="overflow-x-auto pb-2">
           {loading ? (
             // Estado de carregamento
             <div className="flex items-center justify-center h-[150px]">
               <div className="flex flex-col items-center">
                 <Loader2 className="h-8 w-8 text-orange-500 animate-spin mb-2" />
-                <p className="text-sm text-gray-500">Carregando produtos...</p>
+                <p className="text-sm text-gray-500">Carregando serviços...</p>
               </div>
             </div>
           ) : (
             <div className="flex space-x-3" style={{ paddingBottom: '4px' }}>
-              {/* Card para adicionar produto - completamente separado dos demais */}
+              {/* Card para adicionar serviço - completamente separado dos demais */}
               <div className="flex-shrink-0">
                 <AddProductCard clinicId={clinicId} />
               </div>
               
-              {/* Renderização dos produtos ou mensagem de não encontrado */}
+              {/* Renderização dos serviços ou mensagem de não encontrado */}
               <div className="flex space-x-3">
                 {filteredProducts.length > 0 ? (
                   filteredProducts.map((product) => (
@@ -814,15 +827,15 @@ export default function CreateProductCatalogPage() {
                   ))
                 ) : searchFilter ? (
                   <div className="py-4 px-3 text-gray-500 text-sm">
-                    Nenhum produto encontrado com o termo "{searchFilter}"
+                    Nenhum serviço encontrado com o termo "{searchFilter}"
                   </div>
                 ) : apiProducts.length === 0 ? (
                   <div className="py-4 px-3 text-gray-500 text-sm">
-                    Nenhum produto cadastrado. Clique no botão ao lado para adicionar produtos ao catálogo.
+                    Nenhum serviço cadastrado. Clique no botão ao lado para adicionar serviços ao catálogo.
                   </div>
                 ) : (
                   <div className="py-4 px-3 text-gray-500 text-sm">
-                    Clique no botão ao lado para adicionar produtos ao catálogo.
+                    Clique no botão ao lado para adicionar serviços ao catálogo.
                   </div>
                 )}
               </div>
@@ -831,7 +844,7 @@ export default function CreateProductCatalogPage() {
         </div>
       </div>
       
-      {/* Seção de produtos selecionados */}
+      {/* Seção de serviços selecionados */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-5">
         <div className="flex items-center mb-3">
           <h2 className="text-base font-medium text-gray-600">
@@ -841,8 +854,8 @@ export default function CreateProductCatalogPage() {
             {selectedProducts.size} {selectedProducts.size === 1 ? 'item' : 'itens'}
           </span>
         </div>
-        
-        {/* Lista horizontal de produtos selecionados com scroll */}
+
+        {/* Lista horizontal de serviços selecionados com scroll */}
         <div className="overflow-x-auto pb-1">
           {selectedProducts.size > 0 ? (
             <div className="flex flex-wrap gap-3">
@@ -856,7 +869,7 @@ export default function CreateProductCatalogPage() {
             </div>
           ) : (
             <div className="py-4 text-center text-gray-500 text-sm border border-dashed border-gray-200 rounded-md bg-gray-50">
-              Nenhum produto selecionado. Selecione produtos acima para adicioná-los ao catálogo.
+              Nenhum serviço selecionado. Selecione serviços acima para adicioná-los ao catálogo.
             </div>
           )}
         </div>

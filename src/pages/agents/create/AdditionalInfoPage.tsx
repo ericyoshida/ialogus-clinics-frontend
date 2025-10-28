@@ -3,8 +3,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { useClinics } from '@/hooks/use-clinics'
 import { cn } from '@/lib/utils'
 import { agentsService } from '@/services/agents'
-import { ApiService } from '@/services/api'
-import { departmentsService } from '@/services/departments'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -158,112 +156,49 @@ export default function AdditionalInfoPage() {
   const handleFinalize = async () => {
     try {
       setIsCreating(true);
-      
+
       // Recuperar todos os dados salvos no localStorage
-      const botName = localStorage.getItem('temp_agent_name') || '';
-      const conversationFlowId = localStorage.getItem('temp_conversation_flow') || '';
-      const conversationFlowName = localStorage.getItem('temp_conversation_flow_name') || 'Fluxo';
+      const agentName = localStorage.getItem('temp_agent_name') || '';
       const productsListId = localStorage.getItem('selected_catalog') || '';
-      const humanChatConditions = localStorage.getItem('temp_human_chat_conditions') || 'Quando o cliente solicitar falar com um atendente humano';
-      const agentType = localStorage.getItem('temp_agent_type') || 'sales';
-      
+
       // Validar dados obrigatórios
-      if (!botName) {
+      if (!agentName) {
         toast.error('Nome do agente não foi definido');
         setIsCreating(false);
         return;
       }
-      
-      if (!conversationFlowId) {
-        toast.error('Fluxo de conversa não foi selecionado');
-        setIsCreating(false);
-        return;
-      }
-      
+
       if (!productsListId) {
         toast.error('Catálogo de produtos não foi selecionado');
         setIsCreating(false);
         return;
       }
-      
-      // Definir o macro departamento baseado no tipo de agente (deve ser 'sales' ou 'customer_services')
-      const macroDepartmentName = agentType === 'sales' ? 'sales' : 'customer_services';
-      
-      // Criar nome do departamento concatenando macro department + flowchart name
-      const macroDepartmentDisplayName = agentType === 'sales' ? 'Vendas' : 'Suporte';
-      const departmentName = `${macroDepartmentDisplayName} - ${conversationFlowName}`;
-      
-      console.log('Criando departamento:', {
-        clinicId: clinicId,
-        departmentName,
-        macroDepartmentName
-      });
-      
-      // Primeiro criar o departamento
-      const department = await departmentsService.createDepartment(clinicId!, {
-        departmentName,
-        macroDepartmentName
-      });
-      
-      console.log('Departamento criado - resposta completa:', department);
-      console.log('Estrutura do departamento:', Object.keys(department));
-      
-      // Usar o ID do departamento criado
-      // A resposta pode vir como { department: { id: ... } } ou diretamente como { id: ... }
-      const departmentData = department.department || department;
-      console.log('Department data:', departmentData);
-      console.log('Keys do departmentData:', Object.keys(departmentData));
-      
-      // Extrair o ID do departamento
-      let departmentId = departmentData.id || departmentData.departmentId || departmentData._id;
-      
-      // Se o ID for um objeto com propriedade value, extrair o value
-      if (departmentId && typeof departmentId === 'object' && 'value' in departmentId) {
-        departmentId = departmentId.value;
-      }
-      
-      console.log('Department ID extraído:', departmentId);
-      
-      if (!departmentId) {
-        throw new Error('ID do departamento não encontrado na resposta');
-      }
-      
-      // Criar messagesFlowchart se necessário
-      let messagesFlowchartId = conversationFlowId;
-      
-      // Se o conversationFlowId for um tipo de template, criar o flowchart a partir do template
-      if (conversationFlowId === 'sales_general' || conversationFlowId === 'sales_scheduling') {
-        console.log('Criando flowchart a partir do template:', conversationFlowId);
-        
-        const flowchartResult = await ApiService.createFlowchartFromTemplate(clinicId!, {
-          templateType: conversationFlowId as 'sales_general' | 'sales_scheduling',
-          name: conversationFlowName
-        });
-        
-        messagesFlowchartId = flowchartResult.messagesFlowchart.id;
-        console.log('Flowchart criado:', messagesFlowchartId);
-      }
-      
+
+      // Texto padrão para humanChatConditions cobrindo os 3 casos:
+      // 1. Solicitação de operador humano
+      // 2. Cliente impaciente
+      // 3. Cliente bravo com o atendimento
+      const humanChatConditions =
+        'Quando o cliente solicitar explicitamente falar com um atendente humano, ou quando demonstrar impaciência ou insatisfação com o atendimento.';
+
       console.log('Criando agente com os dados:', {
-        departmentId,
-        botName,
+        clinicId,
+        agentName,
         additionalInstructions: additionalInfo,
         humanChatConditions,
         productsListId,
-        messagesFlowchartId
       });
-      
-      // Chamar a API para criar o bot model
-      await agentsService.createBotModel(departmentId, {
-        botName,
+
+      // Chamar a API para criar o agente
+      await agentsService.createBotModel(clinicId!, {
+        agentName,
         additionalInstructions: additionalInfo || '',
         humanChatConditions,
         productsListId,
-        messagesFlowchartId
       });
-      
+
       toast.success('Agente criado com sucesso!');
-      
+
       // Limpar TODOS os dados temporários do localStorage
       localStorage.removeItem('temp_agent_additional_info');
       localStorage.removeItem('temp_selected_products');
@@ -273,12 +208,8 @@ export default function AdditionalInfoPage() {
       localStorage.removeItem('catalog_saved');
       localStorage.removeItem('temp_product_data');
       localStorage.removeItem('temp_agent_name');
-      localStorage.removeItem('temp_agent_type');
-      localStorage.removeItem('temp_conversation_flow');
-      localStorage.removeItem('temp_conversation_flow_name');
       localStorage.removeItem('temp_selected_clinic');
-      localStorage.removeItem('temp_human_chat_conditions');
-      
+
       // Navegar para a página de sucesso
       navigate(`/dashboard/clinic/${clinicId}/agents/create/success`);
     } catch (error) {
@@ -297,12 +228,13 @@ export default function AdditionalInfoPage() {
           <span className="text-gray-400">|</span>
           <span className="text-gray-600">{clinicName}</span>
         </h1>
-        <p className="text-gray-500 text-sm mb-4">Etapa 4: Adicione informações complementares</p>
-        
+        <p className="text-gray-500 text-sm mb-4">Etapa 3: Adicione informações complementares</p>
+
         {/* Indicador de multistep abaixo do título */}
         <div className="w-full mb-6">
-          <MultiStepAgent 
-            currentStep={4} 
+          <MultiStepAgent
+            currentStep={3}
+            totalSteps={3}
             className="max-w-full"
           />
         </div>
