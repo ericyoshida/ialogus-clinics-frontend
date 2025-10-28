@@ -6,7 +6,7 @@ import { CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outl
 import { useCallback, useEffect, useState } from 'react'
 
 // Configurações do Meta conforme fornecidas
-const META_APP_ID = '249811214391254'
+const META_APP_ID = '1141048344552370'
 const META_CONFIG_ID = '1581688783211060'
 const META_SDK_VERSION = 'v23.0'
 
