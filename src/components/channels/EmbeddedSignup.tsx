@@ -34,7 +34,14 @@ interface SessionInfoData {
 
 declare global {
   interface Window {
-    FB: any
+    FB: {
+      init: (config: any) => void
+      login: (callback: (response: any) => void, config?: any) => void
+      getLoginStatus: (callback: (response: any) => void, force?: boolean) => void
+      AppEvents?: {
+        logPageView: () => void
+      }
+    }
     fbAsyncInit: () => void
   }
 }
@@ -45,7 +52,33 @@ export function EmbeddedSignup({ clinicId, onSuccess, onError }: EmbeddedSignupP
   const [isConnected, setIsConnected] = useState(false)
   const { toast } = useToast()
 
-  // Carregar o SDK do Facebook
+  // Função para processar mudanças no status de login
+  const statusChangeCallback = useCallback((response: any) => {
+    console.log('📋 Status Change Callback:', response)
+
+    if (response.status === 'connected') {
+      // Usuário está logado no Facebook e autorizou o app
+      console.log('✅ Usuário já conectado:', {
+        status: response.status,
+        userID: response.authResponse?.userID,
+        accessToken: response.authResponse?.accessToken?.substring(0, 20) + '...'
+      })
+
+      // Nota: Para Embedded Signup, ainda precisamos do fluxo completo
+      // porque precisamos do código de autorização para o WhatsApp Business
+      // O login status apenas confirma que o usuário está logado no Facebook
+
+    } else if (response.status === 'not_authorized') {
+      // Usuário está logado no Facebook mas não autorizou o app
+      console.log('⚠️ Usuário logado no Facebook mas não autorizou o app')
+
+    } else {
+      // Usuário não está logado no Facebook
+      console.log('ℹ️ Usuário não está logado no Facebook')
+    }
+  }, [])
+
+  // Carregar o SDK do Facebook usando o padrão oficial
   useEffect(() => {
     // Se já existe o SDK, não recarregar
     if (window.FB) {
@@ -53,31 +86,46 @@ export function EmbeddedSignup({ clinicId, onSuccess, onError }: EmbeddedSignupP
       return
     }
 
-    // Configurar callback de inicialização
+    // Padrão oficial do Facebook SDK
     window.fbAsyncInit = function() {
       window.FB.init({
         appId: META_APP_ID,
-        autoLogAppEvents: true,
+        cookie: true,
         xfbml: true,
         version: META_SDK_VERSION
       })
+
+      // Log page view conforme recomendado pelo Facebook
+      if (window.FB.AppEvents) {
+        window.FB.AppEvents.logPageView()
+      }
+
       setSdkLoaded(true)
       console.log('✅ Facebook SDK carregado e inicializado')
+
+      // Verificar status de login conforme documentação oficial
+      window.FB.getLoginStatus(function(response) {
+        console.log('📊 Login Status:', response)
+        statusChangeCallback(response)
+      })
     }
 
-    // Carregar o script do SDK
-    const script = document.createElement('script')
-    script.async = true
-    script.defer = true
-    script.crossOrigin = 'anonymous'
-    script.src = `https://connect.facebook.net/pt_BR/sdk.js`
-    
-    document.body.appendChild(script)
+    // IIFE pattern oficial do Facebook para carregar o SDK
+    ;(function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0]
+      if (d.getElementById(id)) { return }
+      js = d.createElement(s)
+      js.id = id
+      js.src = "https://connect.facebook.net/en_US/sdk.js"
+      if (fjs && fjs.parentNode) {
+        fjs.parentNode.insertBefore(js, fjs)
+      }
+    }(document, 'script', 'facebook-jssdk'))
 
     return () => {
       // Cleanup se necessário
     }
-  }, [])
+  }, [statusChangeCallback])
 
   // Função para processar a resposta do Embedded Signup
   const handleSessionInfoReceived = useCallback(async (sessionInfo: SessionInfoData) => {
