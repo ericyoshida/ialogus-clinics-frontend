@@ -26,7 +26,7 @@ interface EmbeddedSignupResult {
 const META_CONFIG = {
   appId: '1141048344552370',
   configId: '1152173283136317',
-  version: 'v18.0'
+  version: 'v24.0'
 }
 
 declare global {
