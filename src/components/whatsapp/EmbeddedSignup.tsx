@@ -25,7 +25,7 @@ interface EmbeddedSignupResult {
 // Meta SDK Configuration
 const META_CONFIG = {
   appId: '1141048344552370',
-  configId: '1152173283136317',
+  configId: '1759844504726036',
   version: 'v18.0'
 }
 
@@ -34,8 +34,10 @@ declare global {
     FB: {
       init: (config: any) => void
       login: (callback: (response: any) => void, config?: any) => void
+      getLoginStatus: (callback: (response: any) => void) => void
       AppEvents: {
         logEvent: (event: string, params?: any) => void
+        logPageView: () => void
       }
     }
     fbAsyncInit: () => void
@@ -52,77 +54,70 @@ export const EmbeddedSignup: React.FC<EmbeddedSignupProps> = ({
   const [isLoading, setIsLoading] = useState(false)
   const [sdkError, setSDKError] = useState<string | null>(null)
 
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout
+  // Status callback para verificar login do Facebook
+  const statusChangeCallback = React.useCallback((response: any) => {
+    console.log('📊 Status de login do Facebook:', response)
 
-    const loadFacebookSDK = () => {
-      // Check if SDK is already loaded
-      if (window.FB) {
-        setIsSDKLoaded(true)
-        return
-      }
-
-      // Define the async init function
-      window.fbAsyncInit = () => {
-        try {
-          window.FB.init({
-            appId: META_CONFIG.appId,
-            cookie: true,
-            xfbml: true,
-            version: META_CONFIG.version,
-            autoLogAppEvents: true
-          })
-          
-          console.log('✅ Facebook SDK initialized successfully')
-          setIsSDKLoaded(true)
-          setSDKError(null)
-        } catch (error) {
-          console.error('❌ Error initializing Facebook SDK:', error)
-          setSDKError('Failed to initialize Meta SDK')
-        }
-      }
-
-      // Load the SDK script
-      const script = document.createElement('script')
-      script.id = 'facebook-jssdk'
-      script.src = `https://connect.facebook.net/en_US/sdk.js`
-      script.async = true
-      script.defer = true
-      script.crossOrigin = 'anonymous'
-      
-      script.onload = () => {
-        console.log('📦 Facebook SDK script loaded')
-      }
-      
-      script.onerror = () => {
-        console.error('❌ Failed to load Facebook SDK script')
-        setSDKError('Failed to load Meta SDK script')
-      }
-
-      // Insert script into document
-      const firstScript = document.getElementsByTagName('script')[0]
-      if (firstScript && firstScript.parentNode) {
-        firstScript.parentNode.insertBefore(script, firstScript)
-      } else {
-        document.head.appendChild(script)
-      }
-
-      // Set a timeout to detect if SDK fails to load
-      timeoutId = setTimeout(() => {
-        if (!window.FB) {
-          setSDKError('Meta SDK failed to load within timeout period')
-        }
-      }, 10000) // 10 second timeout
-    }
-
-    loadFacebookSDK()
-
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-      }
+    if (response.status === 'connected') {
+      console.log('✅ Usuário já está conectado ao Facebook')
+    } else if (response.status === 'not_authorized') {
+      console.log('⚠️ Usuário está logado no Facebook mas não autorizou o app')
+    } else {
+      console.log('ℹ️ Usuário não está logado no Facebook')
     }
   }, [])
+
+  useEffect(() => {
+    // Se já existe o SDK, não recarregar
+    if (window.FB) {
+      setIsSDKLoaded(true)
+      return
+    }
+
+    // Padrão oficial do Facebook SDK (IIFE)
+    window.fbAsyncInit = function() {
+      window.FB.init({
+        appId: META_CONFIG.appId,
+        autoLogAppEvents: true,
+        cookie: true,
+        xfbml: true,
+        version: META_CONFIG.version
+      })
+
+      // Log page view conforme recomendado pelo Facebook
+      if (window.FB.AppEvents) {
+        window.FB.AppEvents.logPageView()
+      }
+
+      setIsSDKLoaded(true)
+      console.log('✅ Facebook SDK carregado e inicializado')
+
+      // Verificar status de login conforme documentação oficial
+      window.FB.getLoginStatus(function(response) {
+        console.log('📊 Login Status:', response)
+        statusChangeCallback(response)
+      })
+    }
+
+    // IIFE pattern oficial do Facebook para carregar o SDK
+    ;(function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0]
+      if (d.getElementById(id)) { return }
+      js = d.createElement(s) as HTMLScriptElement
+      js.id = id
+      js.src = "https://connect.facebook.net/en_US/sdk.js"
+      js.async = true
+      js.defer = true
+      js.crossOrigin = 'anonymous'
+      if (fjs && fjs.parentNode) {
+        fjs.parentNode.insertBefore(js, fjs)
+      }
+    }(document, 'script', 'facebook-jssdk'))
+
+    return () => {
+      // Cleanup se necessário
+    }
+  }, [statusChangeCallback])
 
   const handleEmbeddedSignup = async () => {
     if (!isSDKLoaded || !window.FB) {
@@ -139,7 +134,7 @@ export const EmbeddedSignup: React.FC<EmbeddedSignupProps> = ({
       // Use Facebook Login with WhatsApp Business permissions
       window.FB.login((response) => {
         console.log('📋 Login response:', response)
-        
+
         if (response.authResponse) {
           handleAuthResponse(response.authResponse)
         } else {
@@ -151,11 +146,13 @@ export const EmbeddedSignup: React.FC<EmbeddedSignupProps> = ({
         config_id: META_CONFIG.configId,
         response_type: 'code',
         override_default_response_type: true,
-        scope: 'whatsapp_business_management,whatsapp_business_messaging,business_management',
         extras: {
           setup: {
-            /* Business account setup data if needed */
-          }
+            // Solicitar permissões do WhatsApp Business
+            features: ['whatsapp_business_management', 'whatsapp_business_messaging']
+          },
+          // Versão do sessionInfo
+          sessionInfoVersion: 3
         }
       })
     } catch (error) {
