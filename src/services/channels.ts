@@ -30,12 +30,6 @@ export interface WhatsAppPhoneNumber {
   status: string;
 }
 
-export interface OAuthResponse {
-  success: boolean;
-  businessAccounts?: MetaBusinessAccount[];
-  error?: string;
-}
-
 export interface EmbeddedSignupRequest {
   code: string;
   clinicId: string;
@@ -95,54 +89,6 @@ export const getWhatsappChannelsByClinicId = async (clinicId: string): Promise<W
     return response.data.whatsappChannels || [];
   } catch (error) {
     console.error('Erro ao buscar canais WhatsApp:', error);
-    throw error;
-  }
-};
-
-/**
- * Inicia o fluxo OAuth do Meta retornando a URL de autorização
- */
-export const initiateMetaOAuth = async (clinicId?: string): Promise<{ authUrl: string }> => {
-  try {
-    // Se temos clinicId, tentar usar POST (nova versão)
-    if (clinicId) {
-      try {
-        const response = await api.post('/whatsapp-channels/oauth/authorize', {
-          clinicId
-        });
-        return response.data;
-      } catch (postError: any) {
-        // Se POST falhar com 404, fazer fallback para GET
-        if (postError?.response?.status === 404) {
-          console.log('POST não disponível, usando GET sem clinicId');
-          const response = await api.get('/whatsapp-channels/oauth/authorize');
-          return response.data;
-        }
-        throw postError;
-      }
-    } else {
-      // Sem clinicId, usar GET
-      const response = await api.get('/whatsapp-channels/oauth/authorize');
-      return response.data;
-    }
-  } catch (error) {
-    console.error('Erro ao iniciar OAuth:', error);
-    throw error;
-  }
-};
-
-/**
- * Troca o código de autorização por tokens de acesso
- */
-export const exchangeCodeForTokens = async (code: string, state?: string): Promise<OAuthResponse> => {
-  try {
-    const response = await api.post('/whatsapp-channels/oauth/callback', {
-      code,
-      state
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Erro ao trocar código por tokens:', error);
     throw error;
   }
 };
@@ -298,8 +244,6 @@ export const channelsService = {
   getWhatsAppChannelMetrics,
   getWhatsAppChannelStatistics,
   updateWhatsAppChannel,
-  initiateMetaOAuth,
-  exchangeCodeForTokens,
   getMetaBusinessAccounts,
   getWhatsAppNumbers,
   createWhatsAppChannel,

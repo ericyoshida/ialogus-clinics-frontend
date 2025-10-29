@@ -33,7 +33,6 @@ import Login from "./pages/auth/Login"
 import Register from "./pages/auth/Register"
 import ChannelDetailPage from "./pages/channels/ChannelDetailPage"
 import ChannelsPage from "./pages/channels/ChannelsPage"
-import MetaCallbackPage from "./pages/channels/create/MetaCallbackPage"
 import MetaConnectionPage from "./pages/channels/create/MetaConnectionPage"
 import SelectAgentsPage from "./pages/channels/create/SelectAgentsPage"
 import SelectChannelTypePage from "./pages/channels/create/SelectChannelTypePage"
@@ -154,7 +153,6 @@ const App = () => (
                   <Route path="clinic/:clinicId/channels/create/type" element={<SelectChannelTypePage />} />
                   <Route path="clinic/:clinicId/channels/create/agents" element={<SelectAgentsPage />} />
                   <Route path="clinic/:clinicId/channels/create/meta-connection" element={<MetaConnectionPage />} />
-                  <Route path="clinic/:clinicId/channels/create/meta-callback" element={<MetaCallbackPage />} />
                   <Route path="clinic/:clinicId/channels/create/success" element={<ChannelSuccessPage />} />
                   
                   {/* Rotas legadas para criação de canal - manter para compatibilidade */}
@@ -162,7 +160,6 @@ const App = () => (
                   <Route path="channels/create/type" element={<SelectChannelTypePage />} />
                   <Route path="channels/create/agents" element={<SelectAgentsPage />} />
                   <Route path="channels/create/meta-connection" element={<MetaConnectionPage />} />
-                  <Route path="channels/create/meta-callback" element={<MetaCallbackPage />} />
                 </Route>
               </Route>
               
