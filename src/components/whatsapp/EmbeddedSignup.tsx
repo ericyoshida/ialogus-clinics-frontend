@@ -29,6 +29,24 @@ const META_CONFIG = {
   version: 'v24.0'
 }
 
+/**
+ * Meta WhatsApp Embedded Signup - Dois Fluxos Possíveis:
+ *
+ * 1. FLUXO IDEAL - postMessage (iframe embedded):
+ *    - O usuário completa o fluxo dentro de um iframe/popup controlado
+ *    - Meta envia evento `WA_EMBEDDED_SIGNUP` via postMessage
+ *    - Recebemos `waba_id` e `phone_number_id` diretamente
+ *    - Requisitos: HTTPS, configuração correta do app, sem redirect de página
+ *
+ * 2. FLUXO FALLBACK - OAuth code flow (redirect):
+ *    - Ocorre quando há redirect de página completa
+ *    - Meta retorna apenas `authResponse.code`
+ *    - Precisamos trocar o código por access token via backend
+ *    - Usado quando: HTTP, Safari com cookies bloqueados, configuração incompleta
+ *
+ * Este componente implementa AMBOS os fluxos para máxima compatibilidade.
+ */
+
 declare global {
   interface Window {
     FB: {
@@ -66,6 +84,89 @@ export const EmbeddedSignup: React.FC<EmbeddedSignupProps> = ({
       console.log('ℹ️ Usuário não está logado no Facebook')
     }
   }, [])
+
+  // Listener robusto para postMessage do Meta Embedded Signup
+  useEffect(() => {
+    const handlePostMessage = (event: MessageEvent) => {
+      // Validar origem - aceitar subdomínios do Facebook
+      try {
+        const eventOrigin = new URL(event.origin).hostname
+        if (!/\.facebook\.com$/.test(eventOrigin) && eventOrigin !== 'facebook.com') {
+          return
+        }
+      } catch {
+        return
+      }
+
+      // Log de debug: todas as mensagens do Facebook
+      console.log('📨 PostMessage recebida do Facebook:', {
+        origin: event.origin,
+        dataType: typeof event.data,
+        rawData: event.data
+      })
+
+      // Processar mensagem - pode vir como string ou objeto
+      let msg = event.data
+      if (typeof msg === 'string') {
+        try {
+          msg = JSON.parse(msg)
+        } catch {
+          console.log('📨 Mensagem não é JSON válido, ignorando')
+          return
+        }
+      }
+
+      // Log de todas as mensagens estruturadas
+      if (msg?.type) {
+        console.log('📨 Mensagem estruturada recebida:', {
+          type: msg.type,
+          event: msg.event,
+          data: msg.data
+        })
+      }
+
+      // Verificar se é o evento de finalização do Embedded Signup
+      if (msg?.type === 'WA_EMBEDDED_SIGNUP') {
+        if (msg?.event === 'FINISH') {
+          const { waba_id, phone_number_id } = msg.data || {}
+
+          console.log('🎉 ✅ FLUXO POSTMESSAGE: Recebido WA_EMBEDDED_SIGNUP FINISH:', {
+            waba_id,
+            phone_number_id,
+            fullData: msg.data
+          })
+
+          if (waba_id && phone_number_id) {
+            console.log('✅ Processando via postMessage (FLUXO IDEAL)')
+            // Processar dados diretamente via postMessage
+            const phoneNumber = msg.data?.phone_number || ''
+            onSuccess({
+              accessToken: '', // Será obtido pelo backend
+              userID: '',
+              expiresIn: 0,
+              whatsappBusinessAccounts: [{
+                id: waba_id,
+                name: msg.data?.business_name || 'WhatsApp Business',
+                category: ''
+              }]
+            })
+          } else {
+            console.warn('⚠️ WA_EMBEDDED_SIGNUP FINISH recebido mas sem waba_id ou phone_number_id')
+          }
+        } else {
+          console.log('📨 WA_EMBEDDED_SIGNUP evento:', msg.event)
+        }
+      }
+    }
+
+    console.log('👂 Listener de postMessage ativado - aguardando WA_EMBEDDED_SIGNUP')
+    window.addEventListener('message', handlePostMessage)
+
+    return () => {
+      console.log('👂 Listener de postMessage removido')
+      window.removeEventListener('message', handlePostMessage)
+    }
+  }, [onSuccess])
 
   useEffect(() => {
     // Se já existe o SDK, não recarregar
@@ -129,14 +230,47 @@ export const EmbeddedSignup: React.FC<EmbeddedSignupProps> = ({
     setSDKError(null)
 
     try {
-      console.log('🚀 Starting Embedded Signup flow...')
-      
+      console.log('🚀 Iniciando Embedded Signup com configuração:', {
+        appId: META_CONFIG.appId,
+        configId: META_CONFIG.configId,
+        version: META_CONFIG.version,
+        isHttps: window.location.protocol === 'https:',
+        hostname: window.location.hostname
+      })
+
       // Use Facebook Login with WhatsApp Business permissions
       window.FB.login((response) => {
-        console.log('📋 Login response:', response)
+        console.log('📝 Resposta completa do login:', response)
+        console.log('📋 AuthResponse detalhado:', response.authResponse)
 
         if (response.authResponse) {
-          handleAuthResponse(response.authResponse)
+          const { code, accessToken, userID } = response.authResponse
+
+          console.log('🔍 Verificando tipo de resposta:', {
+            hasCode: !!code,
+            hasAccessToken: !!accessToken,
+            hasUserID: !!userID
+          })
+
+          if (code || accessToken) {
+            if (code) {
+              console.log('✅ FLUXO OAUTH: Código de autorização recebido')
+              console.log('⚠️ NOTA: Se você esperava receber waba_id via postMessage, verifique:')
+              console.log('   1. O app tem "WhatsApp Embedded Signup" habilitado nas configurações')
+              console.log('   2. Não está ocorrendo redirect completo de página')
+              console.log('   3. Está em HTTPS (ou localhost)')
+              console.log('   4. O config_id está correto:', META_CONFIG.configId)
+            }
+            handleAuthResponse(response.authResponse)
+          } else {
+            console.warn('⚠️ Nenhum código ou token recebido na resposta')
+            console.warn('💡 DICA: O postMessage pode estar chegando separadamente. Aguarde...')
+            // Não fechar o loading ainda - pode ser que o postMessage chegue
+            setTimeout(() => {
+              setIsLoading(false)
+              onError('No authorization code or token received')
+            }, 3000)
+          }
         } else {
           console.error('❌ User cancelled login or did not fully authorize.')
           onError('Authentication was cancelled or failed')
