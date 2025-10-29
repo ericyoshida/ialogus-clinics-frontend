@@ -96,6 +96,86 @@ export function EmbeddedSignup({ clinicId, onSuccess, onError }: EmbeddedSignupP
     }
   }, [])
 
+  // Função para processar a resposta do Embedded Signup
+  const handleSessionInfoReceived = useCallback(async (sessionInfo: SessionInfoData) => {
+    console.log('📦 Session info recebida:', sessionInfo)
+
+    try {
+      // Verificar se tem números de telefone disponíveis
+      if (!sessionInfo.phoneNumbers || sessionInfo.phoneNumbers.length === 0) {
+        throw new Error('Nenhum número WhatsApp encontrado na conta')
+      }
+
+      // Por enquanto, usar o primeiro número disponível
+      // Em uma implementação mais completa, permitir que o usuário escolha
+      const selectedPhone = sessionInfo.phoneNumbers[0]
+
+      setIsConnected(true)
+
+      // Chamar callback de sucesso com os dados
+      onSuccess({
+        accessToken: sessionInfo.accessToken,
+        wabaId: sessionInfo.wabaId,
+        phoneNumberId: selectedPhone.id,
+        phoneNumber: selectedPhone.displayPhoneNumber
+      })
+
+      toast({
+        title: 'Conexão estabelecida!',
+        description: `WhatsApp ${selectedPhone.displayPhoneNumber} conectado com sucesso.`,
+      })
+    } catch (error: any) {
+      console.error('❌ Erro ao processar session info:', error)
+      toast({
+        title: 'Erro ao processar conexão',
+        description: error.message || 'Erro ao processar os dados da conexão.',
+        variant: 'destructive'
+      })
+      onError?.(error)
+    }
+  }, [onSuccess, onError, toast])
+
+  // Função para processar dados recebidos via postMessage
+  const handleEmbeddedSignupViaPostMessage = useCallback(async (
+    wabaId: string,
+    phoneNumberId: string,
+    additionalData: any
+  ) => {
+    console.log('📦 Processing Embedded Signup via postMessage...')
+    console.log('📋 Additional data received:', additionalData)
+    setIsLoading(true)
+
+    try {
+      // Extrair o phone number do additionalData se disponível
+      const phoneNumber = additionalData?.phone_number || ''
+
+      // Criar dados de sessão para processar
+      const sessionData: SessionInfoData = {
+        accessToken: '', // Será obtido pelo backend quando criar o canal
+        wabaId: wabaId,
+        phoneNumbers: [{
+          id: phoneNumberId,
+          displayPhoneNumber: phoneNumber,
+          verifiedName: additionalData?.business_name || '',
+          qualityRating: 'UNKNOWN'
+        }]
+      }
+
+      // Processar via fluxo padrão
+      await handleSessionInfoReceived(sessionData)
+    } catch (error: any) {
+      console.error('❌ Error processing postMessage data:', error)
+      toast({
+        title: 'Erro ao processar conexão',
+        description: error.message || 'Não foi possível processar os dados recebidos.',
+        variant: 'destructive'
+      })
+      onError?.(error)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [handleSessionInfoReceived, toast, onError])
+
   // Listener robusto para postMessage do Meta Embedded Signup
   useEffect(() => {
     const handlePostMessage = (event: MessageEvent) => {
@@ -170,48 +250,7 @@ export function EmbeddedSignup({ clinicId, onSuccess, onError }: EmbeddedSignupP
       console.log('👂 Listener de postMessage removido')
       window.removeEventListener('message', handlePostMessage)
     }
-  }, [])
-
-  // Função para processar dados recebidos via postMessage
-  const handleEmbeddedSignupViaPostMessage = useCallback(async (
-    wabaId: string,
-    phoneNumberId: string,
-    additionalData: any
-  ) => {
-    console.log('📦 Processing Embedded Signup via postMessage...')
-    console.log('📋 Additional data received:', additionalData)
-    setIsLoading(true)
-
-    try {
-      // Extrair o phone number do additionalData se disponível
-      const phoneNumber = additionalData?.phone_number || ''
-
-      // Criar dados de sessão para processar
-      const sessionData: SessionInfoData = {
-        accessToken: '', // Será obtido pelo backend quando criar o canal
-        wabaId: wabaId,
-        phoneNumbers: [{
-          id: phoneNumberId,
-          displayPhoneNumber: phoneNumber,
-          verifiedName: additionalData?.business_name || '',
-          qualityRating: 'UNKNOWN'
-        }]
-      }
-
-      // Processar via fluxo padrão
-      await handleSessionInfoReceived(sessionData)
-    } catch (error: any) {
-      console.error('❌ Error processing postMessage data:', error)
-      toast({
-        title: 'Erro ao processar conexão',
-        description: error.message || 'Não foi possível processar os dados recebidos.',
-        variant: 'destructive'
-      })
-      onError?.(error)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [handleSessionInfoReceived, toast, onError])
+  }, [handleEmbeddedSignupViaPostMessage])
 
   // Carregar o SDK do Facebook usando o padrão oficial
   useEffect(() => {
@@ -265,45 +304,6 @@ export function EmbeddedSignup({ clinicId, onSuccess, onError }: EmbeddedSignupP
       // Cleanup se necessário
     }
   }, [statusChangeCallback])
-
-  // Função para processar a resposta do Embedded Signup
-  const handleSessionInfoReceived = useCallback(async (sessionInfo: SessionInfoData) => {
-    console.log('📦 Session info recebida:', sessionInfo)
-    
-    try {
-      // Verificar se tem números de telefone disponíveis
-      if (!sessionInfo.phoneNumbers || sessionInfo.phoneNumbers.length === 0) {
-        throw new Error('Nenhum número WhatsApp encontrado na conta')
-      }
-
-      // Por enquanto, usar o primeiro número disponível
-      // Em uma implementação mais completa, permitir que o usuário escolha
-      const selectedPhone = sessionInfo.phoneNumbers[0]
-      
-      setIsConnected(true)
-      
-      // Chamar callback de sucesso com os dados
-      onSuccess({
-        accessToken: sessionInfo.accessToken,
-        wabaId: sessionInfo.wabaId,
-        phoneNumberId: selectedPhone.id,
-        phoneNumber: selectedPhone.displayPhoneNumber
-      })
-
-      toast({
-        title: 'Conexão estabelecida!',
-        description: `WhatsApp ${selectedPhone.displayPhoneNumber} conectado com sucesso.`,
-      })
-    } catch (error: any) {
-      console.error('❌ Erro ao processar session info:', error)
-      toast({
-        title: 'Erro ao processar conexão',
-        description: error.message || 'Erro ao processar os dados da conexão.',
-        variant: 'destructive'
-      })
-      onError?.(error)
-    }
-  }, [onSuccess, onError, toast])
 
   // Função para iniciar o fluxo de Embedded Signup
   const handleStartEmbeddedSignup = useCallback(() => {
