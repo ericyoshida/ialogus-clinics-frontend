@@ -1,5 +1,6 @@
 import { EmbeddedSignup } from '@/components/channels/EmbeddedSignup'
 import { MultiStepChannel } from '@/components/multi-step-channel'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { IalogusInput } from '@/components/ui/ialogus-input'
 import { useChannelCreationForm } from '@/hooks/use-channel-creation-form'
@@ -7,9 +8,11 @@ import { useClinics } from '@/hooks/use-clinics'
 import { useToast } from '@/hooks/use-toast'
 import { channelsService } from '@/services/channels'
 import { formatPhoneNumber, sanitizePhoneNumber } from '@/utils/phone'
-import { CheckCircleIcon } from '@heroicons/react/24/outline'
+import { ArrowTopRightOnSquareIcon, ArrowsRightLeftIcon, CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+
+type AuthMethod = 'embedded' | 'oauth'
 
 export default function MetaConnectionPage() {
   const navigate = useNavigate()
@@ -25,6 +28,8 @@ export default function MetaConnectionPage() {
     clearFormData 
   } = useChannelCreationForm()
   
+  const [authMethod, setAuthMethod] = useState<AuthMethod>('embedded')
+  const [isConnecting, setIsConnecting] = useState(false)
   const [isCreatingChannel, setIsCreatingChannel] = useState(false)
   const [embeddedSignupData, setEmbeddedSignupData] = useState<{
     accessToken: string
@@ -32,7 +37,7 @@ export default function MetaConnectionPage() {
     phoneNumberId: string
     phoneNumber: string
   } | null>(null)
-  
+
   // Estados para seleção
   const [localChannelName, setLocalChannelName] = useState(channelName || '')
   
@@ -59,6 +64,61 @@ export default function MetaConnectionPage() {
       selectedPhoneNumberId: data.phoneNumberId,
       selectedPhoneNumber: data.phoneNumber,
       selectedBusinessAccountId: data.wabaId
+    })
+  }
+
+  const handleOAuthConnect = async () => {
+    setIsConnecting(true)
+
+    try {
+      // Salvar o token e usuário atual no sessionStorage antes de redirecionar
+      const currentToken = localStorage.getItem('ialogus:token')
+      const currentUser = localStorage.getItem('ialogus:user')
+      if (currentToken) {
+        sessionStorage.setItem('ialogus:oauth:token', currentToken)
+        console.log('🔐 Token salvo no sessionStorage para OAuth')
+      }
+      if (currentUser) {
+        sessionStorage.setItem('ialogus:oauth:user', currentUser)
+        console.log('👤 Usuário salvo no sessionStorage para OAuth')
+      }
+
+      // Obter URL de autorização do backend
+      const { authUrl } = await channelsService.initiateMetaOAuth(clinicId || savedClinicId)
+
+      // Adicionar o estado atual como parâmetro na URL (fallback)
+      const urlWithState = new URL(authUrl)
+      const stateData = {
+        token: currentToken,
+        user: currentUser,
+        clinicId: clinicId || savedClinicId,
+        timestamp: Date.now()
+      }
+      console.log('📦 Enviando estado para OAuth:', stateData)
+      const state = btoa(JSON.stringify(stateData))
+      urlWithState.searchParams.set('app_state', state)
+
+      console.log('🌐 Redirecionando para:', urlWithState.toString())
+      // Redirecionar para o Meta
+      window.location.href = urlWithState.toString()
+    } catch (error) {
+      toast({
+        title: "Erro ao iniciar conexão",
+        description: "Não foi possível iniciar a conexão com o Meta Business.",
+        variant: "destructive"
+      })
+      setIsConnecting(false)
+    }
+  }
+
+  const handleSwitchAuthMethod = () => {
+    setAuthMethod(authMethod === 'embedded' ? 'oauth' : 'embedded')
+    // Clear any existing auth data when switching
+    setEmbeddedSignupData(null)
+    updateFormData({
+      selectedPhoneNumberId: undefined,
+      selectedPhoneNumber: undefined,
+      selectedBusinessAccountId: undefined,
     })
   }
 
@@ -164,10 +224,23 @@ export default function MetaConnectionPage() {
         
         <div className="flex items-center justify-between mb-1">
           <h2 className="text-xl font-medium text-gray-800">Conectar com WhatsApp Business</h2>
+          {!isAuthenticated && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSwitchAuthMethod}
+              className="flex items-center gap-2"
+            >
+              <ArrowsRightLeftIcon className="w-4 h-4" />
+              {authMethod === 'embedded' ? 'Usar OAuth' : 'Usar Embedded'}
+            </Button>
+          )}
         </div>
-        
+
         <p className="text-sm text-gray-500 mb-1">
           Etapa 3: Conecte sua conta do Meta Business e configure o WhatsApp
+          {authMethod === 'embedded' && ' (Método Popup)'}
+          {authMethod === 'oauth' && ' (Método Redirect)'}
         </p>
       </div>
 
@@ -193,14 +266,65 @@ export default function MetaConnectionPage() {
         </div>
 
         {!isAuthenticated ? (
-          // Embedded Signup Flow
-          <EmbeddedSignup
-            clinicId={clinicId || savedClinicId || ''}
-            onSuccess={handleEmbeddedSignupSuccess}
-            onError={(error) => {
-              console.error('Erro no Embedded Signup:', error)
-            }}
-          />
+          authMethod === 'embedded' ? (
+            // Embedded Signup Flow (Popup)
+            <EmbeddedSignup
+              clinicId={clinicId || savedClinicId || ''}
+              onSuccess={handleEmbeddedSignupSuccess}
+              onError={(error) => {
+                console.error('Erro no Embedded Signup:', error)
+              }}
+            />
+          ) : (
+            // OAuth Redirect Flow (Nova Guia)
+            <>
+              <Alert className="mb-6">
+                <InformationCircleIcon className="h-4 w-4" />
+                <AlertDescription>
+                  Você será redirecionado para o Meta Business para autorizar a conexão.
+                  Certifique-se de ter acesso à conta do WhatsApp Business que deseja conectar.
+                </AlertDescription>
+              </Alert>
+
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <h3 className="text-lg font-medium mb-4">Pré-requisitos</h3>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    Conta verificada no Meta Business
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    WhatsApp Business API configurado
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    Permissões de administrador na conta
+                  </li>
+                </ul>
+              </div>
+
+              <div className="flex justify-center">
+                <Button
+                  onClick={handleOAuthConnect}
+                  disabled={isConnecting}
+                  className="bg-[#1877F2] hover:bg-[#1864D9] text-white px-8 py-3 text-base"
+                >
+                  {isConnecting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Redirecionando...
+                    </>
+                  ) : (
+                    <>
+                      <ArrowTopRightOnSquareIcon className="w-5 h-5 mr-2" />
+                      Conectar com Meta Business
+                    </>
+                  )}
+                </Button>
+              </div>
+            </>
+          )
         ) : (
           // Embedded Signup - Conectado
           <>
