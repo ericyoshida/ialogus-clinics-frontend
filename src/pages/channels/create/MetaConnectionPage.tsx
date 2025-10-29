@@ -86,8 +86,14 @@ export default function MetaConnectionPage() {
       // Obter URL de autorização do backend
       const { authUrl } = await channelsService.initiateMetaOAuth(clinicId || savedClinicId)
 
-      // Adicionar o estado atual como parâmetro na URL (fallback)
+      // Adicionar/substituir config_id e app_id corretos
       const urlWithState = new URL(authUrl)
+
+      // Garantir que usa o App ID e Config ID corretos para OAuth
+      urlWithState.searchParams.set('client_id', '1141048344552370')
+      urlWithState.searchParams.set('config_id', '1152173283136317')
+
+      // Adicionar o estado atual como parâmetro na URL (fallback)
       const stateData = {
         token: currentToken,
         user: currentUser,
@@ -99,6 +105,8 @@ export default function MetaConnectionPage() {
       urlWithState.searchParams.set('app_state', state)
 
       console.log('🌐 Redirecionando para:', urlWithState.toString())
+      console.log('📋 Config ID usado:', urlWithState.searchParams.get('config_id'))
+
       // Redirecionar para o Meta
       window.location.href = urlWithState.toString()
     } catch (error) {
