@@ -86,30 +86,33 @@ export default function MetaConnectionPage() {
       // Obter URL de autorização do backend
       const { authUrl } = await channelsService.initiateMetaOAuth(clinicId || savedClinicId)
 
-      // Adicionar/substituir config_id e app_id corretos
-      const urlWithState = new URL(authUrl)
+      console.log('🌐 URL OAuth original do backend:', authUrl)
 
-      // Garantir que usa o App ID e Config ID corretos para OAuth
-      urlWithState.searchParams.set('client_id', '1141048344552370')
-      urlWithState.searchParams.set('config_id', '1152173283136317')
+      // Corrigir a URL se necessário
+      const url = new URL(authUrl)
 
-      // Adicionar o estado atual como parâmetro na URL (fallback)
-      const stateData = {
-        token: currentToken,
-        user: currentUser,
-        clinicId: clinicId || savedClinicId,
-        timestamp: Date.now()
+      // Corrigir redirect_uri se estiver usando o backend antigo
+      const redirectUri = url.searchParams.get('redirect_uri')
+      if (redirectUri && redirectUri.includes('ialogus-deploy-api.onrender.com')) {
+        const newRedirectUri = redirectUri.replace(
+          'ialogus-deploy-api.onrender.com',
+          'ialogus-backend-deploy.onrender.com'
+        )
+        url.searchParams.set('redirect_uri', newRedirectUri)
+        console.log('✅ redirect_uri corrigido:', newRedirectUri)
       }
-      console.log('📦 Enviando estado para OAuth:', stateData)
-      const state = btoa(JSON.stringify(stateData))
-      urlWithState.searchParams.set('app_state', state)
 
-      console.log('🌐 Redirecionando para:', urlWithState.toString())
-      console.log('📋 Config ID usado:', urlWithState.searchParams.get('config_id'))
+      // Garantir que usa o config_id correto para OAuth
+      url.searchParams.set('config_id', '1152173283136317')
+      console.log('✅ config_id definido:', '1152173283136317')
+
+      const finalUrl = url.toString()
+      console.log('🌐 URL OAuth final:', finalUrl)
 
       // Redirecionar para o Meta
-      window.location.href = urlWithState.toString()
+      window.location.href = finalUrl
     } catch (error) {
+      console.error('❌ Erro ao iniciar OAuth:', error)
       toast({
         title: "Erro ao iniciar conexão",
         description: "Não foi possível iniciar a conexão com o Meta Business.",
