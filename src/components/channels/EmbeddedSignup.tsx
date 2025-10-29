@@ -7,8 +7,8 @@ import { useCallback, useEffect, useState } from 'react'
 
 // Configurações do Meta conforme fornecidas
 const META_APP_ID = '1141048344552370'
-const META_CONFIG_ID = '1581688783211060'
-const META_SDK_VERSION = 'v23.0'
+const META_CONFIG_ID = '1152173283136317'
+const META_SDK_VERSION = 'v24.0'
 
 interface EmbeddedSignupProps {
   clinicId: string
@@ -90,6 +90,7 @@ export function EmbeddedSignup({ clinicId, onSuccess, onError }: EmbeddedSignupP
     window.fbAsyncInit = function() {
       window.FB.init({
         appId: META_APP_ID,
+        autoLogAppEvents: true,
         cookie: true,
         xfbml: true,
         version: META_SDK_VERSION
@@ -117,6 +118,9 @@ export function EmbeddedSignup({ clinicId, onSuccess, onError }: EmbeddedSignupP
       js = d.createElement(s)
       js.id = id
       js.src = "https://connect.facebook.net/en_US/sdk.js"
+      ;(js as HTMLScriptElement).async = true
+      ;(js as HTMLScriptElement).defer = true
+      ;(js as HTMLScriptElement).crossOrigin = 'anonymous'
       if (fjs && fjs.parentNode) {
         fjs.parentNode.insertBefore(js, fjs)
       }
