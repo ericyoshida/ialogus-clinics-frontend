@@ -24,8 +24,8 @@ interface EmbeddedSignupResult {
 
 // Meta SDK Configuration
 const META_CONFIG = {
-  appId: '249811214391254',
-  configId: '1898175917407594',
+  appId: '1141048344552370',
+  configId: '1152173283136317',
   version: 'v18.0'
 }
 
