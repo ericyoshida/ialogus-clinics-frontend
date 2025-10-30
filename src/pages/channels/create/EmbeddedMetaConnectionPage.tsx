@@ -181,7 +181,7 @@ export default function EmbeddedMetaConnectionPage() {
       
       const channelData = {
         phoneNumber: sanitizedPhoneNumber,
-        botModelsIds: selectedAgentIds,
+        agentsIds: selectedAgentIds, // Fixed: backend expects "agentsIds" not "botModelsIds"
         additionalInstructions: '',
         operationalRegion: 'BR',
         whatsappPhoneNumberId: selectedPhoneNumberId,
