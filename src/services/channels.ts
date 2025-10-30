@@ -33,10 +33,13 @@ export interface WhatsAppPhoneNumber {
 export interface EmbeddedSignupRequest {
   code: string;
   clinicId: string;
+  wabaId?: string; // NEW: from postMessage
+  phoneNumberId?: string; // NEW: from postMessage
 }
 
 export interface EmbeddedSignupResponse {
   success: boolean;
+  wabaConnectionId?: string; // NEW: ID for channel creation
   accessToken: string;
   wabaId: string;
   phoneNumbers: Array<{
@@ -59,7 +62,8 @@ export interface CreateChannelData {
   botName: string;
   waitTimeoutToEndChatLog: number;
   isEmbeddedSignup?: boolean;
-  embeddedAccessToken?: string;
+  embeddedAccessToken?: string; // DEPRECATED: use userWabaConnectionId
+  userWabaConnectionId?: string; // NEW: from exchange step
 }
 
 /**

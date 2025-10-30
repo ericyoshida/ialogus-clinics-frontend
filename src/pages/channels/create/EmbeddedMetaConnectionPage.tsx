@@ -38,6 +38,7 @@ export default function EmbeddedMetaConnectionPage() {
   // Estados para seleção
   const [localChannelName, setLocalChannelName] = useState(channelName || '')
   const [embeddedAccessToken, setEmbeddedAccessToken] = useState<string | null>(null)
+  const [userWabaConnectionId, setUserWabaConnectionId] = useState<string | null>(null) // NEW
   
   // Salvar clinicId no estado quando montar o componente
   useEffect(() => {
@@ -98,10 +99,16 @@ export default function EmbeddedMetaConnectionPage() {
 
   const handleEmbeddedSignupSuccess = async (signupData: any) => {
     console.log('🎉 Embedded signup successful:', signupData)
-    
+
     // Store the access token for channel creation
     setEmbeddedAccessToken(signupData.accessToken)
-    
+
+    // NEW: Store userWabaConnectionId for channel creation
+    if (signupData.wabaConnectionId) {
+      console.log('📦 Storing userWabaConnectionId:', signupData.wabaConnectionId)
+      setUserWabaConnectionId(signupData.wabaConnectionId)
+    }
+
     // Update form data with the business accounts
     updateFormData({
       metaAuthData: {
@@ -109,7 +116,7 @@ export default function EmbeddedMetaConnectionPage() {
       },
       businessAccounts: signupData.whatsappBusinessAccounts || []
     })
-    
+
     toast({
       title: "Conexão estabelecida!",
       description: "WhatsApp Business conectado com sucesso via Embedded Signup.",
@@ -182,9 +189,15 @@ export default function EmbeddedMetaConnectionPage() {
         metaBusinessAccountId: selectedBusinessAccountId,
         botName: localChannelName,
         waitTimeoutToEndChatLog: 300, // 5 minutos padrão
-        embeddedAccessToken: embeddedAccessToken || undefined
+        embeddedAccessToken: embeddedAccessToken || undefined, // DEPRECATED
+        userWabaConnectionId: userWabaConnectionId || undefined // NEW: link to stored connection
       }
-      
+
+      console.log('📦 Creating channel with data:', {
+        ...channelData,
+        userWabaConnectionId: userWabaConnectionId ? 'presente' : 'ausente'
+      })
+
       // Sempre usar o fluxo Embedded Signup
       await channelsService.createWhatsAppChannelEmbedded(clinicId, channelData)
       

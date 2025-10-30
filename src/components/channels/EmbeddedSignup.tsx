@@ -35,6 +35,7 @@ interface EmbeddedSignupProps {
     wabaId: string
     phoneNumberId: string
     phoneNumber: string
+    wabaConnectionId?: string // NEW: for channel creation
   }) => void
   onError?: (error: any) => void
 }
@@ -42,6 +43,7 @@ interface EmbeddedSignupProps {
 interface SessionInfoData {
   accessToken: string
   wabaId: string
+  wabaConnectionId?: string // NEW: from exchange response
   phoneNumbers: Array<{
     id: string
     displayPhoneNumber: string
@@ -68,6 +70,9 @@ export function EmbeddedSignup({ clinicId, onSuccess, onError }: EmbeddedSignupP
   const [isLoading, setIsLoading] = useState(false)
   const [sdkLoaded, setSdkLoaded] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
+  // NEW: Store postMessage data to use in exchange
+  const [postMessageWabaId, setPostMessageWabaId] = useState<string | null>(null)
+  const [postMessagePhoneNumberId, setPostMessagePhoneNumberId] = useState<string | null>(null)
   const { toast } = useToast()
 
   // Função para processar mudanças no status de login
@@ -117,7 +122,8 @@ export function EmbeddedSignup({ clinicId, onSuccess, onError }: EmbeddedSignupP
         accessToken: sessionInfo.accessToken,
         wabaId: sessionInfo.wabaId,
         phoneNumberId: selectedPhone.id,
-        phoneNumber: selectedPhone.displayPhoneNumber
+        phoneNumber: selectedPhone.displayPhoneNumber,
+        wabaConnectionId: sessionInfo.wabaConnectionId // NEW: pass to parent
       })
 
       toast({
@@ -229,10 +235,13 @@ export function EmbeddedSignup({ clinicId, onSuccess, onError }: EmbeddedSignupP
           })
 
           if (waba_id && phone_number_id) {
-            // Processar dados do embedded signup via postMessage
-            // Este é o fluxo ideal - temos os IDs direto do iframe
-            console.log('✅ Processando via postMessage (FLUXO IDEAL)')
-            handleEmbeddedSignupViaPostMessage(waba_id, phone_number_id, msg.data)
+            // NEW: Store IDs for use in exchange
+            console.log('✅ Armazenando IDs do postMessage para usar no exchange')
+            setPostMessageWabaId(waba_id)
+            setPostMessagePhoneNumberId(phone_number_id)
+
+            // OLD BEHAVIOR: Process via postMessage directly (kept as fallback)
+            // handleEmbeddedSignupViaPostMessage(waba_id, phone_number_id, msg.data)
           } else {
             console.warn('⚠️ WA_EMBEDDED_SIGNUP FINISH recebido mas sem waba_id ou phone_number_id')
           }
@@ -354,24 +363,27 @@ export function EmbeddedSignup({ clinicId, onSuccess, onError }: EmbeddedSignupP
 
             if (code) {
               console.log('✅ FLUXO OAUTH: Código de autorização recebido')
-              console.log('⚠️ NOTA: Se você esperava receber waba_id via postMessage, verifique:')
-              console.log('   1. O app tem "WhatsApp Embedded Signup" habilitado nas configurações')
-              console.log('   2. Não está ocorrendo redirect completo de página')
-              console.log('   3. Está em HTTPS (ou localhost)')
-              console.log('   4. O config_id está correto:', META_CONFIG_ID)
+              console.log('📋 Verificando se temos dados do postMessage:', {
+                wabaId: postMessageWabaId,
+                phoneNumberId: postMessagePhoneNumberId
+              })
 
-              // Processar o código de forma assíncrona (FLUXO OAUTH)
+              // NEW: Include postMessage data in exchange if available
               channelsService.exchangeEmbeddedSignupCode({
                 code,
-                clinicId
+                clinicId,
+                wabaId: postMessageWabaId || undefined,
+                phoneNumberId: postMessagePhoneNumberId || undefined
               })
               .then((result) => {
                 console.log('✅ Código trocado com sucesso via backend')
+                console.log('📦 wabaConnectionId recebido:', result.wabaConnectionId)
                 // Processar a resposta
                 handleSessionInfoReceived({
                   accessToken: result.accessToken,
                   wabaId: result.wabaId,
-                  phoneNumbers: result.phoneNumbers
+                  phoneNumbers: result.phoneNumbers,
+                  wabaConnectionId: result.wabaConnectionId // NEW: pass to handler
                 })
                 setIsLoading(false)
               })
