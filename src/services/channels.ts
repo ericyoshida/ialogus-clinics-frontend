@@ -53,7 +53,7 @@ export interface EmbeddedSignupResponse {
 
 export interface CreateChannelData {
   phoneNumber: string;
-  botModelsIds: string[];
+  agentsIds: string[]; // Fixed: backend expects "agentsIds"
   additionalInstructions: string;
   operationalRegion: string;
   whatsappPhoneNumberId: string;

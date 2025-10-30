@@ -93,7 +93,7 @@ export default function MetaConnectionPage() {
       
       const channelData = {
         phoneNumber: sanitizedPhoneNumber,
-        botModelsIds: selectedAgentIds,
+        agentsIds: selectedAgentIds, // Fixed: backend expects "agentsIds"
         additionalInstructions: '',
         operationalRegion: 'BR',
         whatsappPhoneNumberId: embeddedSignupData.phoneNumberId,
