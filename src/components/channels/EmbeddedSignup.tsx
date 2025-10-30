@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { channelsService } from '@/services/channels'
 import { CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 
 // Configurações do Meta conforme fornecidas
 const META_APP_ID = '1141048344552370'
@@ -70,9 +70,9 @@ export function EmbeddedSignup({ clinicId, onSuccess, onError }: EmbeddedSignupP
   const [isLoading, setIsLoading] = useState(false)
   const [sdkLoaded, setSdkLoaded] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
-  // NEW: Store postMessage data to use in exchange
-  const [postMessageWabaId, setPostMessageWabaId] = useState<string | null>(null)
-  const [postMessagePhoneNumberId, setPostMessagePhoneNumberId] = useState<string | null>(null)
+  // NEW: Store postMessage data to use in exchange (using useRef to avoid race condition)
+  const postMessageWabaIdRef = useRef<string | null>(null)
+  const postMessagePhoneNumberIdRef = useRef<string | null>(null)
   const { toast } = useToast()
 
   // Função para processar mudanças no status de login
@@ -235,10 +235,10 @@ export function EmbeddedSignup({ clinicId, onSuccess, onError }: EmbeddedSignupP
           })
 
           if (waba_id && phone_number_id) {
-            // NEW: Store IDs for use in exchange
+            // NEW: Store IDs for use in exchange (using ref for immediate availability)
             console.log('✅ Armazenando IDs do postMessage para usar no exchange')
-            setPostMessageWabaId(waba_id)
-            setPostMessagePhoneNumberId(phone_number_id)
+            postMessageWabaIdRef.current = waba_id
+            postMessagePhoneNumberIdRef.current = phone_number_id
 
             // OLD BEHAVIOR: Process via postMessage directly (kept as fallback)
             // handleEmbeddedSignupViaPostMessage(waba_id, phone_number_id, msg.data)
@@ -364,16 +364,16 @@ export function EmbeddedSignup({ clinicId, onSuccess, onError }: EmbeddedSignupP
             if (code) {
               console.log('✅ FLUXO OAUTH: Código de autorização recebido')
               console.log('📋 Verificando se temos dados do postMessage:', {
-                wabaId: postMessageWabaId,
-                phoneNumberId: postMessagePhoneNumberId
+                wabaId: postMessageWabaIdRef.current,
+                phoneNumberId: postMessagePhoneNumberIdRef.current
               })
 
               // NEW: Include postMessage data in exchange if available
               channelsService.exchangeEmbeddedSignupCode({
                 code,
                 clinicId,
-                wabaId: postMessageWabaId || undefined,
-                phoneNumberId: postMessagePhoneNumberId || undefined
+                wabaId: postMessageWabaIdRef.current || undefined,
+                phoneNumberId: postMessagePhoneNumberIdRef.current || undefined
               })
               .then((result) => {
                 console.log('✅ Código trocado com sucesso via backend')
