@@ -105,8 +105,8 @@ export default function MetaConnectionPage() {
         embeddedAccessToken: embeddedSignupData.accessToken
       }
       
-      // Criar canal com todos os dados
-      await channelsService.createWhatsAppChannel(clinicId, channelData)
+      // Criar canal com todos os dados (usando endpoint de Embedded Signup)
+      await channelsService.createWhatsAppChannelEmbedded(clinicId, channelData)
       
       toast({
         title: "Canal criado com sucesso!",
