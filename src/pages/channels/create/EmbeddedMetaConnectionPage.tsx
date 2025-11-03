@@ -108,13 +108,14 @@ export default function EmbeddedMetaConnectionPage() {
   // Carregar números quando selecionar uma conta
   useEffect(() => {
     const loadPhoneNumbers = async () => {
-      if (!selectedBusinessAccountId || !isAuthenticated) return
-      
+      // SKIP if using Embedded Signup - phone numbers already provided in callback
+      if (!selectedBusinessAccountId || !isAuthenticated || embeddedAccessToken) return
+
       setIsLoadingNumbers(true)
       try {
         const numbers = await channelsService.getWhatsAppNumbers(selectedBusinessAccountId)
         updateFormData({ whatsappNumbers: numbers })
-        
+
         // Verificar disponibilidade dos números
         if (numbers.length > 0) {
           const numberIds = numbers.map(n => n.id)
@@ -131,9 +132,9 @@ export default function EmbeddedMetaConnectionPage() {
         setIsLoadingNumbers(false)
       }
     }
-    
+
     loadPhoneNumbers()
-  }, [selectedBusinessAccountId, isAuthenticated, updateFormData, toast])
+  }, [selectedBusinessAccountId, isAuthenticated, embeddedAccessToken, updateFormData, toast])
 
   const handleEmbeddedSignupSuccess = async (signupData: any) => {
     console.log('🎉 Embedded signup successful:', signupData)
