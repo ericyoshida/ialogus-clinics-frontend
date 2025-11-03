@@ -40,7 +40,13 @@ export default function EmbeddedMetaConnectionPage() {
   const [localChannelName, setLocalChannelName] = useState(channelName || '')
   const [embeddedAccessToken, setEmbeddedAccessToken] = useState<string | null>(null)
   const [localWabaConnectionId, setLocalWabaConnectionId] = useState<string | undefined>(undefined)
-  
+
+  // Estados para conexões existentes
+  const [existingConnections, setExistingConnections] = useState<any[]>([])
+  const [isLoadingConnections, setIsLoadingConnections] = useState(true)
+  const [selectedExistingConnectionId, setSelectedExistingConnectionId] = useState<string | null>(null)
+  const [showExistingTab, setShowExistingTab] = useState(true) // true = mostrar existentes, false = criar nova
+
   // Salvar clinicId no estado quando montar o componente
   useEffect(() => {
     if (clinicId && clinicId !== savedClinicId) {
@@ -52,7 +58,33 @@ export default function EmbeddedMetaConnectionPage() {
   useEffect(() => {
     console.log('🔄 [DEBUG] userWabaConnectionId changed in Zustand store:', userWabaConnectionId || 'undefined')
   }, [userWabaConnectionId])
-  
+
+  // Buscar conexões WABA existentes ao montar componente
+  useEffect(() => {
+    const loadExistingConnections = async () => {
+      try {
+        const connections = await channelsService.getUserWabaConnections()
+        setExistingConnections(connections)
+
+        // Se tiver conexões, mostrar tab de existentes por padrão
+        if (connections.length > 0) {
+          setShowExistingTab(true)
+        } else {
+          // Se não tiver conexões, ir direto para criar nova
+          setShowExistingTab(false)
+        }
+      } catch (error) {
+        console.error('Erro ao carregar conexões existentes:', error)
+        // Em caso de erro, mostrar opção de criar nova
+        setShowExistingTab(false)
+      } finally {
+        setIsLoadingConnections(false)
+      }
+    }
+
+    loadExistingConnections()
+  }, [])
+
   // Verificar se está autenticado
   const isAuthenticated = !!metaAuthData?.accessToken && !!businessAccounts
   

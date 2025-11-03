@@ -248,6 +248,34 @@ export const createWhatsAppChannelEmbedded = async (
   }
 };
 
+export interface UserWabaConnection {
+  id: string;
+  whatsappBusinessAccountId: string;
+  whatsappBusinessAccountName: string;
+  authMethod: 'oauth' | 'embedded_signup';
+  isActive: boolean;
+  createdAt: string;
+  expiresAt?: string | null;
+}
+
+/**
+ * Busca as conexões WABA do usuário atual
+ */
+export const getUserWabaConnections = async (): Promise<UserWabaConnection[]> => {
+  try {
+    console.log('Buscando conexões WABA do usuário');
+    const response = await api.get<{ connections: UserWabaConnection[] }>(
+      '/accounts/waba-connections'
+    );
+
+    console.log('Conexões WABA recebidas:', response.data.connections);
+    return response.data.connections;
+  } catch (error) {
+    console.error('Error fetching user WABA connections:', error);
+    throw error;
+  }
+};
+
 export const channelsService = {
   getWhatsappChannelsByClinicId,
   getWhatsAppChannelById,
@@ -260,4 +288,5 @@ export const channelsService = {
   createWhatsAppChannelEmbedded,
   checkWhatsAppNumbersAvailability,
   exchangeEmbeddedSignupCode,
+  getUserWabaConnections,
 }; 
