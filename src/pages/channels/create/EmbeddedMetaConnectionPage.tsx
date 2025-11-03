@@ -39,6 +39,7 @@ export default function EmbeddedMetaConnectionPage() {
   // Estados para seleção
   const [localChannelName, setLocalChannelName] = useState(channelName || '')
   const [embeddedAccessToken, setEmbeddedAccessToken] = useState<string | null>(null)
+  const [localWabaConnectionId, setLocalWabaConnectionId] = useState<string | undefined>(undefined)
   
   // Salvar clinicId no estado quando montar o componente
   useEffect(() => {
@@ -107,6 +108,9 @@ export default function EmbeddedMetaConnectionPage() {
 
     // Store the access token for channel creation
     setEmbeddedAccessToken(signupData.accessToken)
+
+    // Store wabaConnectionId in local state to avoid Zustand persist race condition
+    setLocalWabaConnectionId(signupData.wabaConnectionId)
 
     // Update form data with the business accounts and userWabaConnectionId
     updateFormData({
@@ -197,6 +201,7 @@ export default function EmbeddedMetaConnectionPage() {
       
       // DEBUG: Check Zustand store value
       console.log('🔍 [DEBUG] Before creating channelData:')
+      console.log('  - localWabaConnectionId (state):', localWabaConnectionId)
       console.log('  - userWabaConnectionId from Zustand:', userWabaConnectionId)
       console.log('  - typeof:', typeof userWabaConnectionId)
 
@@ -211,7 +216,7 @@ export default function EmbeddedMetaConnectionPage() {
         botName: localChannelName,
         waitTimeoutToEndChatLog: 300, // 5 minutos padrão
         embeddedAccessToken: embeddedAccessToken || undefined, // DEPRECATED
-        userWabaConnectionId: userWabaConnectionId || undefined // NEW: link to stored connection
+        userWabaConnectionId: localWabaConnectionId || userWabaConnectionId || undefined // Prioritize local state over Zustand
       }
 
       console.log('🔍 [DEBUG] After creating channelData:')
@@ -232,10 +237,14 @@ export default function EmbeddedMetaConnectionPage() {
         title: "Canal criado com sucesso!",
         description: "Seu canal WhatsApp foi configurado e está pronto para uso.",
       })
-      
+
+      // Limpar estados locais
+      setLocalWabaConnectionId(undefined)
+      setEmbeddedAccessToken(null)
+
       // Limpar dados do formulário
       clearFormData()
-      
+
       // Redirecionar para a página de sucesso
       navigate(`/dashboard/clinic/${clinicId}/channels/create/success`)
     } catch (error: any) {
@@ -327,6 +336,7 @@ export default function EmbeddedMetaConnectionPage() {
                       userWabaConnectionId: undefined,
                     })
                     setEmbeddedAccessToken(null)
+                    setLocalWabaConnectionId(undefined)
                   }}
                   className="text-xs text-green-700 hover:text-green-900 underline"
                 >
