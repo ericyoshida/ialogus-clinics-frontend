@@ -1,7 +1,7 @@
 import { MultiStepChannel } from '@/components/multi-step-channel'
 import { Button } from '@/components/ui/button'
 import { IalogusInput } from '@/components/ui/ialogus-input'
-import { EmbeddedSignup } from '@/components/whatsapp/EmbeddedSignup'
+import { EmbeddedSignup } from '@/components/channels/EmbeddedSignup'
 import { useChannelCreationForm } from '@/hooks/use-channel-creation-form'
 import { useClinics } from '@/hooks/use-clinics'
 import { useToast } from '@/hooks/use-toast'
@@ -195,6 +195,11 @@ export default function EmbeddedMetaConnectionPage() {
       console.log('Número original:', selectedPhoneNumber)
       console.log('Número sanitizado:', sanitizedPhoneNumber)
       
+      // DEBUG: Check Zustand store value
+      console.log('🔍 [DEBUG] Before creating channelData:')
+      console.log('  - userWabaConnectionId from Zustand:', userWabaConnectionId)
+      console.log('  - typeof:', typeof userWabaConnectionId)
+
       const channelData = {
         phoneNumber: sanitizedPhoneNumber,
         agentsIds: selectedAgentIds, // Fixed: backend expects "agentsIds" not "botModelsIds"
@@ -208,6 +213,9 @@ export default function EmbeddedMetaConnectionPage() {
         embeddedAccessToken: embeddedAccessToken || undefined, // DEPRECATED
         userWabaConnectionId: userWabaConnectionId || undefined // NEW: link to stored connection
       }
+
+      console.log('🔍 [DEBUG] After creating channelData:')
+      console.log('  - channelData.userWabaConnectionId:', channelData.userWabaConnectionId)
 
       console.log('📦 Creating channel with data:')
       console.log('  - phoneNumber:', sanitizedPhoneNumber)
