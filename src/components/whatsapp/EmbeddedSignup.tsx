@@ -13,12 +13,13 @@ interface EmbeddedSignupProps {
 
 interface EmbeddedSignupResult {
   accessToken: string
-  userID: string
-  expiresIn: number
-  whatsappBusinessAccounts: Array<{
+  wabaConnectionId?: string
+  wabaId: string
+  phoneNumbers: Array<{
     id: string
-    name: string
-    category: string
+    displayPhoneNumber: string
+    verifiedName: string
+    qualityRating: string
   }>
 }
 
@@ -142,12 +143,12 @@ export const EmbeddedSignup: React.FC<EmbeddedSignupProps> = ({
             const phoneNumber = msg.data?.phone_number || ''
             onSuccess({
               accessToken: '', // Será obtido pelo backend
-              userID: '',
-              expiresIn: 0,
-              whatsappBusinessAccounts: [{
-                id: waba_id,
-                name: msg.data?.business_name || 'WhatsApp Business',
-                category: ''
+              wabaId: waba_id,
+              phoneNumbers: [{
+                id: phone_number_id,
+                displayPhoneNumber: phoneNumber,
+                verifiedName: msg.data?.business_name || 'WhatsApp Business',
+                qualityRating: 'UNKNOWN'
               }]
             })
           } else {
@@ -319,20 +320,21 @@ export const EmbeddedSignup: React.FC<EmbeddedSignupProps> = ({
             title: "WhatsApp Business Connected!",
             description: "Successfully connected your WhatsApp Business account.",
           })
-          
+
           onSuccess({
             accessToken: result.accessToken,
-            userID: result.userID,
-            expiresIn: result.expiresIn,
-            whatsappBusinessAccounts: result.whatsappBusinessAccounts || []
+            wabaConnectionId: result.wabaConnectionId,
+            wabaId: result.wabaId,
+            phoneNumbers: result.phoneNumbers || []
           })
         } else {
           throw new Error(result.error || 'Failed to exchange authorization code')
         }
       } else if (accessToken) {
-        // Direct access token flow (fallback)
+        // Direct access token flow (fallback - DEPRECATED)
+        console.warn('⚠️ Direct access token flow is deprecated. Please use the code exchange flow.')
         console.log('🎫 Processing access token...')
-        
+
         // Log the successful signup event
         if (window.FB.AppEvents) {
           window.FB.AppEvents.logEvent('WhatsAppBusinessSignup', {
@@ -340,20 +342,18 @@ export const EmbeddedSignup: React.FC<EmbeddedSignupProps> = ({
             configId: META_CONFIG.configId
           })
         }
-        
-        // Fetch WhatsApp Business Accounts
-        const businessAccounts = await fetchWhatsAppBusinessAccounts(accessToken)
-        
+
+        // This fallback flow doesn't provide WABA details
+        // User will need to manually configure or use the proper code exchange flow
         toast({
           title: "WhatsApp Business Connected!",
-          description: "Successfully connected your WhatsApp Business account.",
+          description: "Successfully connected. Please complete setup using the code exchange flow for full functionality.",
         })
-        
+
         onSuccess({
           accessToken,
-          userID,
-          expiresIn,
-          whatsappBusinessAccounts: businessAccounts
+          wabaId: '', // Not available in this fallback flow
+          phoneNumbers: [] // Not available in this fallback flow
         })
       } else {
         throw new Error('No access token or authorization code received')

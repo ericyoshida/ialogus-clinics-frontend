@@ -114,7 +114,11 @@ export default function EmbeddedMetaConnectionPage() {
       metaAuthData: {
         accessToken: 'embedded_signup_token', // Placeholder
       },
-      businessAccounts: signupData.whatsappBusinessAccounts || []
+      businessAccounts: signupData.wabaId ? [{
+        id: signupData.wabaId,
+        name: 'WhatsApp Business Account',
+        verificationStatus: 'VERIFIED'
+      }] : []
     })
 
     toast({
