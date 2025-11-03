@@ -17,8 +17,8 @@ export default function EmbeddedMetaConnectionPage() {
   const { toast } = useToast()
   const { clinics } = useClinics()
   const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...'
-  const { 
-    selectedAgentIds, 
+  const {
+    selectedAgentIds,
     metaAuthData,
     businessAccounts,
     selectedBusinessAccountId,
@@ -27,18 +27,18 @@ export default function EmbeddedMetaConnectionPage() {
     selectedPhoneNumber,
     channelName,
     clinicId: savedClinicId,
-    updateFormData, 
-    clearFormData 
+    userWabaConnectionId,
+    updateFormData,
+    clearFormData
   } = useChannelCreationForm()
   
   const [isLoadingNumbers, setIsLoadingNumbers] = useState(false)
   const [isCreatingChannel, setIsCreatingChannel] = useState(false)
   const [numbersAvailability, setNumbersAvailability] = useState<Record<string, { inUse: boolean; channelName?: string }>>({})
-  
+
   // Estados para seleção
   const [localChannelName, setLocalChannelName] = useState(channelName || '')
   const [embeddedAccessToken, setEmbeddedAccessToken] = useState<string | null>(null)
-  const [userWabaConnectionId, setUserWabaConnectionId] = useState<string | null>(null) // NEW
   
   // Salvar clinicId no estado quando montar o componente
   useEffect(() => {
@@ -103,13 +103,7 @@ export default function EmbeddedMetaConnectionPage() {
     // Store the access token for channel creation
     setEmbeddedAccessToken(signupData.accessToken)
 
-    // NEW: Store userWabaConnectionId for channel creation
-    if (signupData.wabaConnectionId) {
-      console.log('📦 Storing userWabaConnectionId:', signupData.wabaConnectionId)
-      setUserWabaConnectionId(signupData.wabaConnectionId)
-    }
-
-    // Update form data with the business accounts
+    // Update form data with the business accounts and userWabaConnectionId
     updateFormData({
       metaAuthData: {
         accessToken: 'embedded_signup_token', // Placeholder
@@ -118,8 +112,15 @@ export default function EmbeddedMetaConnectionPage() {
         id: signupData.wabaId,
         name: 'WhatsApp Business Account',
         verificationStatus: 'VERIFIED'
-      }] : []
+      }] : [],
+      userWabaConnectionId: signupData.wabaConnectionId // Store in Zustand store
     })
+
+    if (signupData.wabaConnectionId) {
+      console.log('📦 Stored userWabaConnectionId in Zustand store:', signupData.wabaConnectionId)
+    } else {
+      console.warn('⚠️ No wabaConnectionId received from backend!')
+    }
 
     toast({
       title: "Conexão estabelecida!",
@@ -156,6 +157,12 @@ export default function EmbeddedMetaConnectionPage() {
   }
   
   const handleComplete = async () => {
+    console.log('🚀 handleComplete called')
+    console.log('📋 Current state from Zustand store:')
+    console.log('  - userWabaConnectionId:', userWabaConnectionId || 'undefined')
+    console.log('  - selectedBusinessAccountId:', selectedBusinessAccountId)
+    console.log('  - selectedPhoneNumberId:', selectedPhoneNumberId)
+
     if (!selectedBusinessAccountId || !selectedPhoneNumberId || !selectedPhoneNumber || !localChannelName.trim()) {
       toast({
         title: "Campos obrigatórios",
@@ -164,9 +171,9 @@ export default function EmbeddedMetaConnectionPage() {
       })
       return
     }
-    
+
     setIsCreatingChannel(true)
-    
+
     try {
       // Usar o ID da clínica da URL
       if (!clinicId) {
@@ -197,10 +204,13 @@ export default function EmbeddedMetaConnectionPage() {
         userWabaConnectionId: userWabaConnectionId || undefined // NEW: link to stored connection
       }
 
-      console.log('📦 Creating channel with data:', {
-        ...channelData,
-        userWabaConnectionId: userWabaConnectionId ? 'presente' : 'ausente'
-      })
+      console.log('📦 Creating channel with data:')
+      console.log('  - phoneNumber:', sanitizedPhoneNumber)
+      console.log('  - agentsIds:', selectedAgentIds)
+      console.log('  - whatsappPhoneNumberId:', selectedPhoneNumberId)
+      console.log('  - whatsappBusinessAccountId:', selectedBusinessAccountId)
+      console.log('  - userWabaConnectionId:', userWabaConnectionId || 'undefined')
+      console.log('  - embeddedAccessToken:', embeddedAccessToken ? 'presente' : 'ausente')
 
       // Sempre usar o fluxo Embedded Signup
       await channelsService.createWhatsAppChannelEmbedded(clinicId, channelData)
@@ -301,6 +311,7 @@ export default function EmbeddedMetaConnectionPage() {
                       whatsappNumbers: undefined,
                       selectedPhoneNumberId: undefined,
                       selectedPhoneNumber: undefined,
+                      userWabaConnectionId: undefined,
                     })
                     setEmbeddedAccessToken(null)
                   }}

@@ -23,6 +23,7 @@ interface ChannelCreationFormData {
   selectedPhoneNumber?: string
   channelName?: string
   clinicId?: string
+  userWabaConnectionId?: string
   step: number
 }
 
@@ -45,6 +46,7 @@ const initialState: ChannelCreationFormData = {
   selectedPhoneNumber: undefined,
   channelName: undefined,
   clinicId: undefined,
+  userWabaConnectionId: undefined,
   step: 0,
 }
 
@@ -95,6 +97,7 @@ export const useChannelCreationForm = create(
         whatsappNumbers: state.whatsappNumbers,
         selectedPhoneNumberId: state.selectedPhoneNumberId,
         selectedPhoneNumber: state.selectedPhoneNumber,
+        userWabaConnectionId: state.userWabaConnectionId,
       }),
     }
   )
