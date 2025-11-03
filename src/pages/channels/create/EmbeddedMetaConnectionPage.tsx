@@ -122,6 +122,9 @@ export default function EmbeddedMetaConnectionPage() {
         name: 'WhatsApp Business Account',
         verificationStatus: 'VERIFIED'
       }] : [],
+      selectedBusinessAccountId: signupData.wabaId, // Auto-select the business account
+      selectedPhoneNumberId: signupData.phoneNumberId, // Set phone number ID
+      selectedPhoneNumber: signupData.phoneNumber, // Set phone number display
       userWabaConnectionId: signupData.wabaConnectionId // Store in Zustand store
     })
 
@@ -130,6 +133,12 @@ export default function EmbeddedMetaConnectionPage() {
     } else {
       console.warn('⚠️ No wabaConnectionId received from backend!')
     }
+
+    console.log('📱 Phone data set:', {
+      phoneNumberId: signupData.phoneNumberId,
+      phoneNumber: signupData.phoneNumber,
+      businessAccountId: signupData.wabaId
+    })
 
     toast({
       title: "Conexão estabelecida!",
