@@ -46,6 +46,11 @@ export default function EmbeddedMetaConnectionPage() {
       updateFormData({ clinicId })
     }
   }, [clinicId, savedClinicId, updateFormData])
+
+  // DEBUG: Monitor userWabaConnectionId changes
+  useEffect(() => {
+    console.log('🔄 [DEBUG] userWabaConnectionId changed in Zustand store:', userWabaConnectionId || 'undefined')
+  }, [userWabaConnectionId])
   
   // Verificar se está autenticado
   const isAuthenticated = !!metaAuthData?.accessToken && !!businessAccounts

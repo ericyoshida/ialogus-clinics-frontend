@@ -233,6 +233,12 @@ export const createWhatsAppChannelEmbedded = async (
   clinicId: string,
   data: CreateChannelData & { embeddedAccessToken?: string }
 ): Promise<WhatsappChannel> => {
+  console.log('🚀 [Service] createWhatsAppChannelEmbedded called')
+  console.log('  - clinicId:', clinicId)
+  console.log('  - data.userWabaConnectionId:', data.userWabaConnectionId || 'undefined')
+  console.log('  - data.embeddedAccessToken:', data.embeddedAccessToken ? 'presente' : 'ausente')
+  console.log('  - Full payload:', JSON.stringify(data, null, 2))
+
   try {
     const response = await api.post(`/clinics/${clinicId}/whatsapp-channels/embedded`, data);
     return response.data;
