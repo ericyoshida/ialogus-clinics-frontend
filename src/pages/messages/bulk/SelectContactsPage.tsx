@@ -306,7 +306,7 @@ const SelectContactsPage: React.FC = () => {
     }
 
     // Verificar se os dados essenciais estão presentes
-    if (!selectedAgentData.departmentId || !selectedChannelData.id || !selectedTemplateData.whatsappMessageTemplateId) {
+    if (!selectedAgentData.agentId || !selectedChannelData.id || !selectedTemplateData.whatsappMessageTemplateId) {
       showError('Dados essenciais do agente, canal ou template estão faltando. Volte e selecione novamente.');
       return;
     }
@@ -317,10 +317,10 @@ const SelectContactsPage: React.FC = () => {
 
     try {
       console.log('📤 Iniciando envio em massa para', selectedContactsSet.size, 'contatos');
-      
+
       // Usar os dados já salvos no formulário - agora usando o canal selecionado
       const response = await bulkMessagesService.sendBulkTemplateMessage(
-        selectedAgentData.departmentId,
+        selectedAgentData.agentId,
         selectedChannelData.id, // Usar o canal selecionado em vez do canal do template
         selectedTemplateData.whatsappMessageTemplateId,
         Array.from(selectedContactsSet)
@@ -330,15 +330,15 @@ const SelectContactsPage: React.FC = () => {
       showSuccess(`Envio iniciado! Redirecionando para acompanhar o progresso...`);
 
       // Salvar dados no formulário
-      updateFormData({ 
+      updateFormData({
         selectedContacts: Array.from(selectedContactsSet),
-        step: 4 
+        step: 4
       });
 
       // Navegar para a página de resultados com os parâmetros necessários
       const params = new URLSearchParams({
         jobId: response.jobId,
-        departmentId: selectedAgentData.departmentId,
+        agentId: selectedAgentData.agentId,
         whatsappChannelId: selectedChannelData.id, // Usar o canal selecionado
         whatsappMessageTemplateId: selectedTemplateData.whatsappMessageTemplateId
       });

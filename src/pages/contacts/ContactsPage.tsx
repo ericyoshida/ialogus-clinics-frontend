@@ -192,7 +192,6 @@ const ContactsPage: React.FC = () => {
       await customersService.updateCustomer(updatedCustomer.id, {
         name: updatedCustomer.name,
         phoneNumber: updatedCustomer.phoneNumber,
-        department: updatedCustomer.department,
         customerReferenceId: updatedCustomer.customerReferenceId
       });
       
@@ -225,7 +224,6 @@ const ContactsPage: React.FC = () => {
   const handleSaveNewCustomer = async (customerData: {
     name: string;
     phoneNumber: string;
-    department?: string;
   }) => {
     try {
       setIsCreatingCustomer(true);
@@ -388,11 +386,6 @@ const ContactsPage: React.FC = () => {
                           <div className="text-sm font-medium text-gray-900">
                             {customerName}
                           </div>
-                          {customer.department && (
-                            <div className="text-sm text-gray-500">
-                              {customer.department}
-                            </div>
-                          )}
                           {customer.lastMessageDate && (
                             <div className="flex items-center text-xs text-gray-400 mt-1">
                               <Eye className="h-3 w-3 mr-1" />

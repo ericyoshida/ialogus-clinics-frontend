@@ -3,8 +3,8 @@ import { api } from '.';
 export interface WhatsappChannel {
   id: string;
   clinicId: string;
-  botModelsIDList: string[];
-  botName: string;
+  agentsIds: string[];
+  channelName: string;
   phoneNumber: string;
   operationalRegion: string;
   additionalInstructions: string;
@@ -59,7 +59,7 @@ export interface CreateChannelData {
   whatsappPhoneNumberId: string;
   whatsappBusinessAccountId: string;
   metaBusinessAccountId: string;
-  botName: string;
+  channelName: string;
   waitTimeoutToEndChatLog: number;
   isEmbeddedSignup?: boolean;
   embeddedAccessToken?: string; // DEPRECATED: use userWabaConnectionId

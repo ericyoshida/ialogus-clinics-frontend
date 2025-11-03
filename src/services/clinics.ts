@@ -1,17 +1,10 @@
 import { api } from '.';
 
-export interface Department {
-  departmentId: string;
-  departmentName: string;
-  macroDepartmentName: string;
-}
-
 export interface Clinic {
   id: string;
   name: string;
   address: string;
   acceptedInsurances: string[];
-  departments: Department[];
   createdAt: string;
   updatedAt: string;
 }
@@ -36,7 +29,6 @@ interface RawClinicData {
   name: string;
   address?: string;
   acceptedInsurances?: string[];
-  departments?: Department[];
   createdAt?: string;
   updatedAt?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

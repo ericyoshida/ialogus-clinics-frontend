@@ -39,27 +39,19 @@ function SelectableBotModelCard({
       .join(' ');
   };
 
-  // Determinar o tipo de agente baseado no departamento
-  const getAgentType = (departmentName: string) => {
-    if (departmentName.toLowerCase().includes('vendas')) {
-      return 'Vendas';
-    }
-    return 'Suporte ao Cliente';
-  };
-
   const handleEditAgent = (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    console.log('Editar agente:', agent.botName);
+    console.log('Editar agente:', agent.agentName);
     // No contexto do fluxo de envio em massa, não navegar para outra página
     // TODO: Implementar modal de edição ou outra solução
-    // navigate(`/dashboard/clinic/${clinicId}/agents?editAgent=${agent.botModelId}`);
+    // navigate(`/dashboard/clinic/${clinicId}/agents?editAgent=${agent.agentId}`);
   };
 
   const handleDeleteAgent = (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    console.log('Deletar agente:', agent.botName);
+    console.log('Deletar agente:', agent.agentName);
     // TODO: Implementar confirmação e deleção de agente
-    // navigate(`/dashboard/agents?deleteAgent=${agent.botModelId}`);
+    // navigate(`/dashboard/agents?deleteAgent=${agent.agentId}`);
   };
 
   return (
@@ -72,8 +64,8 @@ function SelectableBotModelCard({
       
       <div className="w-full h-full">
         <AgentCard
-          name={formatName(agent.botName)}
-          type={getAgentType(agent.departmentName)}
+          name={formatName(agent.agentName)}
+          type="Agente de IA"
           conversationsToday={agent.todayActiveConversationsCount || 0}
           activeChannels={agent.connectedChannels?.map(channel => channel.channelType.toLowerCase()) || ['chat']}
           onClick={onClick}
@@ -187,28 +179,26 @@ export default function SelectAgentPage() {
     }
   };
 
-  const handleBotModelSelect = (botModelId: string) => {
-    console.log('🎯 Selecionando agente:', botModelId);
-    
-    // Encontrar o bot model completo nos dados carregados
-    const selectedBotModel = allAgents.find(agent => agent.botModelId === botModelId);
-    
-    if (selectedBotModel) {
+  const handleAgentSelect = (agentId: string) => {
+    console.log('🎯 Selecionando agente:', agentId);
+
+    // Encontrar o agente completo nos dados carregados
+    const selectedAgent = allAgents.find(agent => agent.agentId === agentId);
+
+    if (selectedAgent) {
       console.log('✅ Agente encontrado, atualizando formData');
-      updateFormData({ 
-        selectedAgentId: botModelId,
+      updateFormData({
+        selectedAgentId: agentId,
         selectedAgentData: {
-          botModelId: selectedBotModel.botModelId,
-          departmentId: selectedBotModel.departmentId,
-          departmentName: selectedBotModel.departmentName,
-          botName: selectedBotModel.botName,
-          clinicId: '', // Este campo não está disponível no Agent, usando string vazia
+          agentId: selectedAgent.agentId,
+          agentName: selectedAgent.agentName,
+          clinicId: selectedAgent.clinicId,
         },
-        step: 1 
+        step: 1
       });
     } else {
       console.log('⚠️ Agente não encontrado na lista');
-      updateFormData({ selectedAgentId: botModelId, step: 1 });
+      updateFormData({ selectedAgentId: agentId, step: 1 });
     }
   };
 
@@ -312,10 +302,10 @@ export default function SelectAgentPage() {
               
               {currentAgents.map((agent) => (
                 <SelectableBotModelCard
-                  key={agent.botModelId}
+                  key={agent.agentId}
                   agent={agent}
-                  selected={selectedAgentId === agent.botModelId}
-                  onClick={() => handleBotModelSelect(agent.botModelId)}
+                  selected={selectedAgentId === agent.agentId}
+                  onClick={() => handleAgentSelect(agent.agentId)}
                   clinicId={clinicId}
                 />
               ))}

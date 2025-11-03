@@ -3,16 +3,14 @@ import { useEffect, useState } from 'react';
 export interface BulkMessageFormData {
   selectedAgentId?: string;
   selectedAgentData?: {
-    botModelId: string;
-    departmentId: string;
-    departmentName: string;
-    botName: string;
+    agentId: string;
+    agentName: string;
     clinicId: string;
   };
   selectedChannelId?: string;
   selectedChannelData?: {
     id: string;
-    botName: string;
+    channelName: string;
     phoneNumber: string;
     operationalRegion: string;
   };

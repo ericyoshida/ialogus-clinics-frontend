@@ -8,7 +8,6 @@ interface CreateContactModalProps {
   onSave: (customerData: {
     name: string;
     phoneNumber: string;
-    department?: string;
   }) => Promise<void>;
   isLoading: boolean;
 }
@@ -76,7 +75,6 @@ export const CreateContactModal: React.FC<CreateContactModalProps> = ({
   const [name, setName] = useState('');
   const [countryCode, setCountryCode] = useState('+55'); // Default Brasil
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [department, setDepartment] = useState('');
   const [errors, setErrors] = useState<{
     name?: string;
     phoneNumber?: string;
@@ -88,7 +86,6 @@ export const CreateContactModal: React.FC<CreateContactModalProps> = ({
       setName('');
       setCountryCode('+55');
       setPhoneNumber('');
-      setDepartment('');
       setErrors({});
     }
   }, [isOpen]);
@@ -122,17 +119,15 @@ export const CreateContactModal: React.FC<CreateContactModalProps> = ({
       // Limpar completamente o número de telefone antes de enviar
       const cleanPhoneNumber = phoneNumber.replace(/\D/g, '');
       const fullPhoneNumber = countryCode + cleanPhoneNumber;
-      
+
       console.log('Dados sendo enviados:', {
         name: name.trim(),
-        phoneNumber: fullPhoneNumber,
-        department: department.trim() || undefined
+        phoneNumber: fullPhoneNumber
       });
-      
+
       await onSave({
         name: name.trim(),
-        phoneNumber: fullPhoneNumber,
-        department: department.trim() || undefined
+        phoneNumber: fullPhoneNumber
       });
       
       // Só fecha o modal se não houve erro
@@ -217,13 +212,6 @@ export const CreateContactModal: React.FC<CreateContactModalProps> = ({
               />
             </div>
           </div>
-
-          <IalogusInput
-            label="Departamento (Opcional)"
-            value={department}
-            onChange={(e) => setDepartment(e.target.value)}
-            disabled={isLoading}
-          />
         </div>
 
         <div className="flex justify-end gap-3 p-6 border-t border-gray-200">

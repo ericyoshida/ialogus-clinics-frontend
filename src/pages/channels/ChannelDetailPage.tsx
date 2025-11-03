@@ -103,9 +103,8 @@ function MetricCard({ title, value, subtitle, icon: Icon, trend, color = "orange
 
 // Componente para o card de agente
 function AgentCard({ agent, onRemove, isRemoving }: { agent: any; onRemove: () => void; isRemoving?: boolean }) {
-  const agentName = agent.botName || 'Agente sem nome';
-  const departmentName = agent.departmentName || agent.department || 'Sem departamento';
-  
+  const agentName = agent.agentName || 'Agente sem nome';
+
   return (
     <div className="flex items-center justify-between p-4 border border-gray-200 rounded-xl bg-white">
       <div className="flex items-center gap-3">
@@ -117,7 +116,7 @@ function AgentCard({ agent, onRemove, isRemoving }: { agent: any; onRemove: () =
         </Avatar>
         <div>
           <p className="font-medium text-sm text-gray-900">{agentName}</p>
-          <p className="text-xs text-gray-500">{departmentName}</p>
+          <p className="text-xs text-gray-500">Agente de IA</p>
         </div>
       </div>
       <Button
@@ -167,7 +166,7 @@ export default function ChannelDetailPage() {
           const channelData = await channelsService.getWhatsAppChannelById(channelId)
           setChannel(channelData)
           setReceptionistName(channelData.botName)
-          setSelectedAgents(channelData.botModelsIDList || [])
+          setSelectedAgents(channelData.agentsIds || [])
         } catch (error) {
           console.error('Erro ao buscar dados do canal:', error)
           toast.error('Erro ao carregar dados do canal')
@@ -350,11 +349,11 @@ export default function ChannelDetailPage() {
   }
 
   const getConnectedAgents = () => {
-    return agents.filter(agent => selectedAgents.includes(agent.botModelId))
+    return agents.filter(agent => selectedAgents.includes(agent.agentId))
   }
 
   const getAvailableAgents = () => {
-    return agents.filter(agent => !selectedAgents.includes(agent.botModelId))
+    return agents.filter(agent => !selectedAgents.includes(agent.agentId))
   }
 
   if (loading) {
@@ -594,9 +593,9 @@ export default function ChannelDetailPage() {
               <div className="space-y-2">
                 {getConnectedAgents().map((agent) => (
                   <AgentCard
-                    key={agent.botModelId}
+                    key={agent.agentId}
                     agent={agent}
-                    onRemove={() => handleRemoveAgent(agent.botModelId)}
+                    onRemove={() => handleRemoveAgent(agent.agentId)}
                     isRemoving={updatingAgents}
                   />
                 ))}
@@ -739,10 +738,10 @@ export default function ChannelDetailPage() {
             {getAvailableAgents().length > 0 ? (
               getAvailableAgents().map((agent) => (
                 <div
-                  key={agent.botModelId}
+                  key={agent.agentId}
                   className="flex items-center justify-between p-3 border border-gray-200 rounded-xl bg-white cursor-pointer hover:bg-gray-50"
                   onClick={() => {
-                    handleAddAgent(agent.botModelId)
+                    handleAddAgent(agent.agentId)
                     setShowAddAgentDialog(false)
                   }}
                 >
@@ -750,12 +749,12 @@ export default function ChannelDetailPage() {
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={agent.avatar} />
                       <AvatarFallback className="bg-gradient-to-br from-[#F6921E] to-[#D33952] text-white text-xs">
-                        {(agent.botName || 'A').charAt(0).toUpperCase()}
+                        {(agent.agentName || 'A').charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium text-sm">{agent.botName || 'Agente sem nome'}</p>
-                      <p className="text-xs text-gray-500">{agent.departmentName || 'Sem departamento'}</p>
+                      <p className="font-medium text-sm">{agent.agentName || 'Agente sem nome'}</p>
+                      <p className="text-xs text-gray-500">Agente de IA</p>
                     </div>
                   </div>
                 </div>

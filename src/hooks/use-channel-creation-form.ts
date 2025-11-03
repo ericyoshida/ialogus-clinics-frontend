@@ -6,10 +6,8 @@ interface ChannelCreationFormData {
   selectedChannelType: 'whatsapp' | null
   selectedAgentIds: string[]
   selectedAgentsData?: Array<{
-    botModelId: string
-    departmentId: string
-    departmentName: string
-    botName: string
+    agentId: string
+    agentName: string
     clinicId: string
   }>
   metaAuthData?: {
@@ -58,14 +56,14 @@ export const useChannelCreationForm = create(
       clearFormData: () => set(initialState),
       toggleAgentSelection: (agentId, agentData) => set((state) => {
         const isSelected = state.selectedAgentIds.includes(agentId)
-        
+
         if (isSelected) {
           // Remove agent
           return {
             ...state,
             selectedAgentIds: state.selectedAgentIds.filter(id => id !== agentId),
             selectedAgentsData: state.selectedAgentsData?.filter(
-              agent => agent.botModelId !== agentId
+              agent => agent.agentId !== agentId
             ),
           }
         } else {
@@ -73,7 +71,7 @@ export const useChannelCreationForm = create(
           return {
             ...state,
             selectedAgentIds: [...state.selectedAgentIds, agentId],
-            selectedAgentsData: agentData 
+            selectedAgentsData: agentData
               ? [...(state.selectedAgentsData || []), agentData]
               : state.selectedAgentsData,
           }

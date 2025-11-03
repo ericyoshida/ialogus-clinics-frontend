@@ -14,7 +14,6 @@ interface UseCustomersReturn {
   createCustomer: (customerData: {
     name: string;
     phoneNumber: string;
-    department?: string;
   }) => Promise<Customer>;
 }
 
@@ -134,7 +133,6 @@ export const useCustomers = (clinicId: string): UseCustomersReturn => {
     createCustomer: useCallback(async (customerData: {
       name: string;
       phoneNumber: string;
-      department?: string;
     }) => {
       try {
         const newCustomer = await customersService.createCustomer(clinicId, customerData);

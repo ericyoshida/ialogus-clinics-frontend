@@ -10,17 +10,17 @@ const BulkSendResultsPage: React.FC = () => {
   
   // Extrair parâmetros da URL
   const jobId = searchParams.get('jobId');
-  const departmentId = searchParams.get('departmentId');
+  const agentId = searchParams.get('agentId');
   const whatsappChannelId = searchParams.get('whatsappChannelId');
   const whatsappMessageTemplateId = searchParams.get('whatsappMessageTemplateId');
 
   // Hook para rastrear progresso do envio
-  const { 
-    progress, 
-    isPolling, 
+  const {
+    progress,
+    isPolling,
     error: progressError
   } = useBulkSendProgress({
-    departmentId: departmentId || '',
+    agentId: agentId || '',
     whatsappChannelId: whatsappChannelId || '',
     whatsappMessageTemplateId: whatsappMessageTemplateId || '',
     jobId: jobId || undefined,
@@ -44,7 +44,7 @@ const BulkSendResultsPage: React.FC = () => {
   };
 
   // Verificar se temos os parâmetros necessários
-  if (!jobId || !departmentId || !whatsappChannelId || !whatsappMessageTemplateId) {
+  if (!jobId || !agentId || !whatsappChannelId || !whatsappMessageTemplateId) {
     return (
       <div className="max-w-7xl h-[calc(100vh-80px)] flex items-center justify-center -mt-4 px-2 sm:px-3 lg:px-4">
         <div className="text-center">

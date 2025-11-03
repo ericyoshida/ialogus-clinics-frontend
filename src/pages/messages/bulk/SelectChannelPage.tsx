@@ -37,7 +37,7 @@ function SelectableChannelCard({
       
       <div className="w-full h-full">
         <AgentCard
-          name={channel.botName}
+          name={channel.channelName}
           type="Canal WhatsApp"
           conversationsToday={0}
           activeChannels={['whatsapp']}
@@ -173,15 +173,15 @@ export default function SelectChannelPage() {
     
     if (selectedChannel) {
       console.log('Canal encontrado:', selectedChannel);
-      updateFormData({ 
+      updateFormData({
         selectedChannelId: channelId,
         selectedChannelData: {
           id: selectedChannel.id,
-          botName: selectedChannel.botName,
+          channelName: selectedChannel.channelName,
           phoneNumber: selectedChannel.phoneNumber,
           operationalRegion: selectedChannel.operationalRegion,
         },
-        step: 0 
+        step: 0
       });
     } else {
       console.log('Canal não encontrado na lista');

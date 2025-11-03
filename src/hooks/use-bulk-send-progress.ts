@@ -2,7 +2,7 @@ import { bulkMessagesService, BulkSendProgress } from '@/services/bulkMessages';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface UseBulkSendProgressProps {
-  departmentId: string;
+  agentId: string;
   whatsappChannelId: string;
   whatsappMessageTemplateId: string;
   jobId?: string;
@@ -20,7 +20,7 @@ interface UseBulkSendProgressReturn {
 }
 
 export const useBulkSendProgress = ({
-  departmentId,
+  agentId,
   whatsappChannelId,
   whatsappMessageTemplateId,
   jobId,
@@ -53,7 +53,7 @@ export const useBulkSendProgress = ({
       console.log(`[useBulkSendProgress] Consultando progresso do job: ${jobId}`);
       
       const progressData = await bulkMessagesService.getBulkSendProgress(
-        departmentId,
+        agentId,
         whatsappChannelId,
         whatsappMessageTemplateId,
         jobId
@@ -89,7 +89,7 @@ export const useBulkSendProgress = ({
         intervalRef.current = null;
       }
     }
-  }, [jobId, departmentId, whatsappChannelId, whatsappMessageTemplateId, autoStop]);
+  }, [jobId, agentId, whatsappChannelId, whatsappMessageTemplateId, autoStop]);
 
   // Função para iniciar o polling
   const startPolling = useCallback(() => {

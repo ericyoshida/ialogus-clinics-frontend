@@ -13,7 +13,6 @@ interface ApiError {
 export interface Customer {
   id: string;
   name: string;
-  department?: string;
   phoneNumber: string;
   customerReferenceId?: string;
   hasActiveWhatsappServiceWindow: boolean;
@@ -62,7 +61,6 @@ function transformBackendPatientToCustomer(patient: BackendPatient): Customer {
   return {
     ...patient,
     customerReferenceId: patient.patientReferenceId,
-    department: undefined, // Campo não existe no backend
   };
 }
 
@@ -118,10 +116,8 @@ export const customersService = {
   async createCustomer(clinicId: string, customerData: {
     name: string;
     phoneNumber: string;
-    department?: string;
   }): Promise<Customer> {
     try {
-      // O backend não aceita o campo 'department', então enviamos apenas name e phoneNumber
       const payload = {
         name: customerData.name,
         phoneNumber: customerData.phoneNumber.replace(/^\+/, ''),

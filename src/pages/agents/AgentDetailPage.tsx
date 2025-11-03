@@ -41,14 +41,6 @@ export default function AgentDetailPage() {
     navigate(`/dashboard/clinic/${clinicId}/agents`)
   }
 
-  const getAgentType = (departmentName: string) => {
-    const salesDepartments = ['vendas', 'marketing', 'comercial', 'produtos']
-    const isLikelySales = salesDepartments.some(dept => 
-      departmentName.toLowerCase().includes(dept)
-    )
-    return isLikelySales ? 'Vendas' : 'Suporte ao Cliente'
-  }
-
   if (loading) {
     return (
       <div className="max-w-7xl -mt-4 px-2 sm:px-3 lg:px-4 pb-6">
@@ -106,13 +98,12 @@ export default function AgentDetailPage() {
           <div className="flex-1">
             <div className="mb-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                {agent.botName}
+                {agent.agentName}
               </h2>
               <div className="flex items-center gap-4 text-sm text-gray-600">
                 <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                  {getAgentType(agent.departmentName)}
+                  Agente de IA
                 </span>
-                <span>Departamento: {agent.departmentName}</span>
               </div>
             </div>
 
@@ -160,8 +151,8 @@ export default function AgentDetailPage() {
             <div className="border-t pt-4">
               <h3 className="text-sm font-medium text-gray-700 mb-2">Informações Técnicas</h3>
               <div className="text-sm text-gray-600">
-                <div className="mb-1">ID do Agente: <code className="bg-gray-100 px-2 py-1 rounded">{agent.botModelId}</code></div>
-                <div>ID do Departamento: <code className="bg-gray-100 px-2 py-1 rounded">{agent.departmentId}</code></div>
+                <div className="mb-1">ID do Agente: <code className="bg-gray-100 px-2 py-1 rounded">{agent.agentId}</code></div>
+                <div>ID da Clínica: <code className="bg-gray-100 px-2 py-1 rounded">{agent.clinicId}</code></div>
               </div>
             </div>
           </div>

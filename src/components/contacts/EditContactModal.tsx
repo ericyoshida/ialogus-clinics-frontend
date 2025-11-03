@@ -7,7 +7,6 @@ interface Customer {
   id: string;
   name: string;
   phoneNumber: string;
-  department?: string;
 }
 
 interface EditContactModalProps {
@@ -27,8 +26,7 @@ export function EditContactModal({
 }: EditContactModalProps) {
   const [formData, setFormData] = useState({
     name: '',
-    phoneNumber: '',
-    department: ''
+    phoneNumber: ''
   });
 
   const [errors, setErrors] = useState({
@@ -41,8 +39,7 @@ export function EditContactModal({
     if (customer) {
       setFormData({
         name: customer.name || '',
-        phoneNumber: customer.phoneNumber || '',
-        department: customer.department || ''
+        phoneNumber: customer.phoneNumber || ''
       });
       setErrors({ name: '', phoneNumber: '' });
     }
@@ -76,21 +73,20 @@ export function EditContactModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm() || !customer) return;
 
     const updatedCustomer: Customer = {
       ...customer,
       name: formData.name.trim(),
-      phoneNumber: formData.phoneNumber.trim(),
-      department: formData.department.trim() || undefined
+      phoneNumber: formData.phoneNumber.trim()
     };
 
     onSave(updatedCustomer);
   };
 
   const handleClose = () => {
-    setFormData({ name: '', phoneNumber: '', department: '' });
+    setFormData({ name: '', phoneNumber: '' });
     setErrors({ name: '', phoneNumber: '' });
     onClose();
   };
@@ -141,15 +137,6 @@ export function EditContactModal({
           </div>
 
           {/* Departamento (opcional) */}
-          <div>
-            <IalogusInput
-              label="Departamento (Opcional)"
-              value={formData.department}
-              onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
-              disabled={isLoading}
-            />
-          </div>
-
           {/* Buttons */}
           <div className="flex gap-3 pt-4">
             <Button

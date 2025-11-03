@@ -54,28 +54,28 @@ export interface BulkSendProgress {
 
 /**
  * Envia mensagem template para múltiplos contatos
- * @param departmentId ID do departamento
+ * @param agentId ID do agente
  * @param whatsappChannelId ID do canal WhatsApp
  * @param whatsappMessageTemplateId ID do template de mensagem
  * @param customersIds Array de IDs dos clientes
  * @returns Resposta do envio com jobId
  */
 export const sendBulkTemplateMessage = async (
-  departmentId: string,
+  agentId: string,
   whatsappChannelId: string,
   whatsappMessageTemplateId: string,
   customersIds: string[]
 ): Promise<SendBulkMessageResponse> => {
   try {
     console.log('Enviando mensagem em massa:', {
-      departmentId,
+      agentId,
       whatsappChannelId,
       whatsappMessageTemplateId,
       customersCount: customersIds.length
     });
 
     const response = await api.post<SendBulkMessageResponse>(
-      `/departments/${departmentId}/channels/${whatsappChannelId}/whatsapp-message-templates/${whatsappMessageTemplateId}/send-message-template`,
+      `/agents/${agentId}/channels/${whatsappChannelId}/whatsapp-message-templates/${whatsappMessageTemplateId}/send-message-template`,
       {
         customersIds
       }
@@ -91,14 +91,14 @@ export const sendBulkTemplateMessage = async (
 
 /**
  * Consulta o progresso de um job de envio em massa
- * @param departmentId ID do departamento
+ * @param agentId ID do agente
  * @param whatsappChannelId ID do canal WhatsApp
  * @param whatsappMessageTemplateId ID do template de mensagem
  * @param jobId ID do job de envio
  * @returns Progresso atual do envio
  */
 export const getBulkSendProgress = async (
-  departmentId: string,
+  agentId: string,
   whatsappChannelId: string,
   whatsappMessageTemplateId: string,
   jobId: string
@@ -107,7 +107,7 @@ export const getBulkSendProgress = async (
     console.log(`Consultando progresso do job: ${jobId}`);
 
     const response = await api.get<BulkSendProgress>(
-      `/departments/${departmentId}/channels/${whatsappChannelId}/whatsapp-message-templates/${whatsappMessageTemplateId}/send-message-template/progress/${jobId}`
+      `/agents/${agentId}/channels/${whatsappChannelId}/whatsapp-message-templates/${whatsappMessageTemplateId}/send-message-template/progress/${jobId}`
     );
 
     console.log(`Progresso do job ${jobId}:`, {

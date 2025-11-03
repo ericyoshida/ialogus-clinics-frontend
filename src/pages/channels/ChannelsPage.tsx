@@ -249,7 +249,7 @@ export default function ChannelsPage() {
                         name={channel.botName}
                         phoneNumber={channel.phoneNumber}
                         region={channel.operationalRegion}
-                        connectedAgents={channel.botModelsIDList?.length || 0}
+                        connectedAgents={channel.agentsIds?.length || 0}
                         status="active"
                         onClick={() => handleChannelClick(channel.id)}
                       />
