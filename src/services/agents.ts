@@ -30,14 +30,21 @@ export interface ConnectedChannel {
 export interface Agent {
   agentId: string;
   clinicId: string;
+  agentName: string;
   additionalInstructions: string;
   humanChatConditions: string;
-  agentName: string;
   productsListId: string;
   connectedChannels?: ConnectedChannel[];
   todayActiveConversationsCount?: number;
   createdAt: string;
   updatedAt: string;
+  // Campos legados mantidos para compatibilidade
+  botModelId?: string;
+  botName?: string;
+  departmentId?: string;
+  departmentName?: string;
+  macroDepartmentName?: string;
+  messagesFlowchart?: MessagesFlowchart | null;
 }
 
 // Interface para a resposta da API de agentes
@@ -64,13 +71,22 @@ export const getClinicAgents = async (clinicId: string): Promise<Agent[]> => {
     // Verificar se a resposta contém a propriedade agents
     if (response.data && 'agents' in response.data) {
       console.log('Agentes encontrados:', response.data.agents.length);
-      return response.data.agents;
+      // Mapear os dados para incluir campos legados para compatibilidade
+      return response.data.agents.map(agent => ({
+        ...agent,
+        botModelId: agent.agentId,
+        botName: agent.agentName,
+      }));
     }
 
     // Se não houver estrutura esperada mas for um array, retorna o array diretamente
     if (Array.isArray(response.data)) {
       console.log('Resposta é um array direto:', response.data.length);
-      return response.data;
+      return response.data.map(agent => ({
+        ...agent,
+        botModelId: agent.agentId,
+        botName: agent.agentName,
+      }));
     }
 
     // Caso não seja nenhum dos formatos esperados, retorna array vazio
@@ -85,28 +101,17 @@ export const getClinicAgents = async (clinicId: string): Promise<Agent[]> => {
 export const getAgentById = async (clinicId: string, agentId: string): Promise<Agent | null> => {
   try {
     console.log(`Buscando agente ${agentId} da clínica ${clinicId}...`);
-    const response = await api.get(`/clinics/${clinicId}/agents`);
-    console.log('Resposta recebida:', response.data);
 
-    // Verificar se a resposta contém um único agente
-    if (response.data && response.data.agent) {
-      return response.data.agent;
+    // Buscar todos os agentes da clínica e filtrar pelo ID
+    const agents = await getClinicAgents(clinicId);
+    const agent = agents.find(a => a.agentId === agentId || a.botModelId === agentId);
+
+    if (agent) {
+      console.log('Agente encontrado:', agent);
+      return agent;
     }
 
-    // Verificar se a resposta contém um array de agentes e filtrar pelo ID
-    if (response.data && 'agents' in response.data) {
-      const agent = response.data.agents.find((a: Agent) => a.agentId === agentId);
-      if (agent) {
-        return agent;
-      }
-    }
-
-    // Verificar se a resposta é diretamente o agente
-    if (response.data && response.data.agentId) {
-      return response.data;
-    }
-
-    console.warn('Agente não encontrado ou formato não reconhecido:', response.data);
+    console.warn('Agente não encontrado');
     return null;
   } catch (error) {
     console.error(`Erro ao buscar agente ${agentId} da clínica ${clinicId}:`, error);
@@ -115,7 +120,7 @@ export const getAgentById = async (clinicId: string, agentId: string): Promise<A
 };
 
 /**
- * Busca os agentes associados a um canal WhatsApp específico
+ * Busca os bot models (agentes) associados a um canal WhatsApp específico
  * @param whatsappChannelId ID do canal WhatsApp
  * @returns Array de agentes conectados ao canal
  */
@@ -128,13 +133,22 @@ export const getBotModelsByWhatsappChannelId = async (whatsappChannelId: string)
     // Verificar se a resposta contém a propriedade agents
     if (response.data && 'agents' in response.data) {
       console.log('Agentes encontrados:', response.data.agents.length);
-      return response.data.agents;
+      // Mapear os dados para incluir campos legados para compatibilidade
+      return response.data.agents.map(agent => ({
+        ...agent,
+        botModelId: agent.agentId,
+        botName: agent.agentName,
+      }));
     }
 
     // Se não houver estrutura esperada mas for um array, retorna o array diretamente
     if (Array.isArray(response.data)) {
       console.log('Resposta é um array direto:', response.data.length);
-      return response.data;
+      return response.data.map(agent => ({
+        ...agent,
+        botModelId: agent.agentId,
+        botName: agent.agentName,
+      }));
     }
 
     // Caso não seja nenhum dos formatos esperados, retorna array vazio
@@ -152,7 +166,7 @@ export const getBotModelsByWhatsappChannelId = async (whatsappChannelId: string)
  * @param data Dados do agente
  * @returns Agente criado
  */
-export const createBotModel = async (clinicId: string, data: {
+export const createAgent = async (clinicId: string, data: {
   additionalInstructions: string;
   humanChatConditions: string;
   agentName: string;
@@ -165,7 +179,13 @@ export const createBotModel = async (clinicId: string, data: {
     const response = await api.post(`/clinics/${clinicId}/agents`, data);
     console.log('Agente criado com sucesso:', response.data);
 
-    return response.data;
+    // Mapear resposta para incluir campos legados
+    const agent = response.data.agent || response.data;
+    return {
+      ...agent,
+      botModelId: agent.agentId,
+      botName: agent.agentName,
+    };
   } catch (error: any) {
     console.error(`Erro ao criar agente:`, error);
     if (error.response) {
@@ -176,9 +196,15 @@ export const createBotModel = async (clinicId: string, data: {
   }
 };
 
+/**
+ * @deprecated Use createAgent instead
+ */
+export const createBotModel = createAgent;
+
 export const agentsService = {
   getClinicAgents,
   getAgentById,
   getBotModelsByWhatsappChannelId,
-  createBotModel,
+  createAgent,
+  createBotModel, // Mantido para compatibilidade
 }; 

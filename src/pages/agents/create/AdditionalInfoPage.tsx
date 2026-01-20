@@ -160,6 +160,7 @@ export default function AdditionalInfoPage() {
       // Recuperar todos os dados salvos no localStorage
       const agentName = localStorage.getItem('temp_agent_name') || '';
       const productsListId = localStorage.getItem('selected_catalog') || '';
+      const humanChatConditions = localStorage.getItem('temp_human_chat_conditions') || 'Quando o cliente solicitar falar com um atendente humano';
 
       // Validar dados obrigatórios
       if (!agentName) {
@@ -174,27 +175,20 @@ export default function AdditionalInfoPage() {
         return;
       }
 
-      // Texto padrão para humanChatConditions cobrindo os 3 casos:
-      // 1. Solicitação de operador humano
-      // 2. Cliente impaciente
-      // 3. Cliente bravo com o atendimento
-      const humanChatConditions =
-        'Quando o cliente solicitar explicitamente falar com um atendente humano, ou quando demonstrar impaciência ou insatisfação com o atendimento.';
-
       console.log('Criando agente com os dados:', {
         clinicId,
         agentName,
         additionalInstructions: additionalInfo,
         humanChatConditions,
-        productsListId,
+        productsListId
       });
 
-      // Chamar a API para criar o agente
-      await agentsService.createBotModel(clinicId!, {
+      // Chamar a API para criar o agente diretamente
+      await agentsService.createAgent(clinicId!, {
         agentName,
         additionalInstructions: additionalInfo || '',
         humanChatConditions,
-        productsListId,
+        productsListId
       });
 
       toast.success('Agente criado com sucesso!');
@@ -208,7 +202,11 @@ export default function AdditionalInfoPage() {
       localStorage.removeItem('catalog_saved');
       localStorage.removeItem('temp_product_data');
       localStorage.removeItem('temp_agent_name');
+      localStorage.removeItem('temp_agent_type');
+      localStorage.removeItem('temp_conversation_flow');
+      localStorage.removeItem('temp_conversation_flow_name');
       localStorage.removeItem('temp_selected_clinic');
+      localStorage.removeItem('temp_human_chat_conditions');
 
       // Navegar para a página de sucesso
       navigate(`/dashboard/clinic/${clinicId}/agents/create/success`);
@@ -228,13 +226,12 @@ export default function AdditionalInfoPage() {
           <span className="text-gray-400">|</span>
           <span className="text-gray-600">{clinicName}</span>
         </h1>
-        <p className="text-gray-500 text-sm mb-4">Etapa 3: Adicione informações complementares</p>
-
+        <p className="text-gray-500 text-sm mb-4">Etapa 4: Adicione informações complementares</p>
+        
         {/* Indicador de multistep abaixo do título */}
         <div className="w-full mb-6">
-          <MultiStepAgent
-            currentStep={3}
-            totalSteps={3}
+          <MultiStepAgent 
+            currentStep={4} 
             className="max-w-full"
           />
         </div>

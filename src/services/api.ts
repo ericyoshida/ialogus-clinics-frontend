@@ -30,7 +30,7 @@ api.interceptors.response.use(
       // Token expirado ou inválido
       localStorage.removeItem('ialogus:token');
       localStorage.removeItem('ialogus:user');
-      window.location.href = '/login';
+      window.location.href = '/auth/login';
     }
     return Promise.reject(error);
   }
