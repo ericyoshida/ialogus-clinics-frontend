@@ -1,3 +1,4 @@
+import { WorkingHoursSelector } from '@/components/calendar/WorkingHoursSelector';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,7 +17,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -24,7 +24,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import {
     Table,
     TableBody,
@@ -37,6 +36,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useClinics } from '@/hooks/use-clinics';
 import { toast } from '@/hooks/use-toast';
 import { api } from '@/services';
+import { WorkingHours } from '@/services/calendar';
 import {
     ArrowLeftIcon,
     CalendarDaysIcon,
@@ -63,45 +63,23 @@ interface Member {
   updatedAt?: string;
 }
 
-interface WorkingHourSlot {
-  startTime: string;
-  endTime: string;
-}
-
-interface DayWorkingHours {
-  enabled: boolean;
-  slots: WorkingHourSlot[];
-}
-
-interface CalendarWithWorkingHours {
+interface CalendarData {
   calendarId: string;
   membershipId: string;
-  workingHours: {
-    weekday: number;
-    startTime: string;
-    endTime: string;
-  }[];
 }
 
-const WEEKDAYS = [
-  { value: 0, label: 'Domingo' },
-  { value: 1, label: 'Segunda-feira' },
-  { value: 2, label: 'Terça-feira' },
-  { value: 3, label: 'Quarta-feira' },
-  { value: 4, label: 'Quinta-feira' },
-  { value: 5, label: 'Sexta-feira' },
-  { value: 6, label: 'Sábado' },
+const DEFAULT_WORKING_HOURS: WorkingHours[] = [
+  { weekday: 1, startTime: '08:00', endTime: '12:00' },
+  { weekday: 1, startTime: '13:00', endTime: '17:00' },
+  { weekday: 2, startTime: '08:00', endTime: '12:00' },
+  { weekday: 2, startTime: '13:00', endTime: '17:00' },
+  { weekday: 3, startTime: '08:00', endTime: '12:00' },
+  { weekday: 3, startTime: '13:00', endTime: '17:00' },
+  { weekday: 4, startTime: '08:00', endTime: '12:00' },
+  { weekday: 4, startTime: '13:00', endTime: '17:00' },
+  { weekday: 5, startTime: '08:00', endTime: '12:00' },
+  { weekday: 5, startTime: '13:00', endTime: '17:00' },
 ];
-
-const DEFAULT_WORKING_HOURS: Record<number, DayWorkingHours> = {
-  0: { enabled: false, slots: [] },
-  1: { enabled: true, slots: [{ startTime: '08:00', endTime: '12:00' }, { startTime: '13:00', endTime: '17:00' }] },
-  2: { enabled: true, slots: [{ startTime: '08:00', endTime: '12:00' }, { startTime: '13:00', endTime: '17:00' }] },
-  3: { enabled: true, slots: [{ startTime: '08:00', endTime: '12:00' }, { startTime: '13:00', endTime: '17:00' }] },
-  4: { enabled: true, slots: [{ startTime: '08:00', endTime: '12:00' }, { startTime: '13:00', endTime: '17:00' }] },
-  5: { enabled: true, slots: [{ startTime: '08:00', endTime: '12:00' }, { startTime: '13:00', endTime: '17:00' }] },
-  6: { enabled: false, slots: [] },
-};
 
 export default function Members() {
   const { clinicId } = useParams<{ clinicId: string }>();
@@ -127,8 +105,8 @@ export default function Members() {
   // Estados para editar calendário
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [selectedMemberForCalendar, setSelectedMemberForCalendar] = useState<Member | null>(null);
-  const [workingHours, setWorkingHours] = useState<Record<number, DayWorkingHours>>(DEFAULT_WORKING_HOURS);
-  const [calendarData, setCalendarData] = useState<CalendarWithWorkingHours | null>(null);
+  const [workingHours, setWorkingHours] = useState<WorkingHours[]>(DEFAULT_WORKING_HOURS);
+  const [calendarData, setCalendarData] = useState<CalendarData | null>(null);
   const [isLoadingCalendar, setIsLoadingCalendar] = useState(false);
   const [isSavingCalendar, setIsSavingCalendar] = useState(false);
   
@@ -317,33 +295,21 @@ export default function Members() {
       setCalendarData({
         calendarId: calendar.calendarId,
         membershipId: calendar.membershipId,
-        workingHours: calendar.workingHours || [],
       });
 
-      // Converter working hours do backend para o formato do estado
-      const newWorkingHours: Record<number, DayWorkingHours> = { ...DEFAULT_WORKING_HOURS };
-
-      // Reset all days to disabled
-      Object.keys(newWorkingHours).forEach(key => {
-        newWorkingHours[parseInt(key)] = { enabled: false, slots: [] };
-      });
-
-      // Agrupar working hours por dia da semana
+      // Converter working hours do backend para o formato esperado pelo WorkingHoursSelector
       if (calendar.workingHours && Array.isArray(calendar.workingHours)) {
-        calendar.workingHours.forEach((wh: { weekday: number; startTime: string; endTime: string }) => {
-          if (!newWorkingHours[wh.weekday]) {
-            newWorkingHours[wh.weekday] = { enabled: true, slots: [] };
-          } else {
-            newWorkingHours[wh.weekday].enabled = true;
-          }
-          newWorkingHours[wh.weekday].slots.push({
+        const formattedWorkingHours: WorkingHours[] = calendar.workingHours.map(
+          (wh: { weekday: number; startTime: string; endTime: string }) => ({
+            weekday: wh.weekday,
             startTime: wh.startTime,
             endTime: wh.endTime,
-          });
-        });
+          })
+        );
+        setWorkingHours(formattedWorkingHours);
+      } else {
+        setWorkingHours([]);
       }
-
-      setWorkingHours(newWorkingHours);
     } catch (error: any) {
       console.error('Erro ao buscar calendário:', error);
       if (error.response?.status === 404) {
@@ -372,67 +338,33 @@ export default function Members() {
     setWorkingHours(DEFAULT_WORKING_HOURS);
   };
 
-  const handleDayToggle = (weekday: number) => {
-    setWorkingHours(prev => ({
-      ...prev,
-      [weekday]: {
-        ...prev[weekday],
-        enabled: !prev[weekday].enabled,
-        slots: !prev[weekday].enabled ? [{ startTime: '08:00', endTime: '17:00' }] : prev[weekday].slots,
-      },
-    }));
-  };
-
-  const handleSlotChange = (weekday: number, slotIndex: number, field: 'startTime' | 'endTime', value: string) => {
-    setWorkingHours(prev => ({
-      ...prev,
-      [weekday]: {
-        ...prev[weekday],
-        slots: prev[weekday].slots.map((slot, idx) =>
-          idx === slotIndex ? { ...slot, [field]: value } : slot
-        ),
-      },
-    }));
-  };
-
-  const addSlot = (weekday: number) => {
-    setWorkingHours(prev => ({
-      ...prev,
-      [weekday]: {
-        ...prev[weekday],
-        slots: [...prev[weekday].slots, { startTime: '13:00', endTime: '17:00' }],
-      },
-    }));
-  };
-
-  const removeSlot = (weekday: number, slotIndex: number) => {
-    setWorkingHours(prev => ({
-      ...prev,
-      [weekday]: {
-        ...prev[weekday],
-        slots: prev[weekday].slots.filter((_, idx) => idx !== slotIndex),
-      },
-    }));
-  };
-
   const handleSaveWorkingHours = async () => {
     if (!calendarData) return;
 
     setIsSavingCalendar(true);
     try {
-      // Salvar cada dia que tem horários
-      for (const [weekdayStr, dayData] of Object.entries(workingHours)) {
-        const weekday = parseInt(weekdayStr);
-        const workingHoursData = dayData.enabled
-          ? dayData.slots.map(slot => ({
-              startTime: slot.startTime,
-              endTime: slot.endTime,
-            }))
-          : [];
+      // Agrupar working hours por dia da semana
+      const workingHoursByDay: Record<number, { startTime: string; endTime: string }[]> = {};
 
+      // Inicializar todos os dias com array vazio
+      for (let i = 0; i <= 6; i++) {
+        workingHoursByDay[i] = [];
+      }
+
+      // Preencher com os horários selecionados
+      workingHours.forEach(wh => {
+        workingHoursByDay[wh.weekday].push({
+          startTime: wh.startTime,
+          endTime: wh.endTime,
+        });
+      });
+
+      // Salvar cada dia
+      for (const [weekdayStr, dayHours] of Object.entries(workingHoursByDay)) {
+        const weekday = parseInt(weekdayStr);
         await api.put(`/calendars/${calendarData.calendarId}/working-hours`, {
           weekday,
-          workingHours: workingHoursData,
+          workingHours: dayHours,
         });
       }
 
@@ -588,36 +520,45 @@ export default function Members() {
                       {new Date(member.createdAt).toLocaleDateString('pt-BR')}
                     </TableCell>
                     <TableCell className="text-right">
-                      {canEditMember(member) ? (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <EllipsisVerticalIcon className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => openEditModal(member)}>
-                              <PencilIcon className="h-4 w-4 mr-2" />
-                              Editar Cargo
-                            </DropdownMenuItem>
-                            {hasCalendarRole(member) && member.status === 'active' && (
-                              <DropdownMenuItem onClick={() => openCalendarModal(member)}>
-                                <CalendarDaysIcon className="h-4 w-4 mr-2" />
-                                Editar Calendário
+                      <div className="flex items-center justify-end gap-1">
+                        {/* Botão de calendário - aparece para todos com role ADMIN/DENTISTA ativos */}
+                        {hasCalendarRole(member) && member.status === 'active' && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openCalendarModal(member)}
+                            title="Editar Calendário"
+                          >
+                            <CalendarDaysIcon className="h-4 w-4" />
+                          </Button>
+                        )}
+
+                        {/* Menu de ações - só aparece para outros membros */}
+                        {canEditMember(member) ? (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <EllipsisVerticalIcon className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => openEditModal(member)}>
+                                <PencilIcon className="h-4 w-4 mr-2" />
+                                Editar Cargo
                               </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem
-                              onClick={() => openDeleteModal(member)}
-                              className="text-destructive"
-                            >
-                              <TrashIcon className="h-4 w-4 mr-2" />
-                              Remover Membro
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">Você</span>
-                      )}
+                              <DropdownMenuItem
+                                onClick={() => openDeleteModal(member)}
+                                className="text-destructive"
+                              >
+                                <TrashIcon className="h-4 w-4 mr-2" />
+                                Remover Membro
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        ) : (
+                          <span className="text-sm text-muted-foreground px-2">Você</span>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -745,11 +686,12 @@ export default function Members() {
 
       {/* Calendar Working Hours Modal */}
       <Dialog open={isCalendarModalOpen} onOpenChange={(open) => !open && closeCalendarModal()}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Horários de Trabalho</DialogTitle>
             <DialogDescription>
               Configure os horários de atendimento de {selectedMemberForCalendar?.user.name}.
+              Clique e arraste para selecionar os horários disponíveis.
             </DialogDescription>
           </DialogHeader>
 
@@ -759,66 +701,57 @@ export default function Members() {
             </div>
           ) : (
             <div className="space-y-4">
-              {WEEKDAYS.map(({ value: weekday, label }) => (
-                <div key={weekday} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <Switch
-                        checked={workingHours[weekday]?.enabled || false}
-                        onCheckedChange={() => handleDayToggle(weekday)}
-                      />
-                      <Label className="font-medium">{label}</Label>
-                    </div>
-                    {workingHours[weekday]?.enabled && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => addSlot(weekday)}
-                      >
-                        + Adicionar horário
-                      </Button>
-                    )}
-                  </div>
+              {/* Botões de atalho */}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWorkingHours([
+                      { weekday: 1, startTime: '09:00', endTime: '18:00' },
+                      { weekday: 2, startTime: '09:00', endTime: '18:00' },
+                      { weekday: 3, startTime: '09:00', endTime: '18:00' },
+                      { weekday: 4, startTime: '09:00', endTime: '18:00' },
+                      { weekday: 5, startTime: '09:00', endTime: '18:00' },
+                    ]);
+                  }}
+                  className="px-3 py-1.5 text-sm border rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Comercial (Seg-Sex 9h-18h)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWorkingHours([
+                      { weekday: 1, startTime: '08:00', endTime: '12:00' },
+                      { weekday: 1, startTime: '13:00', endTime: '17:00' },
+                      { weekday: 2, startTime: '08:00', endTime: '12:00' },
+                      { weekday: 2, startTime: '13:00', endTime: '17:00' },
+                      { weekday: 3, startTime: '08:00', endTime: '12:00' },
+                      { weekday: 3, startTime: '13:00', endTime: '17:00' },
+                      { weekday: 4, startTime: '08:00', endTime: '12:00' },
+                      { weekday: 4, startTime: '13:00', endTime: '17:00' },
+                      { weekday: 5, startTime: '08:00', endTime: '12:00' },
+                      { weekday: 5, startTime: '13:00', endTime: '17:00' },
+                    ]);
+                  }}
+                  className="px-3 py-1.5 text-sm border rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  CLT (Seg-Sex 8h-12h, 13h-17h)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWorkingHours([])}
+                  className="px-3 py-1.5 text-sm border rounded-md hover:bg-gray-50 transition-colors ml-auto"
+                >
+                  Limpar tudo
+                </button>
+              </div>
 
-                  {workingHours[weekday]?.enabled && workingHours[weekday].slots.length > 0 && (
-                    <div className="space-y-2 ml-10">
-                      {workingHours[weekday].slots.map((slot, slotIndex) => (
-                        <div key={slotIndex} className="flex items-center gap-2">
-                          <Input
-                            type="time"
-                            value={slot.startTime}
-                            onChange={(e) => handleSlotChange(weekday, slotIndex, 'startTime', e.target.value)}
-                            className="w-32"
-                          />
-                          <span className="text-muted-foreground">até</span>
-                          <Input
-                            type="time"
-                            value={slot.endTime}
-                            onChange={(e) => handleSlotChange(weekday, slotIndex, 'endTime', e.target.value)}
-                            className="w-32"
-                          />
-                          {workingHours[weekday].slots.length > 1 && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeSlot(weekday, slotIndex)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <TrashIcon className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {workingHours[weekday]?.enabled && workingHours[weekday].slots.length === 0 && (
-                    <p className="text-sm text-muted-foreground ml-10">
-                      Nenhum horário configurado. Clique em &quot;Adicionar horário&quot; para começar.
-                    </p>
-                  )}
-                </div>
-              ))}
+              {/* Seletor visual de horários */}
+              <WorkingHoursSelector
+                value={workingHours}
+                onChange={setWorkingHours}
+              />
             </div>
           )}
 
