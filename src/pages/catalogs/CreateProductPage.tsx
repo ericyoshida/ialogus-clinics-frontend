@@ -304,7 +304,7 @@ function PriceInputWithPrefix({
   );
 }
 
-// Componente de Seleção de Prestador de Serviço (com posicionamento corrigido)
+// Componente de Seleção de Doutor (com posicionamento corrigido)
 function ServiceProviderSelect({
   value,
   onChange,
@@ -361,7 +361,7 @@ function ServiceProviderSelect({
     setIsFocused(true);
   };
   
-  // Carrega os prestadores de serviço da API
+  // Carrega os doutores da API
   useEffect(() => {
     const fetchServiceProviders = async () => {
       if (!clinicId) {
@@ -375,8 +375,8 @@ function ServiceProviderSelect({
         const calendars = await productsService.getClinicCalendars(clinicId);
         setProviders(calendars);
       } catch (err) {
-        console.error('Erro ao buscar prestadores de serviço:', err);
-        setError('Não foi possível carregar os prestadores de serviço');
+        console.error('Erro ao buscar doutores:', err);
+        setError('Não foi possível carregar os doutores');
       } finally {
         setIsLoading(false);
       }
@@ -391,7 +391,7 @@ function ServiceProviderSelect({
     
     return value.map(providerId => {
       const provider = providers.find(p => p.calendarId === providerId);
-      return provider?.user.name || 'Prestador desconhecido';
+      return provider?.user.name || 'Doutor desconhecido';
     }).join(', ');
   };
   
@@ -400,7 +400,7 @@ function ServiceProviderSelect({
     e.stopPropagation();
     // Aqui seria a lógica para adicionar um novo prestador
     // Por enquanto, apenas um placeholder
-    alert('Funcionalidade para adicionar prestador de serviço em desenvolvimento');
+    alert('Funcionalidade para adicionar doutor em desenvolvimento');
   };
   
   // Renderizar o dropdown no portal
@@ -426,7 +426,7 @@ function ServiceProviderSelect({
       >
         {isLoading ? (
           <div className="p-3 text-center text-gray-500">
-            Carregando prestadores de serviço...
+            Carregando doutores...
           </div>
         ) : error ? (
           <div className="p-3 text-center text-red-500">
@@ -435,7 +435,7 @@ function ServiceProviderSelect({
         ) : providers.length === 0 ? (
           <>
             <div className="p-3 text-center text-gray-500">
-              Nenhum prestador de serviço encontrado.
+              Nenhum doutor encontrado.
             </div>
             {/* Botão para adicionar novo prestador */}
             <div className="border-t border-gray-100 py-1 px-3">
@@ -454,7 +454,7 @@ function ServiceProviderSelect({
                 >
                   <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span>Adicionar Novo Prestador</span>
+                <span>Adicionar Novo Doutor</span>
               </button>
             </div>
           </>
@@ -503,7 +503,7 @@ function ServiceProviderSelect({
                 >
                   <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span>Adicionar Novo Prestador</span>
+                <span>Adicionar Novo Doutor</span>
               </button>
             </div>
           </>
@@ -534,8 +534,8 @@ function ServiceProviderSelect({
           `}>
             {/* Mostrar apenas o valor selecionado com posicionamento corrigido */}
             <span className={`text-gray-600 truncate ${!value.length && 'opacity-0'}`}>
-              {isLoading ? 'Carregando prestadores...' :
-               error ? 'Erro ao carregar prestadores' :
+              {isLoading ? 'Carregando doutores...' :
+               error ? 'Erro ao carregar doutores' :
                getSelectedProviderNames() || 'Vazio'}
             </span>
             
@@ -555,7 +555,7 @@ function ServiceProviderSelect({
             : 'text-base text-gray-500 top-1/2 -translate-y-1/2'
           }
         `}>
-          Prestadores de Serviço
+          Doutores
         </label>
         
         {/* Barra inferior */}
@@ -588,7 +588,7 @@ export default function CreateProductPage() {
   const [productDescription, setProductDescription] = useState('');
   const [productPrice, setProductPrice] = useState('');
   const [productType, setProductType] = useState('product'); // 'product' ou 'service'
-  const [serviceProviders, setServiceProviders] = useState<string[]>([]); // IDs dos prestadores de serviço
+  const [serviceProviders, setServiceProviders] = useState<string[]>([]); // IDs dos doutores
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState('');
   const { toast } = useToast();
@@ -730,7 +730,7 @@ export default function CreateProductPage() {
           />
         </div>
         
-        {/* Campo de prestador de serviço (mostrado apenas quando o tipo é 'service') */}
+        {/* Campo de doutor (mostrado apenas quando o tipo é 'service') */}
         {productType === 'service' && (
           <div className="mb-5 animate-fadeIn relative">
             <ServiceProviderSelect

@@ -251,4 +251,64 @@ export const saveUserData = (userData: User) => {
   } catch (error) {
     console.error('[saveUserData] Erro ao salvar dados do usuário:', error);
   }
+};
+
+// ============================================
+// SISTEMA DE CONVITES
+// ============================================
+
+export interface InvitationDetails {
+  clinicName: string;
+  role: string;
+  roleLabel: string;
+  email: string;
+  isNewUser: boolean;
+  userName?: string;
+}
+
+export interface CompleteRegistrationData {
+  pendingMembershipId: string;
+  invitationToken: string;
+  name: string;
+  password: string;
+}
+
+/**
+ * Busca os detalhes de um convite
+ */
+export const getInvitationDetails = async (
+  pendingMembershipId: string,
+  token: string
+): Promise<InvitationDetails> => {
+  console.log('[getInvitationDetails] Buscando detalhes do convite');
+  const response = await api.get(`/invitations/${pendingMembershipId}`, {
+    params: { token }
+  });
+  console.log('[getInvitationDetails] Resposta:', response.data);
+  return response.data;
+};
+
+/**
+ * Completa o registro de um novo usuário convidado
+ */
+export const completeRegistration = async (
+  data: CompleteRegistrationData
+): Promise<void> => {
+  console.log('[completeRegistration] Completando registro');
+  await api.post('/auth/complete-registration', data);
+  console.log('[completeRegistration] Registro completado com sucesso');
+};
+
+/**
+ * Aceita um convite de membership
+ */
+export const acceptInvite = async (
+  pendingMembershipId: string,
+  invitationToken: string
+): Promise<void> => {
+  console.log('[acceptInvite] Aceitando convite');
+  await api.post(`/pending-memberships/${pendingMembershipId}/accept`, {}, {
+    params: { invitationToken }
+  });
+  console.log('[acceptInvite] Convite aceito com sucesso');
 }; 

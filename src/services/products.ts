@@ -150,7 +150,7 @@ export const getClinicProducts = async (clinicId: string): Promise<Product[]> =>
 };
 
 /**
- * Busca todos os calendários dos prestadores de serviço de uma clínica
+ * Busca todos os calendários dos doutores de uma clínica
  * @param clinicId ID da clínica
  * @returns Lista de calendários
  */

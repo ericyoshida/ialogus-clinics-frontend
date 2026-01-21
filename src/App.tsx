@@ -28,6 +28,8 @@ import CreateProductPageAgent from './pages/agents/create/CreateProductPage'
 import EditProductPage from './pages/agents/create/EditProductPage'
 import SelectProductCatalogPage from "./pages/agents/create/SelectProductCatalogPage"
 import SuccessPage from "./pages/agents/create/SuccessPage"
+import AcceptInvite from "./pages/auth/AcceptInvite"
+import CompleteRegistration from "./pages/auth/CompleteRegistration"
 import ForgotPassword from "./pages/auth/ForgotPassword"
 import Login from "./pages/auth/Login"
 import Register from "./pages/auth/Register"
@@ -75,6 +77,10 @@ const App = () => (
                 <Route path="/auth/register" element={<Register />} />
                 <Route path="/auth/forgot-password" element={<ForgotPassword />} />
               </Route>
+
+              {/* Rotas de convite - públicas (sem redirecionamento de auth) */}
+              <Route path="/auth/complete-registration" element={<CompleteRegistration />} />
+              <Route path="/auth/accept-invite" element={<AcceptInvite />} />
               
               {/* Rotas protegidas do dashboard */}
               <Route element={<ProtectedRoute />}>

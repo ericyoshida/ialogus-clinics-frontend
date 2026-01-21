@@ -144,7 +144,7 @@ export const mockCalendarEvents: CalendarEvent[] = [
   },
   {
     id: '12',
-    title: 'Consulta Dentista',
+    title: 'Consulta Doutor',
     type: 'appointment',
     date: addDays(today, 10).toISOString(),
     startTime: '15:00',

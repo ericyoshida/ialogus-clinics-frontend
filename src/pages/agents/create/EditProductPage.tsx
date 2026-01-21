@@ -310,17 +310,19 @@ function PriceInputWithPrefix({
   );
 }
 
-// Componente para seleção de prestadores de serviço
+// Componente para seleção de doutores
 function ServiceProviderSelect({
   value,
   onChange,
   required = false,
-  clinicId
+  clinicId,
+  onAddNewDoctor
 }: {
   value: string[];
   onChange: (value: string[]) => void;
   required?: boolean;
   clinicId?: string;
+  onAddNewDoctor?: () => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -367,7 +369,7 @@ function ServiceProviderSelect({
     setIsFocused(true);
   };
   
-  // Carrega os prestadores de serviço da API
+  // Carrega os doutores da API
   useEffect(() => {
     const fetchServiceProviders = async () => {
       if (!clinicId) {
@@ -381,8 +383,8 @@ function ServiceProviderSelect({
         const calendars = await getClinicCalendars(clinicId);
         setProviders(calendars);
       } catch (err) {
-        console.error('Erro ao buscar prestadores de serviço:', err);
-        setError('Não foi possível carregar os prestadores de serviço');
+        console.error('Erro ao buscar doutores:', err);
+        setError('Não foi possível carregar os doutores');
       } finally {
         setIsLoading(false);
       }
@@ -397,16 +399,16 @@ function ServiceProviderSelect({
     
     return value.map(providerId => {
       const provider = providers.find(p => p.calendarId === providerId);
-      return provider?.user.name || 'Prestador desconhecido';
+      return provider?.user.name || 'Doutor desconhecido';
     }).join(', ');
   };
   
-  // Handler para adicionar novo prestador
+  // Handler para adicionar novo doutor
   const handleAddNewProvider = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Aqui seria a lógica para adicionar um novo prestador
-    // Por enquanto, apenas um placeholder
-    alert('Funcionalidade para adicionar prestador de serviço em desenvolvimento');
+    if (onAddNewDoctor) {
+      onAddNewDoctor();
+    }
   };
   
   // Renderizar o dropdown no portal
@@ -432,7 +434,7 @@ function ServiceProviderSelect({
       >
         {isLoading ? (
           <div className="p-3 text-center text-gray-500">
-            Carregando prestadores de serviço...
+            Carregando doutores...
           </div>
         ) : error ? (
           <div className="p-3 text-center text-red-500">
@@ -441,26 +443,26 @@ function ServiceProviderSelect({
         ) : providers.length === 0 ? (
           <>
             <div className="p-3 text-center text-gray-500">
-              Nenhum prestador de serviço encontrado.
+              Nenhum doutor encontrado.
             </div>
-            {/* Botão para adicionar novo prestador */}
+            {/* Botão para adicionar novo doutor */}
             <div className="border-t border-gray-100 py-1 px-3">
               <button
                 type="button"
                 className="w-full text-left py-2 px-2 text-sm text-blue-600 hover:bg-blue-50 rounded-md transition-colors flex items-center"
                 onClick={handleAddNewProvider}
               >
-                <svg 
-                  width="16" 
-                  height="16" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  xmlns="http://www.w3.org/2000/svg" 
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
                   className="mr-2"
                 >
                   <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span>Adicionar Novo Prestador</span>
+                <span>Adicionar Novo Doutor</span>
               </button>
             </div>
           </>
@@ -492,24 +494,24 @@ function ServiceProviderSelect({
               ))}
             </div>
             
-            {/* Botão para adicionar novo prestador */}
+            {/* Botão para adicionar novo doutor */}
             <div className="border-t border-gray-100 py-1 px-3">
               <button
                 type="button"
                 className="w-full text-left py-2 px-2 text-sm text-blue-600 hover:bg-blue-50 rounded-md transition-colors flex items-center"
                 onClick={handleAddNewProvider}
               >
-                <svg 
-                  width="16" 
-                  height="16" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  xmlns="http://www.w3.org/2000/svg" 
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
                   className="mr-2"
                 >
                   <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span>Adicionar Novo Prestador</span>
+                <span>Adicionar Novo Doutor</span>
               </button>
             </div>
           </>
@@ -540,8 +542,8 @@ function ServiceProviderSelect({
           `}>
             {/* Mostrar apenas o valor selecionado com posicionamento corrigido */}
             <span className={`text-gray-600 truncate ${!value.length && 'opacity-0'}`}>
-              {isLoading ? 'Carregando prestadores...' :
-               error ? 'Erro ao carregar prestadores' :
+              {isLoading ? 'Carregando doutores...' :
+               error ? 'Erro ao carregar doutores' :
                getSelectedProviderNames() || 'Vazio'}
             </span>
             
@@ -561,7 +563,7 @@ function ServiceProviderSelect({
             : 'text-base text-gray-500 top-1/2 -translate-y-1/2'
           }
         `}>
-          Prestadores de Serviço
+          Doutores
         </label>
         
         {/* Barra inferior */}
@@ -599,7 +601,7 @@ export default function EditProductPage() {
   const [productDescription, setProductDescription] = useState('');
   const [productPrice, setProductPrice] = useState('');
   const [productType, setProductType] = useState('product'); // 'product' ou 'service'
-  const [selectedServiceProviders, setSelectedServiceProviders] = useState<string[]>([]); // IDs dos prestadores de serviço
+  const [selectedServiceProviders, setSelectedServiceProviders] = useState<string[]>([]); // IDs dos doutores
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [validationError, setValidationError] = useState('');
@@ -640,11 +642,11 @@ export default function EditProductPage() {
         setProductDescription(productData.productDescription || '');
         setProductPrice(productData.productPrice ? productData.productPrice.toString() : '');
         
-        // Determinar o tipo do produto baseado nos prestadores de serviço
+        // Determinar o tipo do produto baseado nos doutores
         const hasServiceProviders = productData.serviceProviderCalendars && productData.serviceProviderCalendars.length > 0;
         setProductType(hasServiceProviders ? 'service' : 'product');
-        
-        // Mapear os calendários dos prestadores de serviço
+
+        // Mapear os calendários dos doutores
         const serviceProviderIds = productData.serviceProviderCalendars?.map(
           calendar => calendar.serviceProviderCalendarId
         ) || [];
@@ -752,6 +754,11 @@ export default function EditProductPage() {
     navigate(`/dashboard/clinic/${clinicId}/agents/create/product-catalog/create`);
   };
 
+  // Função para navegar para a página de gestão de membros
+  const handleAddNewDoctor = () => {
+    navigate(`/dashboard/clinic/${clinicId}/members`);
+  };
+
   // Mostrar loading enquanto carrega os dados
   if (loading) {
     return (
@@ -819,7 +826,7 @@ export default function EditProductPage() {
           />
         </div>
         
-        {/* Campo de prestador de serviço (mostrado apenas quando o tipo é 'service') */}
+        {/* Campo de doutor (mostrado apenas quando o tipo é 'service') */}
         {productType === 'service' && (
           <div className="mb-5 animate-fadeIn relative">
             <ServiceProviderSelect
@@ -827,6 +834,7 @@ export default function EditProductPage() {
               onChange={setSelectedServiceProviders}
               required
               clinicId={clinicId}
+              onAddNewDoctor={handleAddNewDoctor}
             />
           </div>
         )}

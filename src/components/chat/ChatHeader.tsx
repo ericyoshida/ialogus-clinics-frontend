@@ -38,7 +38,7 @@ export function ChatHeader({
   };
 
   // Gera as iniciais do nome do contato
-  const initials = conversation.contactName
+  const initials = (conversation.contactName || '')
     .split(' ')
     .map((n) => n[0] || '')
     .join('')

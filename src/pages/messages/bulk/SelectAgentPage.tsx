@@ -32,6 +32,7 @@ function SelectableBotModelCard({
   const navigate = useNavigate();
 
   const formatName = (name: string) => {
+    if (!name) return '';
     return name
       .replace(/_/g, ' ')
       .split(' ')

@@ -60,6 +60,7 @@ function SelectableTemplateCard({
 
   // Função para formatar o nome do template
   const formatTemplateName = (name: string) => {
+    if (!name) return '';
     return name
       .replace(/_/g, ' ') // Substitui _ por espaço
       .split(' ')

@@ -101,6 +101,7 @@ export function AgentCard({
   
   // Função para criar iniciais a partir do nome
   const getInitials = (name: string) => {
+    if (!name) return '??';
     return name
       .split(' ')
       .map(part => part[0])
