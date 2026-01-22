@@ -57,9 +57,9 @@ export function IalogusTextarea({
           onFocus={handleFocus}
           onBlur={handleBlur}
           value={value}
-          placeholder=""
           style={{ backgroundColor: 'transparent' }}
           {...props}
+          placeholder=""
         />
         
         {label && (

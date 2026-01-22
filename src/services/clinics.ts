@@ -5,6 +5,8 @@ export interface Clinic {
   name: string;
   address: string;
   acceptedInsurances: string[];
+  userRoles?: string[];
+  membershipId?: string;
   createdAt: string;
   updatedAt: string;
 }

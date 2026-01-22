@@ -38,6 +38,30 @@ interface CalendarResponse {
   calendar: CalendarWithEvents;
 }
 
+export interface CalendarWithUser {
+  calendarId: string;
+  membershipId: string;
+  user: {
+    name: string;
+  };
+  workingHours: WorkingHours[];
+  googleCalendarId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const listCalendarsByClinicId = async (clinicId: string): Promise<CalendarWithUser[]> => {
+  try {
+    console.log(`Buscando calendários para clínica ID: ${clinicId}`);
+    const response = await api.get<{ calendars: CalendarWithUser[] }>(`/clinics/${clinicId}/calendars`);
+    console.log('Calendários recebidos:', response.data);
+    return response.data.calendars;
+  } catch (error) {
+    console.error('Erro ao buscar calendários:', error);
+    throw error;
+  }
+};
+
 export const getCalendarByMembershipId = async (membershipId: string): Promise<CalendarWithEvents | null> => {
   try {
     console.log(`Buscando calendário para membership ID: ${membershipId}`);
@@ -198,6 +222,44 @@ export const deleteCalendarEvent = async (
     console.log('Evento deletado com sucesso');
   } catch (error) {
     console.error('Erro ao deletar evento:', error);
+    throw error;
+  }
+};
+
+export const updateWorkingHours = async (
+  calendarId: string,
+  workingHours: WorkingHours[]
+): Promise<void> => {
+  try {
+    console.log(`Atualizando horários de trabalho do calendário ${calendarId}:`, workingHours);
+
+    // Agrupar workingHours por dia da semana
+    const workingHoursByDay = new Map<number, { startTime: string; endTime: string }[]>();
+
+    // Inicializar todos os dias da semana com array vazio
+    for (let i = 0; i < 7; i++) {
+      workingHoursByDay.set(i, []);
+    }
+
+    // Agrupar os horários por dia
+    workingHours.forEach(wh => {
+      const dayHours = workingHoursByDay.get(wh.weekday) || [];
+      dayHours.push({ startTime: wh.startTime, endTime: wh.endTime });
+      workingHoursByDay.set(wh.weekday, dayHours);
+    });
+
+    // Enviar atualização para cada dia da semana
+    const updatePromises = Array.from(workingHoursByDay.entries()).map(([weekday, hours]) => {
+      return api.put(`/calendars/${calendarId}/working-hours`, {
+        weekday,
+        workingHours: hours,
+      });
+    });
+
+    await Promise.all(updatePromises);
+    console.log('Horários de trabalho atualizados com sucesso');
+  } catch (error) {
+    console.error('Erro ao atualizar horários de trabalho:', error);
     throw error;
   }
 };

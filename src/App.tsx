@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import AgentDetailPage from '@/pages/agents/AgentDetailPage'
 import CalendarsPage from '@/pages/calendars/CalendarsPage'
 import CreateCalendarPage from '@/pages/calendars/CreateCalendarPage'
+import EditCalendarPage from '@/pages/calendars/EditCalendarPage'
 import GoogleCalendarCallback from '@/pages/calendars/GoogleCalendarCallback'
 import CatalogsPage from '@/pages/catalogs/CatalogsPage'
 import CreateCatalogPage from '@/pages/catalogs/CreateCatalogPage'
@@ -12,6 +13,7 @@ import CreateProductPage from '@/pages/catalogs/CreateProductPage'
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import { AuthRedirect } from "./components/AuthRedirect"
+import { ClinicMembershipGuard } from "./components/ClinicMembershipGuard"
 import { HomeRedirect } from "./components/HomeRedirect"
 import { ProtectedRoute } from "./components/ProtectedRoute"
 import DashboardLayout from "./components/layout/DashboardLayout"
@@ -110,58 +112,52 @@ const App = () => (
                   {/* Rota de perfil do usuário */}
                   <Route path="profile" element={<ProfilePage />} />
                   
-                  {/* Rotas específicas por clínica */}
-                  <Route path="clinic/:clinicId" element={<ClinicMenu />} />
-                  <Route path="clinic/:clinicId/agents" element={<AgentsPage />} />
-                  <Route path="clinic/:clinicId/members" element={<Members />} />
-                  <Route path="clinic/:clinicId/contacts" element={<ContactsPage />} />
-                  <Route path="clinic/:clinicId/conversations" element={<ConversationsPage />} />
-                  <Route path="clinic/:clinicId/conversations/flow-editor" element={<FlowEditorPage />} />
-                  <Route path="clinic/:clinicId/calendar" element={<CalendarsPage />} />
-                  <Route path="clinic/:clinicId/calendar/create" element={<CreateCalendarPage />} />
-                  <Route path="clinic/:clinicId/agents/:agentId" element={<AgentDetailPage />} />
-                  <Route path="clinic/:clinicId/channels" element={<ChannelsPage />} />
-                  <Route path="clinic/:clinicId/channels/:channelId" element={<ChannelDetailPage />} />
-                  <Route path="clinic/:clinicId/catalogs" element={<CatalogsPage />} />
-                  <Route path="clinic/:clinicId/catalogs/create" element={<CreateCatalogPage />} />
-                  <Route path="clinic/:clinicId/catalogs/edit/:catalogId" element={<CreateCatalogPage />} />
-                  <Route path="clinic/:clinicId/catalogs/products/create" element={<CreateProductPage />} />
-                  <Route path="clinic/:clinicId/catalogs/products/edit/:productId" element={<CreateProductPage />} />
-                  
-                  {/* Rotas para criação de agente com clinicId */}
-                  <Route path="clinic/:clinicId/agents/create" element={<AgentNamePage />} />
-                  <Route path="clinic/:clinicId/agents/create/product-catalog" element={<SelectProductCatalogPage />} />
-                  <Route path="clinic/:clinicId/agents/create/product-catalog/create" element={<CreateProductCatalogPage />} />
-                  <Route path="clinic/:clinicId/agents/create/product-catalog/create/product" element={<CreateProductPageAgent />} />
-                  <Route path="clinic/:clinicId/agents/create/product-catalog/edit/product/:productId" element={<EditProductPage />} />
-                  <Route path="clinic/:clinicId/agents/create/additional-info" element={<AdditionalInfoPage />} />
-                  <Route path="clinic/:clinicId/agents/create/success" element={<SuccessPage />} />
+                  {/* Rotas específicas por clínica - protegidas por membership */}
+                  <Route path="clinic/:clinicId" element={<ClinicMembershipGuard />}>
+                    <Route index element={<ClinicMenu />} />
+                    <Route path="agents" element={<AgentsPage />} />
+                    <Route path="members" element={<Members />} />
+                    <Route path="contacts" element={<ContactsPage />} />
+                    <Route path="conversations" element={<ConversationsPage />} />
+                    <Route path="conversations/flow-editor" element={<FlowEditorPage />} />
+                    <Route path="calendar" element={<CalendarsPage />} />
+                    <Route path="calendar/create" element={<CreateCalendarPage />} />
+                    <Route path="calendar/edit" element={<EditCalendarPage />} />
+                    <Route path="agents/:agentId" element={<AgentDetailPage />} />
+                    <Route path="channels" element={<ChannelsPage />} />
+                    <Route path="channels/:channelId" element={<ChannelDetailPage />} />
+                    <Route path="catalogs" element={<CatalogsPage />} />
+                    <Route path="catalogs/create" element={<CreateCatalogPage />} />
+                    <Route path="catalogs/edit/:catalogId" element={<CreateCatalogPage />} />
+                    <Route path="catalogs/products/create" element={<CreateProductPage />} />
+                    <Route path="catalogs/products/edit/:productId" element={<CreateProductPage />} />
 
-                  {/* Rotas para envio em massa de mensagens com clinicId */}
-                  <Route path="clinic/:clinicId/messages/bulk/channel" element={<SelectChannelPage />} />
-                  <Route path="clinic/:clinicId/messages/bulk/agent" element={<SelectAgentPage />} />
-                  <Route path="clinic/:clinicId/messages/bulk/template" element={<SelectTemplatePage />} />
-                  <Route path="clinic/:clinicId/messages/bulk/template/create" element={<CreateTemplatePage />} />
-                  <Route path="clinic/:clinicId/messages/bulk/template/edit/:templateId" element={<EditTemplatePage />} />
-                  <Route path="clinic/:clinicId/messages/bulk/contacts" element={<SelectContactsPage />} />
-                  <Route path="clinic/:clinicId/messages/bulk/results" element={<BulkSendResultsPage />} />
-                  
-                  {/* Rotas legadas para envio em massa - manter para compatibilidade */}
-                  <Route path="messages/bulk/channel" element={<SelectChannelPage />} />
-                  <Route path="messages/bulk/agent" element={<SelectAgentPage />} />
-                  <Route path="messages/bulk/template" element={<SelectTemplatePage />} />
-                  <Route path="messages/bulk/template/create" element={<CreateTemplatePage />} />
-                  <Route path="messages/bulk/template/edit/:templateId" element={<EditTemplatePage />} />
-                  <Route path="messages/bulk/contacts" element={<SelectContactsPage />} />
-                  <Route path="messages/bulk/results" element={<BulkSendResultsPage />} />
-                  
-                  {/* Rotas para criação de canal com clinicId */}
-                  <Route path="clinic/:clinicId/channels/create" element={<Navigate to="type" replace />} />
-                  <Route path="clinic/:clinicId/channels/create/type" element={<SelectChannelTypePage />} />
-                  <Route path="clinic/:clinicId/channels/create/agents" element={<SelectAgentsPage />} />
-                  <Route path="clinic/:clinicId/channels/create/meta-connection" element={<EmbeddedMetaConnectionPage />} />
-                  <Route path="clinic/:clinicId/channels/create/success" element={<ChannelSuccessPage />} />
-                  
+                    {/* Rotas para criação de agente */}
+                    <Route path="agents/create" element={<AgentNamePage />} />
+                    <Route path="agents/create/product-catalog" element={<SelectProductCatalogPage />} />
+                    <Route path="agents/create/product-catalog/create" element={<CreateProductCatalogPage />} />
+                    <Route path="agents/create/product-catalog/create/product" element={<CreateProductPageAgent />} />
+                    <Route path="agents/create/product-catalog/edit/product/:productId" element={<EditProductPage />} />
+                    <Route path="agents/create/additional-info" element={<AdditionalInfoPage />} />
+                    <Route path="agents/create/success" element={<SuccessPage />} />
+
+                    {/* Rotas para envio em massa de mensagens */}
+                    <Route path="messages/bulk/channel" element={<SelectChannelPage />} />
+                    <Route path="messages/bulk/agent" element={<SelectAgentPage />} />
+                    <Route path="messages/bulk/template" element={<SelectTemplatePage />} />
+                    <Route path="messages/bulk/template/create" element={<CreateTemplatePage />} />
+                    <Route path="messages/bulk/template/edit/:templateId" element={<EditTemplatePage />} />
+                    <Route path="messages/bulk/contacts" element={<SelectContactsPage />} />
+                    <Route path="messages/bulk/results" element={<BulkSendResultsPage />} />
+
+                    {/* Rotas para criação de canal */}
+                    <Route path="channels/create" element={<Navigate to="type" replace />} />
+                    <Route path="channels/create/type" element={<SelectChannelTypePage />} />
+                    <Route path="channels/create/agents" element={<SelectAgentsPage />} />
+                    <Route path="channels/create/meta-connection" element={<EmbeddedMetaConnectionPage />} />
+                    <Route path="channels/create/success" element={<ChannelSuccessPage />} />
+                  </Route>
+
                   {/* Rotas legadas para criação de canal - manter para compatibilidade */}
                   <Route path="channels/create" element={<Navigate to="/dashboard/channels/create/type" replace />} />
                   <Route path="channels/create/type" element={<SelectChannelTypePage />} />

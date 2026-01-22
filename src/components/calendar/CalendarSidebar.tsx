@@ -1,8 +1,11 @@
 import { Plus, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import { MiniCalendar } from './MiniCalendar'
-import { CalendarEvent, syncGoogleCalendarEvents } from '@/services/calendar'
+import { CalendarEvent, CalendarWithUser, syncGoogleCalendarEvents } from '@/services/calendar'
 import { GoogleCalendarConnect } from './GoogleCalendarConnect'
+import { CalendarSelector } from './CalendarSelector'
 import { useState } from 'react'
 import { useToast } from '@/hooks/use-toast'
 
@@ -14,16 +17,27 @@ interface CalendarSidebarProps {
   calendarId?: string
   isGoogleConnected?: boolean
   onGoogleConnectionChange?: (connected: boolean) => void
+  // Props para seleção de calendários (ADMIN/SECRETARIA)
+  showCalendarSelector?: boolean
+  calendars?: CalendarWithUser[]
+  selectedCalendarId?: string | null
+  onCalendarSelect?: (calendarId: string) => void
+  isLoadingCalendars?: boolean
 }
 
-export function CalendarSidebar({ 
-  events, 
-  selectedDate, 
-  onDateSelect, 
+export function CalendarSidebar({
+  events,
+  selectedDate,
+  onDateSelect,
   onCreateClick,
   calendarId,
   isGoogleConnected = false,
-  onGoogleConnectionChange
+  onGoogleConnectionChange,
+  showCalendarSelector = false,
+  calendars = [],
+  selectedCalendarId = null,
+  onCalendarSelect,
+  isLoadingCalendars = false
 }: CalendarSidebarProps) {
   const [isSyncing, setIsSyncing] = useState(false)
   const { toast } = useToast()
@@ -59,6 +73,18 @@ export function CalendarSidebar({
       <div className="space-y-6 p-4">
         {/* Title */}
         <h2 className="text-[21px] font-medium text-gray-900">Calendários</h2>
+
+        {/* Calendar Selector (for ADMIN/SECRETARIA) */}
+        {showCalendarSelector && onCalendarSelect && (
+          <div className="border-b pb-4">
+            <CalendarSelector
+              calendars={calendars}
+              selectedCalendarId={selectedCalendarId}
+              onSelect={onCalendarSelect}
+              isLoading={isLoadingCalendars}
+            />
+          </div>
+        )}
 
         {/* Create button */}
         <button
@@ -105,21 +131,60 @@ export function CalendarSidebar({
           </div>
         )}
 
-        {/* Additional calendar options can be added here */}
-        <div className="border-t pt-4 space-y-3">
-          <div className="space-y-2">
-            <label className="flex items-center space-x-2">
-              <input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-              <span className="text-sm text-gray-700">Meus eventos</span>
-            </label>
-            <label className="flex items-center space-x-2">
-              <input type="checkbox" defaultChecked className="rounded border-gray-300 text-green-600 focus:ring-green-500" />
-              <span className="text-sm text-gray-700">Agendamentos</span>
-            </label>
-            <label className="flex items-center space-x-2">
-              <input type="checkbox" defaultChecked className="rounded border-gray-300 text-purple-600 focus:ring-purple-500" />
-              <span className="text-sm text-gray-700">Tarefas</span>
-            </label>
+        {/* Filtros de calendario com checkboxes estilizadas */}
+        <div className="border-t pt-4">
+          <h3 className="text-sm font-medium text-gray-500 mb-3">Filtros</h3>
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="show-confirmed"
+                defaultChecked
+                className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+              />
+              <Label
+                htmlFor="show-confirmed"
+                className="text-sm font-normal cursor-pointer"
+              >
+                <span className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-green-500" />
+                  Confirmados
+                </span>
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="show-pending"
+                defaultChecked
+                className="data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
+              />
+              <Label
+                htmlFor="show-pending"
+                className="text-sm font-normal cursor-pointer"
+              >
+                <span className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-yellow-500" />
+                  Pendentes
+                </span>
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="show-cancelled"
+                defaultChecked
+                className="data-[state=checked]:bg-red-500 data-[state=checked]:border-red-500"
+              />
+              <Label
+                htmlFor="show-cancelled"
+                className="text-sm font-normal cursor-pointer"
+              >
+                <span className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-red-500" />
+                  Cancelados
+                </span>
+              </Label>
+            </div>
           </div>
         </div>
       </div>

@@ -1,4 +1,3 @@
-import { WorkingHoursSelector } from '@/components/calendar/WorkingHoursSelector';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,12 +33,11 @@ import {
 } from '@/components/ui/table';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClinics } from '@/hooks/use-clinics';
+import { useUserRole } from '@/hooks/useUserRole';
 import { toast } from '@/hooks/use-toast';
 import { api } from '@/services';
-import { WorkingHours } from '@/services/calendar';
 import {
     ArrowLeftIcon,
-    CalendarDaysIcon,
     EllipsisVerticalIcon,
     MagnifyingGlassIcon,
     PencilIcon,
@@ -63,29 +61,12 @@ interface Member {
   updatedAt?: string;
 }
 
-interface CalendarData {
-  calendarId: string;
-  membershipId: string;
-}
-
-const DEFAULT_WORKING_HOURS: WorkingHours[] = [
-  { weekday: 1, startTime: '08:00', endTime: '12:00' },
-  { weekday: 1, startTime: '13:00', endTime: '17:00' },
-  { weekday: 2, startTime: '08:00', endTime: '12:00' },
-  { weekday: 2, startTime: '13:00', endTime: '17:00' },
-  { weekday: 3, startTime: '08:00', endTime: '12:00' },
-  { weekday: 3, startTime: '13:00', endTime: '17:00' },
-  { weekday: 4, startTime: '08:00', endTime: '12:00' },
-  { weekday: 4, startTime: '13:00', endTime: '17:00' },
-  { weekday: 5, startTime: '08:00', endTime: '12:00' },
-  { weekday: 5, startTime: '13:00', endTime: '17:00' },
-];
-
 export default function Members() {
   const { clinicId } = useParams<{ clinicId: string }>();
   const navigate = useNavigate();
   const { clinics } = useClinics();
   const { user: currentUser } = useAuth();
+  const { canManageMembers } = useUserRole();
   
   const [members, setMembers] = useState<Member[]>([]);
   const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
@@ -102,14 +83,6 @@ export default function Members() {
   const [roleToInvite, setRoleToInvite] = useState('SECRETARIA');
   const [isInviting, setIsInviting] = useState(false);
 
-  // Estados para editar calendário
-  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
-  const [selectedMemberForCalendar, setSelectedMemberForCalendar] = useState<Member | null>(null);
-  const [workingHours, setWorkingHours] = useState<WorkingHours[]>(DEFAULT_WORKING_HOURS);
-  const [calendarData, setCalendarData] = useState<CalendarData | null>(null);
-  const [isLoadingCalendar, setIsLoadingCalendar] = useState(false);
-  const [isSavingCalendar, setIsSavingCalendar] = useState(false);
-  
   const clinic = clinics.find(c => c.id === clinicId);
   
   const roleOptions = [
@@ -277,118 +250,10 @@ export default function Members() {
     setRoleToInvite('SECRETARIA');
   };
 
-  // Funções para gerenciar calendário
-  const hasCalendarRole = (member: Member) => {
-    return member.roles.some(role => ['ADMIN', 'DENTISTA'].includes(role));
-  };
-
-  const openCalendarModal = async (member: Member) => {
-    setSelectedMemberForCalendar(member);
-    setIsCalendarModalOpen(true);
-    setIsLoadingCalendar(true);
-
-    try {
-      // Buscar calendário do membro
-      const response = await api.get(`/memberships/${member.membershipId}/calendars`);
-      const calendar = response.data.calendar;
-
-      setCalendarData({
-        calendarId: calendar.calendarId,
-        membershipId: calendar.membershipId,
-      });
-
-      // Converter working hours do backend para o formato esperado pelo WorkingHoursSelector
-      if (calendar.workingHours && Array.isArray(calendar.workingHours)) {
-        const formattedWorkingHours: WorkingHours[] = calendar.workingHours.map(
-          (wh: { weekday: number; startTime: string; endTime: string }) => ({
-            weekday: wh.weekday,
-            startTime: wh.startTime,
-            endTime: wh.endTime,
-          })
-        );
-        setWorkingHours(formattedWorkingHours);
-      } else {
-        setWorkingHours([]);
-      }
-    } catch (error: any) {
-      console.error('Erro ao buscar calendário:', error);
-      if (error.response?.status === 404) {
-        toast({
-          title: 'Calendário não encontrado',
-          description: 'Este membro ainda não possui um calendário configurado.',
-          variant: 'destructive',
-        });
-        setIsCalendarModalOpen(false);
-      } else {
-        toast({
-          title: 'Erro',
-          description: 'Não foi possível carregar o calendário.',
-          variant: 'destructive',
-        });
-      }
-    } finally {
-      setIsLoadingCalendar(false);
-    }
-  };
-
-  const closeCalendarModal = () => {
-    setIsCalendarModalOpen(false);
-    setSelectedMemberForCalendar(null);
-    setCalendarData(null);
-    setWorkingHours(DEFAULT_WORKING_HOURS);
-  };
-
-  const handleSaveWorkingHours = async () => {
-    if (!calendarData) return;
-
-    setIsSavingCalendar(true);
-    try {
-      // Agrupar working hours por dia da semana
-      const workingHoursByDay: Record<number, { startTime: string; endTime: string }[]> = {};
-
-      // Inicializar todos os dias com array vazio
-      for (let i = 0; i <= 6; i++) {
-        workingHoursByDay[i] = [];
-      }
-
-      // Preencher com os horários selecionados
-      workingHours.forEach(wh => {
-        workingHoursByDay[wh.weekday].push({
-          startTime: wh.startTime,
-          endTime: wh.endTime,
-        });
-      });
-
-      // Salvar cada dia
-      for (const [weekdayStr, dayHours] of Object.entries(workingHoursByDay)) {
-        const weekday = parseInt(weekdayStr);
-        await api.put(`/calendars/${calendarData.calendarId}/working-hours`, {
-          weekday,
-          workingHours: dayHours,
-        });
-      }
-
-      toast({
-        title: 'Sucesso',
-        description: 'Horários de trabalho atualizados com sucesso.',
-      });
-
-      closeCalendarModal();
-    } catch (error) {
-      console.error('Erro ao salvar horários:', error);
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível salvar os horários de trabalho.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSavingCalendar(false);
-    }
-  };
-  
   // Verificar se o usuário pode editar/excluir o membro
+  // Apenas ADMIN pode editar e não pode editar a si mesmo
   const canEditMember = (member: Member) => {
-    return member.userId !== currentUser?.id;
+    return canManageMembers && member.userId !== currentUser?.id;
   };
   
   const getRoleBadgeVariant = (role: string) => {
@@ -436,10 +301,12 @@ export default function Members() {
             </p>
           </div>
         </div>
-        <Button onClick={() => setIsAddModalOpen(true)}>
-          <UserPlusIcon className="h-4 w-4 mr-2" />
-          Convidar Membro
-        </Button>
+        {canManageMembers && (
+          <Button onClick={() => setIsAddModalOpen(true)}>
+            <UserPlusIcon className="h-4 w-4 mr-2" />
+            Convidar Membro
+          </Button>
+        )}
       </div>
 
       {/* Search and Filters */}
@@ -486,7 +353,7 @@ export default function Members() {
                   <TableHead>Cargo</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Data de Entrada</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+                  {canManageMembers && <TableHead className="text-right">Ações</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -519,47 +386,37 @@ export default function Members() {
                     <TableCell>
                       {new Date(member.createdAt).toLocaleDateString('pt-BR')}
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        {/* Botão de calendário - aparece para todos com role ADMIN/DENTISTA ativos */}
-                        {hasCalendarRole(member) && member.status === 'active' && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openCalendarModal(member)}
-                            title="Editar Calendário"
-                          >
-                            <CalendarDaysIcon className="h-4 w-4" />
-                          </Button>
-                        )}
-
-                        {/* Menu de ações - só aparece para outros membros */}
-                        {canEditMember(member) ? (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <EllipsisVerticalIcon className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => openEditModal(member)}>
-                                <PencilIcon className="h-4 w-4 mr-2" />
-                                Editar Cargo
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => openDeleteModal(member)}
-                                className="text-destructive"
-                              >
-                                <TrashIcon className="h-4 w-4 mr-2" />
-                                Remover Membro
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        ) : (
-                          <span className="text-sm text-muted-foreground px-2">Você</span>
-                        )}
-                      </div>
-                    </TableCell>
+                    {canManageMembers && (
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          {/* Menu de ações - só aparece para outros membros */}
+                          {canEditMember(member) ? (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <EllipsisVerticalIcon className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => openEditModal(member)}>
+                                  <PencilIcon className="h-4 w-4 mr-2" />
+                                  Editar Cargo
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => openDeleteModal(member)}
+                                  className="text-destructive"
+                                >
+                                  <TrashIcon className="h-4 w-4 mr-2" />
+                                  Remover Membro
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          ) : (
+                            <span className="text-sm text-muted-foreground px-2">Você</span>
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
@@ -684,87 +541,6 @@ export default function Members() {
         </DialogContent>
       </Dialog>
 
-      {/* Calendar Working Hours Modal */}
-      <Dialog open={isCalendarModalOpen} onOpenChange={(open) => !open && closeCalendarModal()}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Editar Horários de Trabalho</DialogTitle>
-            <DialogDescription>
-              Configure os horários de atendimento de {selectedMemberForCalendar?.user.name}.
-              Clique e arraste para selecionar os horários disponíveis.
-            </DialogDescription>
-          </DialogHeader>
-
-          {isLoadingCalendar ? (
-            <div className="flex items-center justify-center py-8">
-              <p className="text-muted-foreground">Carregando calendário...</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* Botões de atalho */}
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setWorkingHours([
-                      { weekday: 1, startTime: '09:00', endTime: '18:00' },
-                      { weekday: 2, startTime: '09:00', endTime: '18:00' },
-                      { weekday: 3, startTime: '09:00', endTime: '18:00' },
-                      { weekday: 4, startTime: '09:00', endTime: '18:00' },
-                      { weekday: 5, startTime: '09:00', endTime: '18:00' },
-                    ]);
-                  }}
-                  className="px-3 py-1.5 text-sm border rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  Comercial (Seg-Sex 9h-18h)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setWorkingHours([
-                      { weekday: 1, startTime: '08:00', endTime: '12:00' },
-                      { weekday: 1, startTime: '13:00', endTime: '17:00' },
-                      { weekday: 2, startTime: '08:00', endTime: '12:00' },
-                      { weekday: 2, startTime: '13:00', endTime: '17:00' },
-                      { weekday: 3, startTime: '08:00', endTime: '12:00' },
-                      { weekday: 3, startTime: '13:00', endTime: '17:00' },
-                      { weekday: 4, startTime: '08:00', endTime: '12:00' },
-                      { weekday: 4, startTime: '13:00', endTime: '17:00' },
-                      { weekday: 5, startTime: '08:00', endTime: '12:00' },
-                      { weekday: 5, startTime: '13:00', endTime: '17:00' },
-                    ]);
-                  }}
-                  className="px-3 py-1.5 text-sm border rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  CLT (Seg-Sex 8h-12h, 13h-17h)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setWorkingHours([])}
-                  className="px-3 py-1.5 text-sm border rounded-md hover:bg-gray-50 transition-colors ml-auto"
-                >
-                  Limpar tudo
-                </button>
-              </div>
-
-              {/* Seletor visual de horários */}
-              <WorkingHoursSelector
-                value={workingHours}
-                onChange={setWorkingHours}
-              />
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button variant="outline" onClick={closeCalendarModal}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSaveWorkingHours} disabled={isSavingCalendar || isLoadingCalendar}>
-              {isSavingCalendar ? 'Salvando...' : 'Salvar Horários'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

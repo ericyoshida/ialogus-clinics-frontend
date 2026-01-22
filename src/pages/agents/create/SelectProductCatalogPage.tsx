@@ -295,8 +295,8 @@ export default function SelectProductCatalogPage() {
           }
         }
       } catch (err) {
-        console.error('Erro ao buscar catálogos de produtos:', err);
-        setError(err instanceof Error ? err.message : 'Erro ao carregar catálogos de produtos.');
+        console.error('Erro ao buscar catálogos de serviços:', err);
+        setError(err instanceof Error ? err.message : 'Erro ao carregar catálogos de serviços.');
       } finally {
         setLoading(false);
       }
@@ -325,7 +325,7 @@ export default function SelectProductCatalogPage() {
       // Você pode mostrar um alerta ou mensagem aqui
       toast({
         title: 'Seleção necessária',
-        description: 'Por favor, selecione um catálogo de produtos para continuar',
+        description: 'Por favor, selecione um catálogo de serviços para continuar',
         variant: 'destructive',
       });
       return;
@@ -362,8 +362,8 @@ export default function SelectProductCatalogPage() {
         setLoading(false);
       })
       .catch(err => {
-        console.error('Erro ao buscar catálogos de produtos:', err);
-        setError(err instanceof Error ? err.message : 'Erro ao carregar catálogos de produtos.');
+        console.error('Erro ao buscar catálogos de serviços:', err);
+        setError(err instanceof Error ? err.message : 'Erro ao carregar catálogos de serviços.');
         setLoading(false);
       });
   };
@@ -440,7 +440,7 @@ export default function SelectProductCatalogPage() {
   const mappedCatalogs = catalogs.map(catalog => ({
     id: catalog.productsListId,
     title: catalog.productsListName,
-    description: `Catálogo com ${catalog.products.length} produtos para seu agente oferecer aos clientes.`,
+    description: `Catálogo com ${catalog.products.length} serviços para seu agente oferecer aos pacientes.`,
     imagePath: '/images/product-image.svg',
     productCount: catalog.products.length,
     gradientColors: getGradientColors(catalog.productsListId)
@@ -455,7 +455,7 @@ export default function SelectProductCatalogPage() {
           <span className="text-gray-400">|</span>
           <span className="text-gray-600">{clinicName}</span>
         </h1>
-        <p className="text-gray-500 text-sm mb-4">Etapa 2: Selecione o catálogo de produtos</p>
+        <p className="text-gray-500 text-sm mb-4">Etapa 2: Selecione o catálogo de serviços</p>
 
         {/* Indicador de multistep abaixo do título */}
         <div className="w-full mb-6">
@@ -468,11 +468,11 @@ export default function SelectProductCatalogPage() {
         
         {/* Título principal e subtítulo */}
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-xl font-medium text-gray-800">Escolha um catálogo de produtos</h2>
+          <h2 className="text-xl font-medium text-gray-800">Escolha um catálogo de serviços</h2>
         </div>
         
         {/* Subtítulo em uma linha separada */}
-        <p className="text-sm text-gray-500 mb-6">Selecione um catálogo existente ou crie um novo para seu agente acessar durante as conversas</p>
+        <p className="text-sm text-gray-500 mb-6">Selecione um catálogo de serviços existente ou crie um novo para seu agente acessar durante as conversas</p>
         
         {/* Mensagem de erro da API */}
         {error && (
@@ -510,7 +510,7 @@ export default function SelectProductCatalogPage() {
                 <div className="rounded-lg bg-gray-200 h-[250px] w-[250px]"></div>
                 <div className="rounded-lg bg-gray-200 h-[250px] w-[250px]"></div>
               </div>
-              <p className="text-center text-gray-500">Carregando catálogos de produtos...</p>
+              <p className="text-center text-gray-500">Carregando catálogos de serviços...</p>
             </div>
           </div>
         ) : (
@@ -519,7 +519,7 @@ export default function SelectProductCatalogPage() {
             {!loading && mappedCatalogs.length === 0 && !error && (
               <div className="flex items-center justify-center w-full mb-4">
                 <div className="text-center text-gray-500">
-                  <p className="mb-2">Nenhum catálogo de produtos encontrado</p>
+                  <p className="mb-2">Nenhum catálogo de serviços encontrado</p>
                   <p className="text-sm">Clique no botão "+" para adicionar um novo catálogo</p>
                 </div>
               </div>

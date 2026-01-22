@@ -1,10 +1,11 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { useClinics } from '@/hooks/use-clinics'
+import { useUserRole } from '@/hooks/useUserRole'
 import { cn } from '@/lib/utils'
 import { Clinic } from '@/services/clinics'
 import React, { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LogOut } from 'lucide-react'
+import { LogOut, Users, Radio, Package } from 'lucide-react'
 
 // Adicionando interface estendida para incluir clinicId
 interface ClinicWithClinicId extends Clinic {
@@ -256,6 +257,7 @@ interface SidebarProps {
 export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
   const { user, isLoading: authLoading, logout } = useAuth();
   const { clinics, loading, error } = useClinics();
+  const { canViewAgents, canViewChannels, canManageMembers } = useUserRole();
   const location = useLocation();
   const navigate = useNavigate();
   const path = location.pathname;
@@ -481,8 +483,8 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
       
       <nav className="flex-1 pt-1.5 overflow-y-auto">
         <SidebarSection title="Home" isCollapsed={isCollapsed} mobile={mobile}>
-          <SidebarItem 
-            icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={path === '/dashboard' ? 2.5 : 1.5} stroke="currentColor" className="w-4 h-4">
+          <SidebarItem
+            icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
             </svg>}
             label="Home" 
@@ -501,12 +503,12 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
               onMouseLeave={() => setHoveredItem(null)}
             >
               <SidebarItem 
-                icon={<svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
-                  strokeWidth={path.includes('/admin/llm-cost-tracking') ? 2.5 : 1.5} 
-                  stroke="currentColor" 
+                icon={<svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
                   className={mobile ? "w-4 h-4" : "w-5 h-5"}
                   style={{
                     filter: path.includes('/admin/llm-cost-tracking') 
@@ -591,31 +593,56 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
 
         {selectedClinic && (
           <SidebarSection title="Gestão" isCollapsed={isCollapsed} mobile={mobile}>
-            <div 
-              onMouseEnter={() => setHoveredItem('agents')} 
-              onMouseLeave={() => setHoveredItem(null)}
-            >
-              <SidebarItem 
-                icon={<img 
-                  src="/images/icons/agent.svg" 
-                  alt="Agentes"
-                  className={mobile ? "w-4 h-4" : "w-5 h-5"} 
-                  style={{
-                    filter: path.includes('/agents') 
-                      ? 'invert(48%) sepia(93%) saturate(2467%) hue-rotate(346deg) brightness(97%) contrast(95%) drop-shadow(0 0 1px rgba(0,0,0,0.5))' 
-                      : hoveredItem === 'agents' 
-                        ? 'invert(48%) sepia(93%) saturate(2467%) hue-rotate(346deg) brightness(97%) contrast(95%)' 
-                        : undefined,
-                    transform: path.includes('/agents') ? 'scale(1.1)' : 'scale(1)'
-                  }}
-                />}
-                label="Agentes" 
-                to={selectedClinic ? `/dashboard/clinic/${selectedClinic}/agents` : "/dashboard/agents"} 
-                isActive={path.includes('/agents')}
-                isCollapsed={isCollapsed}
-                mobile={mobile}
-              />
-            </div>
+            {/* Agentes - apenas para ADMIN */}
+            {canViewAgents && (
+              <div
+                onMouseEnter={() => setHoveredItem('agents')}
+                onMouseLeave={() => setHoveredItem(null)}
+              >
+                <SidebarItem
+                  icon={<img
+                    src="/images/icons/agent.svg"
+                    alt="Agentes"
+                    className={mobile ? "w-4 h-4" : "w-5 h-5"}
+                    style={{
+                      filter: path.includes('/agents')
+                        ? 'invert(48%) sepia(93%) saturate(2467%) hue-rotate(346deg) brightness(97%) contrast(95%) drop-shadow(0 0 1px rgba(0,0,0,0.5))'
+                        : hoveredItem === 'agents'
+                          ? 'invert(48%) sepia(93%) saturate(2467%) hue-rotate(346deg) brightness(97%) contrast(95%)'
+                          : undefined,
+                      transform: path.includes('/agents') ? 'scale(1.1)' : 'scale(1)'
+                    }}
+                  />}
+                  label="Agentes"
+                  to={selectedClinic ? `/dashboard/clinic/${selectedClinic}/agents` : "/dashboard/agents"}
+                  isActive={path.includes('/agents')}
+                  isCollapsed={isCollapsed}
+                  mobile={mobile}
+                />
+              </div>
+            )}
+            {/* Canais - apenas para ADMIN */}
+            {canViewChannels && (
+              <div
+                onMouseEnter={() => setHoveredItem('channels')}
+                onMouseLeave={() => setHoveredItem(null)}
+              >
+                <SidebarItem
+                  icon={<Radio
+                    strokeWidth={1.5}
+                    className={cn(
+                      mobile ? "w-4 h-4" : "w-5 h-5",
+                      path.includes('/channels') ? "text-[#F15A24]" : "text-gray-500"
+                    )}
+                  />}
+                  label="Canais"
+                  to={selectedClinic ? `/dashboard/clinic/${selectedClinic}/channels` : "/dashboard/channels"}
+                  isActive={path.includes('/channels')}
+                  isCollapsed={isCollapsed}
+                  mobile={mobile}
+                />
+              </div>
+            )}
             <div 
               onMouseEnter={() => setHoveredItem('conversations')} 
               onMouseLeave={() => setHoveredItem(null)}
@@ -671,12 +698,12 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
               onMouseLeave={() => setHoveredItem(null)}
             >
               <SidebarItem 
-                icon={<svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
-                  strokeWidth={path.includes('/messages') ? 2.5 : 1.5} 
-                  stroke="currentColor" 
+                icon={<svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
                   className={mobile ? "w-4 h-4" : "w-5 h-5"}
                   style={{
                     filter: path.includes('/messages') 
@@ -700,27 +727,67 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
                 mobile={mobile}
               />
             </div>
-            <div 
-              onMouseEnter={() => setHoveredItem('calendar')} 
+            <div
+              onMouseEnter={() => setHoveredItem('calendar')}
               onMouseLeave={() => setHoveredItem(null)}
             >
-              <SidebarItem 
-                icon={<img 
-                  src="/images/icons/calendar.svg" 
+              <SidebarItem
+                icon={<img
+                  src="/images/icons/calendar.svg"
                   alt="Calendários"
-                  className="w-4 h-4" 
+                  className="w-4 h-4"
                   style={{
-                    filter: path.includes('/calendar') 
-                      ? 'invert(48%) sepia(93%) saturate(2467%) hue-rotate(346deg) brightness(97%) contrast(95%) drop-shadow(0 0 1px rgba(0,0,0,0.5))' 
-                      : hoveredItem === 'calendar' 
-                        ? 'invert(48%) sepia(93%) saturate(2467%) hue-rotate(346deg) brightness(97%) contrast(95%)' 
+                    filter: path.includes('/calendar')
+                      ? 'invert(48%) sepia(93%) saturate(2467%) hue-rotate(346deg) brightness(97%) contrast(95%) drop-shadow(0 0 1px rgba(0,0,0,0.5))'
+                      : hoveredItem === 'calendar'
+                        ? 'invert(48%) sepia(93%) saturate(2467%) hue-rotate(346deg) brightness(97%) contrast(95%)'
                         : undefined,
                     transform: path.includes('/calendar') ? 'scale(1.1)' : 'scale(1)'
                   }}
                 />}
-                label="Calendários" 
-                to={selectedClinic ? `/dashboard/clinic/${selectedClinic}/calendar` : "/dashboard/calendar"} 
+                label="Calendários"
+                to={selectedClinic ? `/dashboard/clinic/${selectedClinic}/calendar` : "/dashboard/calendar"}
                 isActive={path.includes('/calendar')}
+                isCollapsed={isCollapsed}
+                mobile={mobile}
+              />
+            </div>
+            {/* Membros - visível para todos */}
+            <div
+              onMouseEnter={() => setHoveredItem('members')}
+              onMouseLeave={() => setHoveredItem(null)}
+            >
+              <SidebarItem
+                icon={<Users
+                  strokeWidth={1.5}
+                  className={cn(
+                    mobile ? "w-4 h-4" : "w-5 h-5",
+                    path.includes('/members') ? "text-[#F15A24]" : "text-gray-500"
+                  )}
+                />}
+                label="Membros"
+                to={selectedClinic ? `/dashboard/clinic/${selectedClinic}/members` : "/dashboard/members"}
+                isActive={path.includes('/members')}
+                isCollapsed={isCollapsed}
+                mobile={mobile}
+              />
+            </div>
+            {/* Catálogo de Serviços - visível para todos */}
+            <div
+              onMouseEnter={() => setHoveredItem('catalog')}
+              onMouseLeave={() => setHoveredItem(null)}
+            >
+              <SidebarItem
+                icon={<Package
+                  strokeWidth={1.5}
+                  className={cn(
+                    mobile ? "w-4 h-4" : "w-5 h-5",
+                    path.includes('/catalogs') ? "text-[#F15A24]" : "text-gray-500"
+                  )}
+                />}
+                label="Catálogo de Serviços"
+                to={selectedClinic ? `/dashboard/clinic/${selectedClinic}/catalogs` : "/dashboard/catalogs"}
+                isActive={path.includes('/catalogs')}
                 isCollapsed={isCollapsed}
                 mobile={mobile}
               />
@@ -788,7 +855,7 @@ export function Sidebar({ mobile, onCloseMobile }: SidebarProps) {
               aria-label="Sair"
               title="Sair"
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut strokeWidth={1.5} className="w-5 h-5" />
             </button>
           )}
         </div>

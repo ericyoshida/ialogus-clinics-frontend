@@ -680,7 +680,7 @@ export default function CreateProductPage() {
       {/* Cabeçalho com título */}
       <div className="flex flex-col mb-5">
         <h1 className="text-[21px] font-medium text-gray-900 mt-2 flex items-center gap-2">
-          Catálogo de Produtos | Cadastrar Novo Produto
+          Catálogo de Serviços | Cadastrar Novo Serviço
           <span className="text-gray-400">|</span>
           <span className="text-gray-600">{clinicName}</span>
         </h1>

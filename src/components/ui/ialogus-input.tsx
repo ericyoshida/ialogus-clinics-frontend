@@ -60,8 +60,8 @@ export function IalogusInput({
             onFocus={handleFocus}
             onBlur={handleBlur}
             value={value}
-            placeholder=""
             {...props}
+            placeholder=""
           />
           
           {label && (

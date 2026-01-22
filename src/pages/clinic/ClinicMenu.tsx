@@ -58,7 +58,7 @@ export default function ClinicMenu() {
     },
     {
       id: 'catalog',
-      title: 'Catálogo de Produtos',
+      title: 'Catálogo de Serviços',
       svgPath: '/images/catalogo.svg',
       gradientColors: { from: '#F6921E', to: '#EE413D' },
       onClick: () => navigate(`/dashboard/clinic/${clinic.id}/catalogs`)

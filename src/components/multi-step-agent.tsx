@@ -9,14 +9,14 @@ interface MultiStepAgentProps {
 
 const threeSteps = [
   "Nome do Agente",
-  "Catálogo de Produtos",
+  "Catálogo de Serviços",
   "Informações Adicionais"
 ];
 
 const fourSteps = [
   "Tipo de Agente",
   "Fluxo de Conversa",
-  "Catálogo de Produtos",
+  "Catálogo de Serviços",
   "Informações Adicionais"
 ];
 
