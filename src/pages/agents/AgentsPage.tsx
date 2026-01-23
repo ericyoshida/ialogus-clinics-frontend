@@ -2,7 +2,8 @@ import { AddAgentCard } from '@/components/agents/AddAgentCard'
 import { AgentCard } from '@/components/agents/AgentCard'
 import { useAgents } from '@/hooks/use-agents'
 import { useClinics } from '@/hooks/use-clinics'
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { useUserRole } from '@/hooks/use-user-role'
+import { ChevronLeftIcon, ChevronRightIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -19,7 +20,10 @@ export default function AgentsPage() {
   
   // Buscar as clínicas para encontrar o nome da clínica pelo ID
   const { clinics, loading: loadingClinics } = useClinics();
-  
+
+  // Verificar as roles do usuário na clínica atual
+  const { canAccessAdminFeatures, loading: loadingRoles } = useUserRole(clinicId);
+
   // Usar o hook de agentes
   const { agents, loading: loadingAgents, error, refetchAgents } = useAgents(clinic.id);
   
@@ -204,12 +208,34 @@ export default function AgentsPage() {
   };
 
   // Loading state
-  if (loadingClinics) {
+  if (loadingClinics || loadingRoles) {
     return (
       <div className="max-w-7xl -mt-4 px-2 sm:px-3 lg:px-4 pb-6">
         <div className="flex flex-col items-center justify-center py-12">
           <div className="animate-pulse w-48 h-6 bg-gray-200 rounded mb-4"></div>
           <div className="animate-pulse w-64 h-4 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Acesso negado para usuários não-admin
+  if (!canAccessAdminFeatures) {
+    return (
+      <div className="max-w-7xl -mt-4 px-2 sm:px-3 lg:px-4 pb-6">
+        <div className="flex flex-col items-center justify-center py-16">
+          <ShieldExclamationIcon className="w-16 h-16 text-gray-400 mb-4" />
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">Acesso Restrito</h1>
+          <p className="text-gray-500 text-center max-w-md mb-6">
+            Você não possui permissão para acessar esta funcionalidade.
+            Entre em contato com o administrador da clínica para mais informações.
+          </p>
+          <button
+            onClick={() => navigate(`/dashboard/clinic/${clinicId}`)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Voltar ao Menu
+          </button>
         </div>
       </div>
     );

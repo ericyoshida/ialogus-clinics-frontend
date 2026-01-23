@@ -2,7 +2,9 @@ import { MultiStepChannel } from '@/components/multi-step-channel'
 import { FeatureCard } from '@/components/ui/feature-card'
 import { useChannelCreationForm } from '@/hooks/use-channel-creation-form'
 import { useClinics } from '@/hooks/use-clinics'
+import { useUserRole } from '@/hooks/use-user-role'
 import { cn } from '@/lib/utils'
+import { ShieldExclamationIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
@@ -76,8 +78,11 @@ export default function SelectChannelTypePage() {
   const [lastClinicId, setLastClinicId] = useState(clinicId)
   
   // Buscar nome da clínica
-  const { clinics } = useClinics()
+  const { clinics, loading: loadingClinics } = useClinics()
   const clinicName = clinics.find(c => c.id === clinicId)?.name || 'Carregando...'
+
+  // Verificar permissões do usuário
+  const { canAccessAdminFeatures, loading: loadingRoles } = useUserRole(clinicId)
   
   // Limpar dados do formulário quando a clínica mudar
   useEffect(() => {
@@ -115,7 +120,40 @@ export default function SelectChannelTypePage() {
   }
   
   const canProceed = selectedChannelType !== null
-  
+
+  // Verificação de acesso
+  if (loadingClinics || loadingRoles) {
+    return (
+      <div className="max-w-7xl -mt-4 px-2 sm:px-3 lg:px-4 pb-6">
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="animate-pulse w-48 h-6 bg-gray-200 rounded mb-4"></div>
+          <div className="animate-pulse w-64 h-4 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!canAccessAdminFeatures) {
+    return (
+      <div className="max-w-7xl -mt-4 px-2 sm:px-3 lg:px-4 pb-6">
+        <div className="flex flex-col items-center justify-center py-16">
+          <ShieldExclamationIcon className="w-16 h-16 text-gray-400 mb-4" />
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">Acesso Restrito</h1>
+          <p className="text-gray-500 text-center max-w-md mb-6">
+            Você não possui permissão para criar canais de comunicação.
+            Entre em contato com o administrador da clínica para mais informações.
+          </p>
+          <button
+            onClick={() => navigate(`/dashboard/clinic/${clinicId}`)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Voltar ao Menu
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-7xl h-[calc(100vh-80px)] flex flex-col -mt-4 px-2 sm:px-3 lg:px-4 pb-6">
       <div className="flex flex-col mb-1">

@@ -1,19 +1,23 @@
 import { FeatureCard } from '@/components/ui/feature-card';
 import { useClinics } from '@/hooks/use-clinics';
-import { useEffect, useState } from 'react';
+import { useUserRole } from '@/hooks/use-user-role';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function ClinicMenu() {
   const { clinicId } = useParams<{ clinicId: string }>();
   const navigate = useNavigate();
-  
+
   const [clinic, setClinic] = useState({
     name: "Carregando...",
     id: clinicId
   });
-  
+
   // Buscar as clínicas para encontrar o nome pelo ID
   const { clinics, loading } = useClinics();
+
+  // Verificar as roles do usuário na clínica atual
+  const { canAccessAdminFeatures } = useUserRole(clinicId);
   
   // Atualizar o nome da clínica quando as clínicas forem carregadas
   useEffect(() => {
@@ -35,60 +39,68 @@ export default function ClinicMenu() {
     }
   }, [clinicId, clinics, loading]);
 
-  const menuItems: Array<{
+  const allMenuItems: Array<{
     id: string;
     title: string;
     svgPath: string;
     gradientColors: { from: string; to: string };
     onClick: () => void;
+    requiresAdmin: boolean;
   }> = [
     {
       id: 'agents',
       title: 'Meus Agentes',
       svgPath: '/images/agents.svg',
       gradientColors: { from: '#F6921E', to: '#EE413D' },
-      onClick: () => navigate(`/dashboard/clinic/${clinic.id}/agents`)
+      onClick: () => navigate(`/dashboard/clinic/${clinic.id}/agents`),
+      requiresAdmin: true, // Somente ADMIN pode ver
     },
     {
       id: 'members',
       title: 'Membros da Clínica',
       svgPath: '/images/membros.svg',
       gradientColors: { from: '#F6921E', to: '#EE413D' },
-      onClick: () => navigate(`/dashboard/clinic/${clinic.id}/members`)
+      onClick: () => navigate(`/dashboard/clinic/${clinic.id}/members`),
+      requiresAdmin: false,
     },
     {
       id: 'catalog',
       title: 'Catálogo de Serviços',
       svgPath: '/images/catalogo.svg',
       gradientColors: { from: '#F6921E', to: '#EE413D' },
-      onClick: () => navigate(`/dashboard/clinic/${clinic.id}/catalogs`)
+      onClick: () => navigate(`/dashboard/clinic/${clinic.id}/catalogs`),
+      requiresAdmin: true, // Somente ADMIN pode ver
     },
     {
       id: 'channels',
       title: 'Canais de Comunicação',
       svgPath: '/images/canais.svg',
       gradientColors: { from: '#F6921E', to: '#EE413D' },
-      onClick: () => navigate(`/dashboard/clinic/${clinic.id}/channels`)
+      onClick: () => navigate(`/dashboard/clinic/${clinic.id}/channels`),
+      requiresAdmin: true, // Somente ADMIN pode ver
     },
     {
       id: 'contacts',
       title: 'Contatos',
       svgPath: '/images/contatos.svg',
       gradientColors: { from: '#F6921E', to: '#EE413D' },
-      onClick: () => navigate(`/dashboard/clinic/${clinic.id}/contacts`)
+      onClick: () => navigate(`/dashboard/clinic/${clinic.id}/contacts`),
+      requiresAdmin: false,
     },
     {
       id: 'dashboard',
       title: 'Dashboard',
       svgPath: '/images/dashboard.svg',
       gradientColors: { from: '#F6921E', to: '#EE413D' },
-      onClick: () => console.log('Dashboard clicked')
+      onClick: () => console.log('Dashboard clicked'),
+      requiresAdmin: false,
     }
   ];
 
-  // Dividir os itens em duas linhas
-  const firstRow = menuItems.slice(0, 3);
-  const secondRow = menuItems.slice(3, 6);
+  // Filtrar itens baseado nas permissões do usuário
+  const menuItems = useMemo(() => {
+    return allMenuItems.filter(item => !item.requiresAdmin || canAccessAdminFeatures);
+  }, [canAccessAdminFeatures, clinic.id]);
 
   // Estilo com dimensões fixas para os cards
   const cardStyle = {
@@ -144,7 +156,7 @@ export default function ClinicMenu() {
       {/* Grid de cards responsivo com espaçamento lateral fixo */}
       <div style={gridContainerStyle} className="max-w-full">
         {/* Todos os cards em sequência */}
-        {[...firstRow, ...secondRow].map((item) => (
+        {menuItems.map((item) => (
           <div key={item.id}>
             <div style={cardStyle}>
               <FeatureCard
